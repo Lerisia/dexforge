@@ -1,0 +1,18 @@
+# Build output
+bin/
+obj/
+publish/
+
+# Test output and coverage
+TestResults/
+coverage/
+
+# The 3DSRNGTool clone the reference harness compiles (see tools/Reference)
+tools/Reference/3DSRNGTool
+
+# Editors
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo

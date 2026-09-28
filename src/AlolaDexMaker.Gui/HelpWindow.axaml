@@ -1,0 +1,12 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AlolaDexMaker.Gui.HelpWindow"
+        Title="도움말 — Alola Dex Maker"
+        Icon="/Assets/sun.ico"
+        Width="640" Height="680" MinWidth="420" MinHeight="320"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource Surface}">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <StackPanel x:Name="Page" Margin="36,26,36,32" MaxWidth="640" HorizontalAlignment="Left" />
+  </ScrollViewer>
+</Window>

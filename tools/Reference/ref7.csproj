@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Only the files named below: the 3DSRNGTool clone sits inside this folder, with its windows and resources. -->
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoWarn>CS0649;CS0169;CS0414;CS0108;CS0162;CS0219;CS0168;CS8981;CS0618;CS0067;CA2022;SYSLIB0011</NoWarn>
+    <RootNamespace>Ref7</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="3DSRNGTool/3DSRNGTool/RNG/*.cs" />
+    <Compile Include="3DSRNGTool/3DSRNGTool/Core/*.cs" />
+    <Compile Include="3DSRNGTool/3DSRNGTool/Gen6/**/*.cs" />
+    <Compile Include="3DSRNGTool/3DSRNGTool/Gen7/**/*.cs" />
+    <Compile Include="3DSRNGTool/3DSRNGTool/Pokemon/*.cs" />
+    <Compile Include="3DSRNGTool/3DSRNGTool/Util/FuncUtil.cs" />
+    <Compile Include="3DSRNGTool/3DSRNGTool/Controls/Frame_Tiny.cs" />
+    <Compile Include="Harness.cs" />
+    <Compile Include="Stubs.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The window. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>AlolaDexMaker</AssemblyName>
+    <RootNamespace>AlolaDexMaker.Gui</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/sun.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.22" />
+    <ProjectReference Include="../AlolaDexMaker.Core/AlolaDexMaker.Core.csproj" />
+    <AvaloniaResource Include="Assets/*.otf" />
+    <AvaloniaResource Include="Assets/*.ico" />
+    <AvaloniaResource Include="Assets/help.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="AlolaDexMaker.Gui.Tests" />
+  </ItemGroup>
+</Project>

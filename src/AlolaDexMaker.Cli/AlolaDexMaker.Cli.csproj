@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The command line. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>AlolaDexMaker.Cli</AssemblyName>
+    <RootNamespace>AlolaDexMaker.Cli</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../AlolaDexMaker.Core/AlolaDexMaker.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="AlolaDexMaker.Cli.Tests" />
+  </ItemGroup>
+</Project>
