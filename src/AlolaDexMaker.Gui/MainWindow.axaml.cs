@@ -42,8 +42,9 @@ public partial class MainWindow : Window
 
         foreach (var box in new[] { SidBox, TidBox }) box.PropertyChanged += (_, e) => { if (e.Property == TextBox.TextProperty) Ids(); };
         foreach (var r in new[] { OneBall, PickedBalls, Plain, Shiny, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred }) r.IsCheckedChanged += (_, _) => Hints();
+        foreach (var r in new[] { GameUltraSun, GameSword }) r.IsCheckedChanged += (_, _) => { GameChanged(); Hints(); };
         BallBox.SelectionChanged += (_, _) => { OneBall.IsChecked = true; Hints(); };
-        Ids(); Hints(); Rest();
+        Ids(); GameChanged(); Hints(); Rest();
     }
 
     private static bool Id(string? text, int digits, out uint? id)
@@ -74,13 +75,15 @@ public partial class MainWindow : Window
     private void Hints()
     {
         var chosen = Shelf[Math.Max(BallBox.SelectedIndex, 0)];
-        BallHint.Text = PickedBalls.IsChecked == true || chosen == Ball.Poke
+        BallHint.Text = IsSword
+            ? (PickedBalls.IsChecked == true ? "포켓몬마다 골라 둔 볼. 선물·화석·배포는 정해진 볼입니다." : "넣을 수 없는 포켓몬은 몬스터볼에 넣습니다. 선물·화석·배포는 정해진 볼입니다.")
+            : PickedBalls.IsChecked == true || chosen == Ball.Poke
             ? "배포 포켓몬은 카드가 정한 볼에 넣습니다."
             : BallFits.CannotGoIn[chosen] is var cannot and > 0
                 ? $"{BallFits.Boxed}마리 중 {cannot}마리는 {balls[(int)chosen]}에 넣을 수 없어 몬스터볼에 넣습니다. 배포 포켓몬은 카드가 정한 볼에 넣습니다."
                 : "배포 포켓몬은 카드가 정한 볼에 넣습니다.";
         ColourHint.Text = Shiny.IsChecked == true
-            ? "이로치가 막힌 포켓몬은 일반 색입니다."
+            ? (IsSword ? "막힌 것과 마휘핑 크림 9폼은 일반 색입니다." : "이로치가 막힌 포켓몬은 일반 색입니다.")
             : "카드가 이로치로 정한 배포는 이로치입니다.";
         IvHint.Text = IvFive.IsChecked == true ? "알에서 나온 포켓몬은 5V가 됩니다."
             : "적법한 선에서 완전 랜덤입니다.";
@@ -93,6 +96,39 @@ public partial class MainWindow : Window
     private void Rest()
     {
         Say("만드는 데 몇 초 걸립니다.", "Muted");
+    }
+
+    /// <summary>Sword or Ultra Sun: which rows there are to fill.</summary>
+    public bool IsSword => GameSword.IsChecked == true;
+
+    private void GameChanged()
+    {
+        bool sword = IsSword;
+        foreach (var row in new Control[] { ForeignRow, IvRow, SexRow, LevelRow, PeriodRow }) row.IsVisible = !sword;
+        YearRow.IsVisible = sword;
+        Subtitle.Text = sword
+            ? "소드 전국도감 세이브 만들기 · 663종 755마리 (폼까지) · 한국어"
+            : "울트라썬 전국도감 세이브 만들기 · 807종 · 한국 본체, 한국어, 여자 주인공";
+        GameHint.Text = sword
+            ? "가라르·갑옷섬·왕관설원 도감의 전 종과 폼. 알이 되는 것은 알, 화석은 화석, 전설은 고정 조우와 다이맥스 어드벤처, 환상은 배포 카드. JKSV 로 복원하는 폴더가 나옵니다."
+            : "전국도감 807종. 알이 되는 것은 알, 나머지는 이 게임에서 잡거나 받은 것, 배포, 이전 게임에서 온 것.";
+        WhereHint.Text = sword
+            ? "이 안에 'AlolaDexMaker-Sword-이름-TID' 폴더를 만들어 JKSV 백업(main 등 네 파일)과 기록을 씁니다."
+            : "이 안에 'AlolaDexMaker-이름-TID' 폴더를 만들어 세이브(main)와 기록을 씁니다.";
+    }
+
+    public bool Read8(out Options8 asked, out string why)
+    {
+        asked = null!; why = "";
+        var name = (NameBox.Text ?? "").Trim();
+        if (name.Length == 0) name = DefaultName;
+        if (name.Length > 6) { why = "어버이 이름은 6글자까지입니다."; NameBox.Focus(); return false; }
+        if (IdsRefused() is { } badId) { why = badId; (Id(SidBox.Text, 4, out _) ? TidBox : SidBox).Focus(); return false; }
+        Id(SidBox.Text, 4, out var sid); Id(TidBox.Text, 6, out var tid);
+        if (!int.TryParse((YearBox.Text ?? "").Trim(), out var year) || year is < 2019 or > 2099) { why = "해는 2019 부터 2099 까지입니다."; YearBox.Focus(); return false; }
+        int? ball = PickedBalls.IsChecked == true ? null : (int)Shelf[Math.Max(BallBox.SelectedIndex, 0)];
+        asked = new Options8(name, tid, sid, year, Random.Shared.Next(), ball, Shiny.IsChecked == true);
+        return true;
     }
 
     private void Say(string what, string colour, bool strong = false)
@@ -125,11 +161,17 @@ public partial class MainWindow : Window
     private void Make(object? sender, RoutedEventArgs e)
     {
         if (busy) return;
+        if (IsSword)
+        {
+            if (!Read8(out var asked8, out var why8)) { Refuse([why8]); return; }
+            Working = Work(into => Sword.Making8.Run(asked8, null, into, (done, of) => Dispatcher.UIThread.Post(() => Going(done, of))));
+            return;
+        }
         if (!Read(out var asked, out var why)) { Refuse([why]); return; }
-        Working = Work(asked);
+        Working = Work(into => Making.Run(asked, null, into, (done, of) => Dispatcher.UIThread.Post(() => Going(done, of))));
     }
 
-    private async Task Work(Options asked)
+    private async Task Work(Func<string, Made> run)
     {
         Busy(true);
         Last = null;
@@ -139,7 +181,7 @@ public partial class MainWindow : Window
         var into = under;
         try
         {
-            var made = await Task.Run(() => Making.Run(asked, null, into, (done, of) => Dispatcher.UIThread.Post(() => Going(done, of))));
+            var made = await Task.Run(() => run(into));
             Last = made;
             Bar.IsVisible = false;
             if (made.Code == 0) Finished(made); else Refuse(made.Refused);
@@ -171,6 +213,7 @@ public partial class MainWindow : Window
         var lines = new List<string>();
         if (made.Me is { } me) lines.Add($"{me.Name} · SID {me.Sid7:0000} · TID {me.Shown:000000}");
         if (made.Checked is { } c) lines.Add($"포켓몬 {c.Count}마리 · {c.Species}종 · 이로치 {c.Shiny}마리 · 합법 {c.Legal} / {c.Count}");
+        else lines.AddRange(made.Lines.Where(l => l.StartsWith("포켓몬") || l.StartsWith("합법") || l.StartsWith("이로치") || l.StartsWith("도감")).Select(l => string.Join(' ', l.Split(' ', StringSplitOptions.RemoveEmptyEntries))));
         lines.Add(made.Folder!);
         Detail.Text = string.Join("\n", lines); Detail.IsVisible = true;
         OpenButton.IsVisible = true;
@@ -188,7 +231,7 @@ public partial class MainWindow : Window
     {
         busy = now;
         MakeButton.IsEnabled = !now;
-        foreach (var c in new Control[] { NameBox, EnglishBox, JapaneseBox, ChineseBox, SidBox, TidBox, OneBall, BallBox, PickedBalls, Plain, Shiny, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred, FromBox, ToBox, ChooseButton }) c.IsEnabled = !now;
+        foreach (var c in new Control[] { GameUltraSun, GameSword, NameBox, EnglishBox, JapaneseBox, ChineseBox, SidBox, TidBox, OneBall, BallBox, PickedBalls, Plain, Shiny, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred, YearBox, FromBox, ToBox, ChooseButton }) c.IsEnabled = !now;
     }
 
     private HelpWindow? help;

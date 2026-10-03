@@ -17,6 +17,13 @@ internal static class Arguments
                 string Value() => args[++i];
                 switch (args[i])
                 {
+                    case "--game":
+                        var g = Value();
+                        if (g is "sword" or "소드") o.Game = Game.Sword;
+                        else if (g is "ultrasun" or "울트라썬") o.Game = Game.UltraSun;
+                        else { why = "--game 은 울트라썬 또는 소드입니다."; return null; }
+                        break;
+                    case "--year": o.Year = int.Parse(Value()); break;
                     case "--name": o.Name = Value(); break;
                     case "--english": o.English = Value(); break;
                     case "--japanese": o.Japanese = Value(); break;

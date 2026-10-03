@@ -5,6 +5,9 @@ namespace AlolaDexMaker.Cli;
 /// <summary>What has been asked for so far, as it was typed: made into options once everything is in.</summary>
 internal sealed class Order
 {
+    /// <summary>Which game's save: Ultra Sun (the seventh generation's national dex) or Sword.</summary>
+    public Game Game = Game.UltraSun;
+    public int Year = AlolaDexMaker.Sword.Maker8.DefaultYear;
     public string Name = "미월";
     public string English = ForeignNames.English, Japanese = ForeignNames.Japanese, Chinese = ForeignNames.Chinese;
     public uint? Tid, Sid;
@@ -26,4 +29,16 @@ internal sealed class Order
         if (Ball is not null && !BallNames.Find(Ball, out ball, out why)) return null;
         return new Options(Name, Tid, Sid, From, To, Seed, ball, Ivs, Shiny, Level, Sex, English, Japanese, Chinese);
     }
+
+    /// <summary>The Sword options asked for; or why they cannot be.</summary>
+    public Options8? ToOptions8(out string why)
+    {
+        why = "";
+        int? ball = null;
+        if (Ball is not null && !BallNames.Find(Ball, out ball, out why)) return null;
+        return new Options8(Name, Tid, Sid, Year, Seed, ball, Shiny);
+    }
 }
+
+/// <summary>The games a save can be made for.</summary>
+internal enum Game { UltraSun, Sword }

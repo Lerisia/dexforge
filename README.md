@@ -6,6 +6,8 @@
 
 한국 본체, 울트라썬, 한국어, 여자 주인공의 세이브만 만든다.
 
+**소드**도 만든다: 가라르·갑옷섬·왕관설원 세 도감의 전 종과 폼, 663종 755마리를 JKSV 로 복원하는 백업 폴더로. 알이 되는 것은 알(Admiral Fish 가 적은 소드실드의 알 난수 순서대로), 화석은 화석, 전설은 고정 조우와 다이맥스 어드벤처, 환상은 배포 카드다. 자세한 것은 창의 도움말 '소드' 절.
+
 ![창](docs/screenshots/filled.png)
 
 ## 창으로 쓰기
@@ -23,14 +25,22 @@
 
 ## 명령어로 쓰기
 
-`AlolaDexMaker.Cli`를 인자 없이 실행하면 하나씩 묻는다. 빈 칸으로 두면 괄호 안의 값을 쓴다.
+`AlolaDexMaker.Cli`를 인자 없이 실행하면 울트라썬 것을 하나씩 묻는다. 빈 칸으로 두면 괄호 안의 값을 쓴다. 소드는 인자로만 만든다.
 
 ```
 AlolaDexMaker.Cli --name 미월 --sid 1234 --tid 567890 --ball 럭셔리볼 --color 이로치 --ivs 5V --sex 랜덤 --level 최저 --from 2018-01-01 --to 2018-12-31
 ```
 
+소드는 `--game 소드` 를 앞에 붙인다. 그때 쓰는 옵션은 `--name --sid --tid --ball --color --year --seed --out` 이다.
+
+```
+AlolaDexMaker.Cli --game 소드 --name 우리 --ball 볼맞춤 --color 이로치 --year 2021
+```
+
 | 옵션 | 고를 수 있는 것 | 안 주면 |
 |---|---|---|
+| `--game` | 울트라썬 / 소드 | 울트라썬 |
+| `--year` | (소드) 얻은 해, 2019~2099 | 2021 |
 | `--name` | 어버이 이름, 6글자까지 | 미월 |
 | `--english` `--japanese` `--chinese` | 외국어판 게임의 어버이 이름, 7·5·6글자까지 | Selene, ミヅキ, 美月 |
 | `--sid` `--tid` | SID 네 자리(0000~4294), TID 여섯 자리(게임에 보이는 ID). PKHeX 의 [SID]TID | 무작위 |
@@ -101,6 +111,8 @@ src/
     Rng/                 게임의 난수와 그 난수로 한 번 만나기 (Seven, Egg, Old)
     Data/                3DSRNGTool 의 표, 배포 카드, 볼별 표, 틀 세이브(template/dex)
     Making/              세이브 만들기와 검사 (Generator, Caught7, Older, Check, Making)
+    Sword/               소드: 알 난수(Xoroshiro8, Egg8), 종·폼·출처(Plan8), 볼(Balls8), 만들기(Maker8, Evolve8), 세이브 쓰기(Making8)
+    Data/sword/          소드의 틀 세이브(main 과 JKSV 가 함께 쓰는 세 파일), 볼 표(balls.tsv), HOME 트래커(trackers.tsv)
     Wording/             옵션을 한국어로 알아듣고 말하기
   AlolaDexMaker.Cli/     명령어
   AlolaDexMaker.Gui/     창 (Avalonia)

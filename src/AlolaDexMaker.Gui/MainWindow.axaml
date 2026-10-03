@@ -11,13 +11,24 @@
     <Grid Grid.Row="0" Margin="32,22,32,14" ColumnDefinitions="*,Auto">
       <StackPanel Spacing="4">
         <TextBlock Classes="title" Text="Alola Dex Maker" />
-        <TextBlock Classes="hint" FontSize="13" Text="울트라썬 전국도감 세이브 만들기 · 807종 · 한국 본체, 한국어, 여자 주인공" />
+        <TextBlock x:Name="Subtitle" Classes="hint" FontSize="13" Text="울트라썬 전국도감 세이브 만들기 · 807종 · 한국 본체, 한국어, 여자 주인공" />
       </StackPanel>
       <Button Grid.Column="1" x:Name="HelpButton" VerticalAlignment="Top" Content="도움말" Click="Help" />
     </Grid>
 
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
       <StackPanel Margin="32,2,32,18" Spacing="13">
+
+        <Grid ColumnDefinitions="112,*">
+          <TextBlock Classes="label" Text="게임" />
+          <StackPanel Grid.Column="1" Spacing="2">
+            <StackPanel Orientation="Horizontal">
+              <RadioButton x:Name="GameUltraSun" GroupName="game" IsChecked="True" Content="울트라썬" />
+              <RadioButton x:Name="GameSword" GroupName="game" Content="소드" />
+            </StackPanel>
+            <TextBlock x:Name="GameHint" Classes="hint" />
+          </StackPanel>
+        </Grid>
 
         <Grid ColumnDefinitions="112,*">
           <TextBlock Classes="label" Text="어버이 이름" />
@@ -27,7 +38,7 @@
           </StackPanel>
         </Grid>
 
-        <Grid ColumnDefinitions="112,*">
+        <Grid x:Name="ForeignRow" ColumnDefinitions="112,*">
           <TextBlock Classes="label" Text="외국어 게임" />
           <StackPanel Grid.Column="1" Spacing="6">
             <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" >
@@ -76,7 +87,7 @@
           </StackPanel>
         </Grid>
 
-        <Grid ColumnDefinitions="112,*">
+        <Grid x:Name="IvRow" ColumnDefinitions="112,*">
           <TextBlock Classes="label" Text="개체값" />
           <StackPanel Grid.Column="1" Spacing="2">
             <StackPanel Orientation="Horizontal">
@@ -87,7 +98,7 @@
           </StackPanel>
         </Grid>
 
-        <Grid ColumnDefinitions="112,*">
+        <Grid x:Name="SexRow" ColumnDefinitions="112,*">
           <TextBlock Classes="label" Text="성별" />
           <StackPanel Grid.Column="1" Spacing="2">
             <StackPanel Orientation="Horizontal">
@@ -99,7 +110,7 @@
           </StackPanel>
         </Grid>
 
-        <Grid ColumnDefinitions="112,*">
+        <Grid x:Name="LevelRow" ColumnDefinitions="112,*">
           <TextBlock Classes="label" Text="레벨" />
           <StackPanel Grid.Column="1" Spacing="2">
             <StackPanel Orientation="Horizontal">
@@ -110,7 +121,18 @@
           </StackPanel>
         </Grid>
 
-        <Grid ColumnDefinitions="112,*">
+        <Grid x:Name="YearRow" ColumnDefinitions="112,*" IsVisible="False">
+          <TextBlock Classes="label" Text="얻은 해" />
+          <StackPanel Grid.Column="1" Spacing="6">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <TextBox x:Name="YearBox" Width="96" MaxLength="4" Text="2021" Watermark="2021" />
+              <TextBlock Classes="hint" VerticalAlignment="Center" Text="2019년 11월 이후" />
+            </StackPanel>
+            <TextBlock Classes="hint" Text="알·포획·배포의 날짜가 이 해 안에서 무작위로 정해집니다. 그 해에 없던 배포 카드는 카드의 날짜를 씁니다." />
+          </StackPanel>
+        </Grid>
+
+        <Grid x:Name="PeriodRow" ColumnDefinitions="112,*">
           <TextBlock Classes="label" Text="얻은 기간" />
           <StackPanel Grid.Column="1" Spacing="8">
             <StackPanel Orientation="Horizontal">
@@ -132,7 +154,7 @@
               <TextBox x:Name="WhereBox" IsReadOnly="True" />
               <Button Grid.Column="1" x:Name="ChooseButton" Margin="8,0,0,0" Content="바꾸기…" Click="Choose" />
             </Grid>
-            <TextBlock Classes="hint" Text="이 안에 'AlolaDexMaker-이름-TID' 폴더를 만들어 세이브(main)와 기록을 씁니다." />
+            <TextBlock x:Name="WhereHint" Classes="hint" Text="이 안에 'AlolaDexMaker-이름-TID' 폴더를 만들어 세이브(main)와 기록을 씁니다." />
           </StackPanel>
         </Grid>
 

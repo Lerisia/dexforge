@@ -19,17 +19,28 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
 
     private int Make(Order order)
     {
-        if (order.ToOptions(out var why) is not { } asked) { error.WriteLine(why); return 2; }
-        output.WriteLine("만드는 중입니다. 몇 초 걸립니다...");
-        var made = Making.Run(asked, order.Out, here);
+        Made made;
+        if (order.Game == Game.Sword)
+        {
+            if (order.ToOptions8(out var why8) is not { } asked8) { error.WriteLine(why8); return 2; }
+            output.WriteLine("만드는 중입니다. 몇 분 걸립니다 (755마리의 시드를 하나씩 찾습니다)...");
+            int shown = 0;
+            made = AlolaDexMaker.Sword.Making8.Run(asked8, order.Out, here, (done, of) => { if (done * 10 / of > shown) { shown = done * 10 / of; output.WriteLine($"  {done} / {of}"); } });
+        }
+        else
+        {
+            if (order.ToOptions(out var why) is not { } asked) { error.WriteLine(why); return 2; }
+            output.WriteLine("만드는 중입니다. 몇 초 걸립니다...");
+            made = Making.Run(asked, order.Out, here);
+        }
         if (made.Code != 0)
         {
             foreach (var l in made.Refused) error.WriteLine(l);
             return made.Code;
         }
         foreach (var l in made.Lines.Take(20)) output.WriteLine(l);
-        output.WriteLine($"썼습니다: {made.Save}");
-        output.WriteLine($"기록:     {made.Record}");
+        output.WriteLine($"썼습니다: {(order.Game == Game.Sword ? made.Folder : made.Save)}");
+        output.WriteLine($"기록:     {(order.Game == Game.Sword ? Path.Combine(made.Folder!, AlolaDexMaker.Sword.Making8.RecordName) : made.Record)}");
         return 0;
     }
 

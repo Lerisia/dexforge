@@ -250,3 +250,69 @@ public class TheWindow
         Directory.Delete(dir, true);
     }
 }
+
+public class TheSwordSide
+{
+    private static T The<T>(Window w, string name) where T : Control => w.FindControl<T>(name) ?? throw new InvalidOperationException($"no {name} on the form");
+
+    private static void Picture(Window w, string name)
+    {
+        if (Environment.GetEnvironmentVariable("DEXGEN_GUI_SHOTS") is not { Length: > 0 } dir) return;
+        Dispatcher.UIThread.RunJobs();
+        Directory.CreateDirectory(dir);
+        w.CaptureRenderedFrame()?.Save(Path.Combine(dir, name + ".png"));
+    }
+
+    [AvaloniaFact]
+    public void ChoosingSwordChangesTheForm()
+    {
+        var w = new MainWindow(); w.Show();
+        Assert.False(w.IsSword);
+        Assert.True(The<Grid>(w, "ForeignRow").IsVisible);
+        Assert.False(The<Grid>(w, "YearRow").IsVisible);
+        The<RadioButton>(w, "GameSword").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.IsSword);
+        Assert.False(The<Grid>(w, "ForeignRow").IsVisible);
+        Assert.False(The<Grid>(w, "PeriodRow").IsVisible);
+        Assert.True(The<Grid>(w, "YearRow").IsVisible);
+        Assert.True(w.Read8(out var asked, out var why), why);
+        Assert.Equal("미월", asked.Name);
+        Assert.Equal(2021, asked.Year);
+        Assert.Equal((int)Ball.Poke, asked.Ball);
+        Assert.True(asked.Shiny);
+        Picture(w, "sword");
+    }
+
+    [AvaloniaFact]
+    public void SwordRefusesABadYear()
+    {
+        var w = new MainWindow(); w.Show();
+        The<RadioButton>(w, "GameSword").IsChecked = true;
+        The<TextBox>(w, "YearBox").Text = "2018";
+        Assert.False(w.Read8(out _, out var why));
+        Assert.Contains("2019", why);
+    }
+
+    [AvaloniaFact]
+    public async Task MakesASwordSave()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), $"alola-dex-maker-sword-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var w = new MainWindow { Under = dir }; w.Show();
+            The<RadioButton>(w, "GameSword").IsChecked = true;
+            The<TextBox>(w, "NameBox").Text = "우리";
+            The<Button>(w, "MakeButton").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+            await w.Working;
+            Dispatcher.UIThread.RunJobs();
+            Assert.NotNull(w.Last);
+            Assert.Equal(0, w.Last!.Code);
+            Assert.True(File.Exists(Path.Combine(w.Last.Folder!, "main")));
+            Assert.Contains("AlolaDexMaker-Sword-우리-", w.Last.Folder);
+            Picture(w, "sword-made");
+        }
+        finally { Directory.Delete(dir, true); }
+    }
+}
