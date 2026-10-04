@@ -171,7 +171,7 @@ public partial class MainWindow : Window
         else if (!arceus && !scarlet && !datesTouched) { FromBox.Day = DefaultFrom; ToBox.Day = DefaultTo; }
         switching = false;
         Subtitle.Text = scarlet
-            ? "스칼렛 도감 세이브 만들기 · 695종 836마리 (폼까지) · 한국어"
+            ? "스칼렛 도감 세이브 만들기 · 695종 836마리 (폼까지) + 배포 100마리 · 한국어"
             : arceus
             ? "LEGENDS 아르세우스 히스이도감 세이브 만들기 · 242종 313마리 (폼까지) · 한국어"
             : events

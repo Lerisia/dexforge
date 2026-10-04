@@ -98,13 +98,49 @@ public class ScarletTests
             Assert.True(sav.ChecksumsValid);
             Assert.Equal("재연", sav.OT);
             var boxed = sav.BoxData.Where(p => p.Species != 0).ToList();
-            Assert.Equal(Plan9.All.Count, boxed.Count);
-            Assert.All(boxed, p => Assert.True(new LegalityAnalysis(p, sav.Personal).Valid, Plan9.Label(p.Species, p.Form)));
-            Assert.True(boxed.Count(p => p.IsShiny) > 700);
-            Assert.All(boxed, p => Assert.InRange(p.MetDate!.Value, new DateOnly(2023, 1, 1), new DateOnly(2024, 12, 31)));
-            Assert.All(boxed.Where(p => p.Species == 150), p => Assert.InRange(p.MetDate!.Value, new DateOnly(2023, 9, 1), new DateOnly(2023, 9, 18)));   // the Mewtwo raid's window
-            Assert.Contains(boxed, p => p.Species == 484 && p.Version == GameVersion.VL);   // Palkia from Violet's raid
+            var analyses = boxed.ToDictionary(p => p, p => new LegalityAnalysis(p, sav.Personal));
+            Assert.All(boxed, p => Assert.True(analyses[p].Valid, Plan9.Label(p.Species, p.Form)));
+            // the dex first, then every distribution and its final evolutions
+            var dex = boxed.Take(Plan9.All.Count).ToList();
+            var gifts = boxed.Skip(Plan9.All.Count).ToList();
+            Assert.Equal(Plan9.All.Count, dex.Count);
+            Assert.All(dex, p => Assert.False(analyses[p].EncounterMatch is WC9));
+            Assert.All(gifts, p => Assert.True(analyses[p].EncounterMatch is WC9));
+            Assert.Equal(Events9.All.Count, gifts.Count(p => p.Species == ((WC9)analyses[p].EncounterMatch).Species));   // one as received per card
+            Assert.Equal(100, gifts.Count);   // 82 cards and 18 final evolutions (Oinkologne's other sex and Maushold's other form cannot be reached)
+            Assert.True(dex.Count(p => p.IsShiny) > 700);
+            Assert.All(dex, p => Assert.InRange(p.MetDate!.Value, new DateOnly(2023, 1, 1), new DateOnly(2024, 12, 31)));
+            Assert.All(dex.Where(p => p.Species == 150), p => Assert.InRange(p.MetDate!.Value, new DateOnly(2023, 9, 1), new DateOnly(2023, 9, 18)));   // the Mewtwo raid's window
+            Assert.Contains(dex, p => p.Species == 484 && p.Version == GameVersion.VL);   // Palkia from Violet's raid
+            // every gift on a day its card was really handed out, by PKHeX's own windows
+            Assert.All(gifts, p => Assert.True(((WC9)analyses[p].EncounterMatch).IsWithinDistributionWindow(p.MetDate!.Value), Plan9.Label(p.Species, p.Form) + " " + p.MetDate));
+            // what one code handed over together was received on one day: CoroCoro's Iron Valiant and Roaring Moon
+            var corocoro = gifts.Where(p => ((WC9)analyses[p].EncounterMatch).CardID == 36).Select(p => p.MetDate).Distinct().ToList();
+            Assert.Single(corocoro);
+            // a card only Violet could receive came from the trainer's own Violet: Koraidon's shiny
+            Assert.Contains(gifts, p => p.Species == 1007 && p.IsShiny && p.Version == GameVersion.VL && p.CurrentHandler == 1);
         }
         finally { if (Directory.Exists(into)) Directory.Delete(into, true); }
+    }
+
+    [Fact]
+    public void Every_distribution_scarlet_received_is_listed()
+    {
+        var all = Events9.All;
+        Assert.Equal(82, all.Count);
+        Assert.All(all, e => Assert.True(e.End is null || e.Start <= e.End, e.Title));
+        // only Violet's cards: Talonflame, Gyarados and the shiny Koraidon
+        Assert.Equal([49, 52, 1540], all.Where(e => e.Violet).Select(e => e.Card.CardID).Order().ToArray());
+        // what one code hands over together shares a group; a card alone is its own
+        Assert.Equal(5, all.GroupBy(e => e.Group).Count(g => g.Count() > 1));
+        Assert.Equal(all.Count - 5, all.GroupBy(e => e.Group).Count());
+        // a plain gift in a Poké Ball is not evolved (the anime's three starters); one in another ball is, unless it is Pikachu
+        Assert.All(all.Where(e => e.Card.Species is 25 or 906 or 909 or 912), e => Assert.Empty(e.Evolutions));
+        Assert.Contains(all, e => e.Card.Species == 915 && e.Evolutions.Select(x => x.Species).Distinct().Single() == 916);   // Lechonk (Cherish Ball) → Oinkologne, both sexes' forms
+        Assert.Contains(all, e => e.Card.Species == 172 && e.Card.IsShiny && e.Evolutions.Single() == (26, 0));   // the shiny Pichu goes up to Raichu; only Pikachu itself stays
+        Assert.Equal(18 + 2, all.Sum(e => e.Evolutions.Count));
+        // the Mew gift rolled its Tera type (and the move that goes with it) at receipt: PKHeX holds one card per type
+        Assert.Equal(18, all.Single(e => e.Card.Species == 151).Variants.Count);
+        Assert.Equal(18, all.Single(e => e.Card.Species == 151).Variants.Select(c => c.TeraType).Distinct().Count());
     }
 }

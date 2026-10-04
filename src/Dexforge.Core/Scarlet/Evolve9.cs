@@ -65,7 +65,7 @@ public static class Evolve9
         if (pi.Genderless) pk.Gender = 2;
         else if (pi.OnlyFemale) pk.Gender = 1;
         else if (pi.OnlyMale) pk.Gender = 0;
-        pk.Nickname = SpeciesName.GetSpeciesNameGeneration(species, pk.Language, 8);
+        if (!pk.IsNicknamed) pk.Nickname = SpeciesName.GetSpeciesNameGeneration(species, pk.Language, 9);   // a nicknamed gift keeps its name
         SetMoves(pk, (byte)level, requiredMove);
         pk.HealPP();
         pk.ResetPartyStats();

@@ -24,6 +24,7 @@
     <EmbeddedResource Include="Data/arceus/spawners.tsv" LogicalName="arceus.spawners" />
     <EmbeddedResource Include="Data/scarlet/plan.tsv" LogicalName="scarlet.plan" />
     <EmbeddedResource Include="Data/scarlet/balls.tsv" LogicalName="scarlet.balls" />
+    <EmbeddedResource Include="Data/scarlet/events.tsv" LogicalName="scarlet.events" />
     <EmbeddedResource Include="Data/scarlet/main" LogicalName="scarlet.main" />
     <EmbeddedResource Include="Data/scarlet/backup" LogicalName="scarlet.backup" />
     <EmbeddedResource Include="Data/scarlet/poke_trade" LogicalName="scarlet.poke_trade" />

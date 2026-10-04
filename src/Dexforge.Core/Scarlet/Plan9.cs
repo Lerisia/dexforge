@@ -16,6 +16,8 @@ public enum Source9
     Raid,
     /// <summary>An in-game trade (the Alolan Meowth).</summary>
     Trade,
+    /// <summary>A distribution card, after the dex.</summary>
+    Card,
 }
 
 /// <summary>

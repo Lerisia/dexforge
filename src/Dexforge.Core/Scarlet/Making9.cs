@@ -49,6 +49,16 @@ public static class Making9
             step?.Invoke(i + 1, entries.Count);
         }
 
+        // the distributions Scarlet received, after the dex: every card, then its final evolutions
+        var events = new List<Made9>();
+        foreach (var ev in Events9.All)
+            foreach (var m in maker.MakeEvent(ev))
+            {
+                if (m.Legal) events.Add(m);
+                else failed.Add($"배포 {ev.Title} → {Plan9.Label(m.Entry.Species, m.Entry.Form)}: {(m.Report.Contains("Invalid") ? string.Join(" | ", m.Report.Split('\n').Where(l => l.Contains("Invalid"))) : m.Report)}");
+            }
+        if (made.Count + events.Count > sav.SlotCount) failed.Add($"박스가 모자랍니다: 도감 {made.Count} + 배포 {events.Count} > {sav.SlotCount}");
+
         var lines = new List<string>
         {
             "스칼렛 도감 세이브 — 만든 기록",
@@ -71,13 +81,12 @@ public static class Making9
             foreach (var f in failed.Take(30)) refused.Add("  " + f);
             return new Made(1, null, lines, refused, me);
         }
-        if (made.Count > sav.SlotCount) return new Made(1, null, lines, [$"박스가 모자랍니다: {made.Count} > {sav.SlotCount}"], me);
-
         sav.OT = me.Name;
         sav.ID32 = id32;
         for (int i = 0; i < sav.SlotCount; i++) sav.SetBoxSlotAtIndex(sav.BlankPKM, i, EntityImportSettings.None);
         for (int i = 0; i < made.Count; i++) sav.SetBoxSlotAtIndex(made[i].Pk, i, EntityImportSettings.None);
-        foreach (var m in made) sav.Zukan.SetDex(m.Pk);
+        for (int i = 0; i < events.Count; i++) sav.SetBoxSlotAtIndex(events[i].Pk, made.Count + i, EntityImportSettings.None);
+        foreach (var m in made.Concat(events)) sav.Zukan.SetDex(m.Pk);
         var data = sav.Write().ToArray();
 
         int seen = 0, caught = 0;
@@ -87,9 +96,10 @@ public static class Making9
         lines.Add($"이로치        {made.Count(m => m.Pk.IsShiny)}마리");
         lines.Add($"출처          야생 {made.Count(m => m.Entry.Source == Source9.Wild)}, 고정 {made.Count(m => m.Entry.Source == Source9.Static)}, 알 {made.Count(m => m.Entry.Source == Source9.Egg)}, 레이드 {made.Count(m => m.Entry.Source == Source9.Raid)}, 교환 {made.Count(m => m.Entry.Source == Source9.Trade)}; 바이올렛에서 {made.Count(m => m.Entry.Violet)}");
         lines.Add($"도감          본 것 {seen}, 잡은 것 {caught}");
+        lines.Add($"배포          {Events9.All.Count}건 (스칼렛에서 받을 수 있는 게임 내 배포 전부, 각각 배포 기간 안의 날짜; 바이올렛만 받는 카드는 거기서 받아 교환) + 최종 진화체 {events.Count - Events9.All.Count}마리 = {events.Count}마리, 도감 뒤에. 전부 {made.Count + events.Count} / {sav.SlotCount}칸");
         lines.Add("");
         lines.Add("마리마다: 이름 · 폼 · 색 · 레벨 · 성격 · 특성 · 개체값 · 스케일 · 테라 · 볼 · 출처 · 시드");
-        foreach (var m in made)
+        foreach (var m in made.Concat(events))
         {
             var pk = m.Pk;
             lines.Add($"  {Plan9.Label(pk.Species, pk.Form)}{(pk.IsShiny ? " ★" : "")} Lv{pk.CurrentLevel} {ko.natures[(int)pk.Nature]} {ko.abilitylist[pk.Ability]} {pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE} 스케일{pk.Scale} {((int)pk.TeraTypeOriginal < ko.types.Length ? ko.types[(int)pk.TeraTypeOriginal] : "스텔라")} {ko.balllist[pk.Ball]} — {m.How}{(m.Entry.Evolves ? $" → {m.Entry.Note}" : "")}{(m.Seed is { } s ? $" · 시드 {s:X16}" : "")}");

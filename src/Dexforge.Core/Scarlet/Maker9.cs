@@ -110,6 +110,61 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Balls9 balls, Random rando
         return new Made9(e, pk, how, seed, la.Valid, la.Valid ? "" : la.Report());
     }
 
+    private readonly Dictionary<string, DateOnly> eventDays = new();
+
+    /// <summary>
+    /// A distribution this trainer received on a day of its window (what one code handed over together on one day), and the
+    /// final evolutions the event box's rules add to it. A card only Violet could receive is received in the trainer's own
+    /// Violet and traded over.
+    /// </summary>
+    public List<Made9> MakeEvent(Event9 ev)
+    {
+        // a gift rolled at receipt (Mew's Tera type) is one of its rolls
+        var wc = ev.Variants.Count > 1 ? ev.Variants[random.Next(ev.Variants.Count)] : ev.Card;
+        var receiver = ev.Violet ? Violet : trainer;
+        var pk = (PK9)wc.ConvertToPKM(receiver, EncounterCriteria.Unrestricted);
+        if (ev.Violet) pk.UpdateHandler(trainer);
+        if (!eventDays.TryGetValue(ev.Group, out var day)) eventDays[ev.Group] = day = ev.Day(random);
+        // PKHeX knows when each card was really handed out (with a day's tolerance); the sources' window is kept to that
+        if (wc.GetDistributionWindow(out var known) && !wc.IsWithinDistributionWindow(day))
+        {
+            var knownEnd = known.End ?? known.Start.AddYears(1);
+            var lo = known.Start > ev.Start ? known.Start : ev.Start;
+            var hi = ev.End is { } e9 && e9 < knownEnd ? e9 : knownEnd;
+            day = lo <= hi ? lo.AddDays(random.Next(hi.DayNumber - lo.DayNumber + 1)) : known.Start;
+            for (int i = 0; i < 400 && !wc.IsWithinDistributionWindow(day); i++) day = day.AddDays(1);
+            eventDays[ev.Group] = day;
+        }
+        pk.MetDate = day;
+        // a card's trainer id changed with patch 2.0.0 (2023-09-13): what the day says it was
+        if (wc.OTGender < 2) pk.ID32 = day.DayNumber <= new DateOnly(2023, 9, 13).DayNumber ? wc.ID32Old : wc.ID32;
+        pk.RefreshChecksum();
+        string when = ev.End is { } end ? $"{ev.Start:yyyy-MM-dd}~{end:yyyy-MM-dd}" : $"{ev.Start:yyyy-MM-dd}~";
+        var entry = new Entry9(wc.Species, wc.Form, Source9.Card, wc.Species, wc.Form, wc, ev.Violet, !wc.IsShiny, ev.Title);
+        var la = new LegalityAnalysis(pk);
+        var made = new List<Made9> { new(entry, pk, $"배포 카드 {ev.Title} ({ev.Region} {when}){(ev.Violet ? " 바이올렛에서 받아 교환" : "")}", null, la.Valid, la.Valid ? "" : la.Report()) };
+        foreach (var (sp, f) in ev.Evolutions)
+        {
+            // a final form the received Pokémon cannot reach: Oinkologne's form is its sex, Maushold's its encryption constant
+            if (sp == 916 && f != pk.Gender) continue;
+            if (sp == 925 && (pk.EncryptionConstant % 100 == 0) != (f == 0)) continue;
+            if (sp == 982 && (pk.EncryptionConstant % 100 == 0) != (f == 1)) continue;
+            var e2 = new Entry9(sp, f, Source9.Card, wc.Species, wc.Form, wc, ev.Violet, !wc.IsShiny, ev.Title);
+            var pk2 = (PK9)pk.Clone();
+            try
+            {
+                byte target = Evolve9.CanReach(pk2.Species, pk2.Form, sp, f) ? f : (byte)0;
+                Evolve9.Evolve(pk2, sp, target, trainer, Violet, random);
+                if (pk2.Form != f) Evolve9.ChangeForm(pk2, f);
+            }
+            catch (InvalidOperationException ex) { made.Add(new Made9(e2, pk2, made[0].How, null, false, ex.Message)); continue; }
+            pk2.RefreshChecksum();
+            var la2 = new LegalityAnalysis(pk2);
+            made.Add(new Made9(e2, pk2, made[0].How + " → " + Plan9.Label(sp, f), null, la2.Valid, la2.Valid ? "" : la2.Report()));
+        }
+        return made;
+    }
+
     /// <summary>Maushold and Dudunsparce take the form their encryption constant decides (one in a hundred is the rare one): the catch must already have the right one.</summary>
     private static Func<PK9, bool>? EcRule(Entry9 e) => e.Species switch
     {
