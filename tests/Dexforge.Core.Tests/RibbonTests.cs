@@ -105,5 +105,6 @@ public class RibbonTests
         Assert.Equal(EffortClass.Tank, Effort.Sword.Of(79, 1, 0));                           // Galarian Slowpoke, from the gen 8 sets
         Assert.Equal(EffortClass.SlowSpecial, Effort.Sword.Of(133, 0, 0));                   // Eevee after Sylveon, as in Ultra Sun
         Assert.Equal(EffortClass.FastPhysical, Effort.Sword.Of(888, 0, 2));                  // Zacian
+        Assert.Equal(EffortClass.FastSpecial, Effort.Sword.Of(840, 0, 0));                   // Applin after Appletun, as the owner chose (Choice Specs first on Smogon ZU, over the defensive set)
     }
 }

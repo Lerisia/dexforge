@@ -665,7 +665,7 @@ species	form	sex	class	name	via	basis
 837	0		탱커	탄동	석탄산	pu 3세트 {'tank': 3}
 838	0		탱커	탄차곤	석탄산	pu 3세트 {'tank': 3}
 839	0		탱커	석탄산		pu 3세트 {'tank': 3}
-840	0		고속물리	과사삭벌레	분기→애프룡 (기본)	zu 2세트 {'fast-phys': 2}
+840	0		고속특수	과사삭벌레	분기→단지래플 (주인장)	zu 2세트 {'fast-spec': 1, 'tank': 1}
 841	0		고속물리	애프룡		zu 2세트 {'fast-phys': 2}
 842	0		고속특수	단지래플		zu 2세트 {'fast-spec': 1, 'tank': 1}
 843	0		탱커	모래뱀	사다이사	pu 2세트 {'tank': 2}

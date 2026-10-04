@@ -37,7 +37,7 @@ def class_of(name, stats):
     if c is None: c, how = by_stats([int(x) for x in stats.split('/')]), '종족값'
     elif b != name: how = b + ' 의 ' + how
     cache[name] = (c, how); return c, how
-CHOSEN = {79: 'Slowbro', 102: 'Exeggutor-Alola', 133: 'Sylveon', 236: 'Hitmonchan', 265: 'Beautifly', 361: 'Glalie', 366: 'Huntail', 789: 'Lunala', 790: 'Lunala'}
+CHOSEN = {79: 'Slowbro', 102: 'Exeggutor-Alola', 133: 'Sylveon', 236: 'Hitmonchan', 265: 'Beautifly', 361: 'Glalie', 366: 'Huntail', 789: 'Lunala', 790: 'Lunala', 840: 'Appletun'}
 out = {}; branches = {}; news = {}
 for r in rows:
     if r['event'] == '1': continue

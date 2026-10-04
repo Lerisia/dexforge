@@ -20,4 +20,4 @@ physical or special attacker (the attacking stat, Speed).
 each entry reaches in Sword takes its Ultra Sun class where that form is in the Ultra Sun table, and the majority of Smogon's
 gen 8 singles sets (`https://data.pkmn.cc/sets/gen8.json`; Ubers to ZU, Monotype, 1v1, Battle Stadium Singles, AG, National
 Dex tiers) where it is not — gen 8 species, Galarian forms, and what Ultra Sun only had from cards. The owner's picks for
-forking lines carry over; Applin defaults to Flapple, the lower number, until picked.
+forking lines carry over; Applin follows Appletun, the owner's pick.
