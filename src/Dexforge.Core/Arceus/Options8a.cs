@@ -9,6 +9,8 @@ public enum SizeChoice
     Smallest,
     /// <summary>An alpha wherever the game has one; the rest as the game draws them.</summary>
     Alpha,
+    /// <summary>Scale 255, the largest (Scarlet: the Jumbo Mark). Not for Legends: Arceus.</summary>
+    Largest,
     /// <summary>As the game draws them.</summary>
     Random,
 }

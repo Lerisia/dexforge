@@ -32,6 +32,7 @@ public static class Making8a
         if (opt.To < opt.From) return new Made(2, null, [], ["마지막 날이 첫날보다 앞섭니다."]);
         if (opt.To.Year > 2099) return new Made(2, null, [], ["마지막 날은 2099년까지입니다."]);
         if (!Balls.Contains((Ball)opt.Ball)) return new Made(2, null, [], ["볼은 히스이 지방의 볼이어야 합니다: " + string.Join(", ", Balls.Select(b => ko.balllist[(int)b]))]);
+        if (opt.Size == SizeChoice.Largest) return new Made(2, null, [], ["LEGENDS 아르세우스에는 '최대' 크기가 없습니다 (최소·우두머리·랜덤)."]);
 
         var random = new Random(opt.Seed);
         var sav = new SAV8LA(Embedded.Bytes("arceus.main"));

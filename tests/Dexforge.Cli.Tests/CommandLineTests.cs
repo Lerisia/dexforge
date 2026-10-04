@@ -182,6 +182,22 @@ public class CommandLineTests
     }
 
     [Fact]
+    public void ScarletIsAskedForWithItsOwnOptions()
+    {
+        var o = Arguments.Parse(["--game", "스칼렛", "--name", "재연", "--size", "최대", "--sex", "암컷", "--ball", "볼맞춤"], out var why);
+        Assert.NotNull(o); Assert.Equal("", why);
+        Assert.Equal(Game.Scarlet, o!.Game);
+        var asked = o.ToOptions9(out why);
+        Assert.NotNull(asked); Assert.Equal("", why);
+        Assert.Equal(SizeChoice.Largest, asked!.Size);
+        Assert.Equal(SexChoice.Female, asked.Sex);
+        Assert.Null(asked.Ball);
+        Assert.Equal(Dexforge.Scarlet.Making9.Released, asked.From);
+        var o2 = Arguments.Parse(["--game", "sv", "--size", "우두머리"], out _)!;
+        Assert.Equal(SizeChoice.Alpha, o2.ToOptions9(out _)!.Size);   // refused later by the maker, which has no alphas
+    }
+
+    [Fact]
     public void ArceusIsAskedForWithItsOwnOptions()
     {
         var o = Arguments.Parse(["--game", "아르세우스", "--name", "달님", "--ball", "페더볼", "--size", "우두머리", "--sex", "암컷", "--seed", "5"], out var why);
@@ -194,7 +210,7 @@ public class CommandLineTests
         Assert.Equal(SexChoice.Female, asked.Sex);
         Assert.Equal(Dexforge.Arceus.Making8a.Released, asked.From);   // no period typed: the release year
         Assert.Null(Arguments.Parse(["--game", "arceus", "--size", "거대"], out why));
-        Assert.Contains("최소, 우두머리, 랜덤", why);
+        Assert.Contains("최소, 최대(스칼렛), 우두머리(아르세우스), 랜덤", why);
         Assert.Null(Arguments.Parse(["--game", "arceus", "--ball", "마스터볼"], out _)?.ToOptions8a(out why));
         Assert.Contains("히스이 볼", why);
     }

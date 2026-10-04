@@ -23,6 +23,7 @@ internal static class Arguments
                         else if (g is "ultrasun" or "울트라썬") o.Game = Game.UltraSun;
                         else if (g is "eventbox" or "배포박스" or "배포") o.Game = Game.EventBox;
                         else if (g is "arceus" or "아르세우스" or "레전드아르세우스" or "pla") o.Game = Game.Arceus;
+                        else if (g is "scarlet" or "스칼렛" or "sv" or "스바") o.Game = Game.Scarlet;
                         else { why = "--game 은 울트라썬, 소드, 배포박스, 아르세우스 중 하나입니다."; return null; }
                         break;
                     case "--year": o.Year = int.Parse(Value()); break;

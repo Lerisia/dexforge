@@ -65,4 +65,42 @@ public class ScarletTests
         Assert.True(pk.IsShiny && pk.Scale == 0);
         Assert.Equal(Spawn9.Rolls, 8);
     }
+
+    [Fact]
+    public void The_plan_resolves_every_row_the_owner_kept()
+    {
+        var all = Plan9.All;
+        var kept = Plan9.Rows.Count(r => r.Source != "없음");
+        Assert.Equal(kept, all.Count);
+        Assert.All(all, e => Assert.NotNull(e.Template));
+        var by = all.GroupBy(e => e.Source).ToDictionary(g => g.Key, g => g.Count());
+        Assert.True(by[Source9.Wild] > 700, by[Source9.Wild].ToString());
+        Assert.Equal(9 + 1, by[Source9.Egg]);          // the three starter lines and the Alolan Persian
+        Assert.Equal(1, by[Source9.Trade]);
+        Assert.Contains(all, e => e.Species == 1008 && e.Violet && e.Source == Source9.Static);   // Miraidon from Violet
+        Assert.Contains(all, e => e.Species == 1006 && e.Violet && e.Source == Source9.Wild);     // Iron Valiant from Violet
+        Assert.Contains(all, e => e.Species == 3 && e.FromSpecies == 1 && e.Source == Source9.Wild); // Venusaur from a wild Bulbasaur
+        Assert.Contains(all, e => e.Species == 1000 && e.FromSpecies == 999 && e.Source == Source9.Static);   // Gholdengo from the chest
+        Assert.Equal(34, all.Count(e => e.Violet));
+    }
+
+    [Fact]
+    public void A_whole_save_is_legal_and_reads_back()
+    {
+        var into = Path.Combine(Path.GetTempPath(), "dexforge-scarlet-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var made = Making9.Run(new Options9("재연", 123456, 1234, new DateOnly(2024, 1, 1), new DateOnly(2024, 12, 31), 20261005), into, into);
+            Assert.True(made.Code == 0, string.Join("\n", made.Refused.Take(40)));
+            var sav = new SAV9SV(File.ReadAllBytes(Path.Combine(into, "main")));
+            Assert.True(sav.ChecksumsValid);
+            Assert.Equal("재연", sav.OT);
+            var boxed = sav.BoxData.Where(p => p.Species != 0).ToList();
+            Assert.Equal(Plan9.All.Count, boxed.Count);
+            Assert.All(boxed, p => Assert.True(new LegalityAnalysis(p, sav.Personal).Valid, Plan9.Label(p.Species, p.Form)));
+            Assert.True(boxed.Count(p => p.IsShiny) > 700);
+            Assert.All(boxed, p => Assert.InRange(p.MetDate!.Value, new DateOnly(2024, 1, 1), new DateOnly(2024, 12, 31)));
+        }
+        finally { if (Directory.Exists(into)) Directory.Delete(into, true); }
+    }
 }

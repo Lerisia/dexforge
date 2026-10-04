@@ -369,6 +369,40 @@ public class TheEventBoxSide
     }
 }
 
+public class TheScarletSide
+{
+    private static T The<T>(Window w, string name) where T : Control => w.FindControl<T>(name) ?? throw new InvalidOperationException($"no {name} on the form");
+
+    [AvaloniaFact]
+    public void ChoosingScarletChangesTheForm()
+    {
+        var w = new MainWindow(); w.Show();
+        Assert.False(w.IsScarlet);
+        The<RadioButton>(w, "GameScarlet").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.IsScarlet);
+        Assert.True(The<Grid>(w, "SizeRow").IsVisible);
+        Assert.True(The<RadioButton>(w, "SizeLargest").IsVisible);
+        Assert.False(The<RadioButton>(w, "SizeAlpha").IsVisible);
+        Assert.True(The<RadioButton>(w, "PickedBalls").IsVisible);
+        Assert.False(The<Grid>(w, "RibbonRow").IsVisible);
+        Assert.False(The<Grid>(w, "IvRow").IsVisible);
+        Assert.Equal(MainWindow.Shelf.Length, The<ComboBox>(w, "BallBox").ItemCount);
+        The<RadioButton>(w, "SizeLargest").IsChecked = true;
+        The<RadioButton>(w, "PickedBalls").IsChecked = true;
+        Assert.True(w.Read9(out var asked, out var why), why);
+        Assert.Equal("미월", asked.Name);
+        Assert.Equal(Dexforge.Scarlet.Making9.Released, asked.From);
+        Assert.Equal(SizeChoice.Largest, asked.Size);
+        Assert.Null(asked.Ball);
+        // back to Arceus: the largest size is not its, so the choice falls back to random
+        The<RadioButton>(w, "GameArceus").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(The<RadioButton>(w, "SizeRandom").IsChecked);
+        Assert.False(The<RadioButton>(w, "SizeLargest").IsVisible);
+    }
+}
+
 public class TheArceusSide
 {
     private static T The<T>(Window w, string name) where T : Control => w.FindControl<T>(name) ?? throw new InvalidOperationException($"no {name} on the form");

@@ -22,6 +22,12 @@
     <EmbeddedResource Include="Data/arceus/main2" LogicalName="arceus.main2" />
     <EmbeddedResource Include="Data/arceus/nx_save_meta.bin" LogicalName="arceus.nx_save_meta" />
     <EmbeddedResource Include="Data/arceus/spawners.tsv" LogicalName="arceus.spawners" />
+    <EmbeddedResource Include="Data/scarlet/plan.tsv" LogicalName="scarlet.plan" />
+    <EmbeddedResource Include="Data/scarlet/balls.tsv" LogicalName="scarlet.balls" />
+    <EmbeddedResource Include="Data/scarlet/main" LogicalName="scarlet.main" />
+    <EmbeddedResource Include="Data/scarlet/backup" LogicalName="scarlet.backup" />
+    <EmbeddedResource Include="Data/scarlet/poke_trade" LogicalName="scarlet.poke_trade" />
+    <EmbeddedResource Include="Data/scarlet/nx_save_meta.bin" LogicalName="scarlet.nx_save_meta" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Dexforge.Core.Tests" />

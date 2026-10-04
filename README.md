@@ -12,6 +12,8 @@ And a **Sword** living dex: every species and form of the three Galar dexes (Gal
 
 And a **Legends: Arceus** living dex: every species and form of the Hisui dex, 242 species and 313 Pokémon, as a JKSV backup folder, with every species' research at level 10. Wild catches are drawn from spawner seeds the way the game draws them — a generator seed whose slot draw lands on the species (alpha or not), the fixed seed it gives, and the level — so the PLA bot's own seed check holds as well as PKHeX's. Evolutions are caught as their nearest earlier stage and evolved, legendaries and starters are their static encounters, form changes are made from the form caught. A size option asks for the smallest (height and weight 0, found by solving the RNG's linear equations rather than searching), alphas wherever the game has one, or whatever the game draws. See the "LEGENDS 아르세우스" section of the in-app help.
 
+And a **Scarlet** living dex: every species and form of the Paldea, Kitakami and Blueberry dexes, 695 species and 836 Pokémon, as a JKSV backup folder with the Pokédex complete. Whatever is wild is caught wild, as a shiny hunter catches it in a mass outbreak: the values come from a 64-bit seed the way the game draws them (PKHeX's own gen 9 generation, eight shiny rolls, the Tera type the species' own from the same seed), evolutions are caught as their nearest earlier stage and evolved, fixed symbols are what the game fixes (plain, shiny-locked), the starters hatch, and a raid or an in-game trade stands in only where nothing else gives the species. What only Violet has is caught in the trainer's own Violet and traded over. A size option asks for the smallest (scale 0, with the Mini Mark) or the largest (scale 255, the Jumbo Mark), found by solving the RNG's equations. See the "스칼렛" section of the in-app help.
+
 The program speaks Korean: the window, the help, the messages and the option words. The command line also accepts the English words listed below for most options.
 
 ![The window](docs/screenshots/filled.png)
@@ -43,6 +45,8 @@ For Sword put `--game sword` first. The options that apply are `--name --sid --t
 Dexforge.Cli --game sword --name 우리 --ball 볼맞춤 --color shiny --year 2021
 ```
 
+For Scarlet put `--game scarlet` first; the options are the same as Legends: Arceus's but the ball is any of the 25 (or `볼맞춤` for the ones picked) and `--size` takes `smallest` or `largest`; the period defaults to the release day 2022-11-18 through 2024-12-31.
+
 For Legends: Arceus put `--game arceus` first. The options are `--name --sid --tid --ball --color --size --sex --level --from --to --seed --out`; the ball is one of the Hisuian balls, and the period defaults to the release year 2022.
 
 ```
@@ -58,7 +62,7 @@ Dexforge.Cli --game eventbox --name 미월 --first-days 7 --pick D:2522,E:1215:2
 | Option | Values | Default |
 |---|---|---|
 | `--game` | `ultrasun` (울트라썬) / `sword` (소드) / `eventbox` (배포박스) / `arceus` (아르세우스) | `ultrasun` |
-| `--size` | (Legends: Arceus) `smallest` (최소), `alpha` (우두머리), `random` (랜덤) | `random` |
+| `--size` | (Legends: Arceus, Scarlet) `smallest` (최소), `alpha` (우두머리, Arceus), `largest` (최대, Scarlet), `random` (랜덤) | `random` |
 | `--year` | (Sword) the year the Pokémon were obtained, 2019–2099 | 2021 |
 | `--first-days` | (event box) received dates fall within the first n days of each distribution window; 0 means the whole window | 0 |
 | `--pick`, `--pick-file` | (event box) keys of what to put in the free slots, comma-separated / a file with one key per line | none |
@@ -140,6 +144,8 @@ src/
     Arceus/              Legends: Arceus: the RNG and the spawn as the game draws it (Xoroshiro8a, Spawn8a), generator seeds from fixed seeds (Generator8a),
                          the smallest sizes by linear algebra (SizeSeeds8a), the spawner table (Spawners8a), the plan (Plan8a), making (Maker8a, Evolve8a), writing the save (Making8a)
     Data/arceus/         the Legends: Arceus template (main, backup, main2, the JKSV meta file) and the spawner table (spawners.tsv)
+    Scarlet/             Scarlet: the seeded spawn (Spawn9), the plan (Plan9), balls (Balls9), the evolver (Evolve9), the maker (Maker9) and the save (Making9)
+    Data/scarlet/        the Scarlet template (main, backup, poke_trade, the JKSV meta file), the plan (plan.tsv) and the ball table (balls.tsv)
     Wording/             understanding and speaking the options in Korean
   Dexforge.Cli/     the command line
   Dexforge.Gui/     the window (Avalonia)

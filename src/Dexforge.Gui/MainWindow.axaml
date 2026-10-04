@@ -27,6 +27,7 @@
               <RadioButton x:Name="GameSword" GroupName="game" Content="소드" />
               <RadioButton x:Name="GameEventBox" GroupName="game" Content="배포 박스" />
               <RadioButton x:Name="GameArceus" GroupName="game" Content="LEGENDS 아르세우스" />
+              <RadioButton x:Name="GameScarlet" GroupName="game" Content="스칼렛" />
             </StackPanel>
             <TextBlock x:Name="GameHint" Classes="hint" />
           </StackPanel>
@@ -129,6 +130,7 @@
             <StackPanel Orientation="Horizontal">
               <RadioButton x:Name="SizeSmallest" GroupName="size" Content="최소" />
               <RadioButton x:Name="SizeAlpha" GroupName="size" Content="우두머리" />
+              <RadioButton x:Name="SizeLargest" GroupName="size" Content="최대" />
               <RadioButton x:Name="SizeRandom" GroupName="size" IsChecked="True" Content="랜덤" />
             </StackPanel>
             <TextBlock x:Name="SizeHint" Classes="hint" />

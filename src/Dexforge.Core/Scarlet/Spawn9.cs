@@ -59,14 +59,17 @@ public static class Spawn9
     /// largest one the seeds of <see cref="SizeSeeds"/>, one sampler per roll the shiny could have come at, kept when the
     /// generation really lands there. None after the tries given.
     /// </summary>
-    public static ulong? Find(PK9 pk, ushort species, byte form, bool shiny, Scale9 scale, Random rnd, int rolls = Rolls, int tries = 2_000_000)
+    /// <param name="gender">0 male, 1 female; none, and either will do.</param>
+    /// <param name="also">A further condition on what comes out (the encryption constant Maushold's and Dudunsparce's forms hang on).</param>
+    public static ulong? Find(PK9 pk, ushort species, byte form, bool shiny, Scale9 scale, Random rnd, byte? gender = null, Func<PK9, bool>? also = null, int rolls = Rolls, int tries = 4_000_000)
     {
+        bool Fits() => pk.IsShiny == shiny && (gender is null || pk.Gender == gender) && (also is null || also(pk));
         if (scale == Scale9.Random)
         {
             for (int i = 0; i < tries; i++)
             {
                 ulong seed = (ulong)rnd.NextInt64() ^ ((ulong)rnd.Next() << 40);
-                if (Apply(pk, species, form, seed, rolls) && pk.IsShiny == shiny) return seed;
+                if (Apply(pk, species, form, seed, rolls) && Fits()) return seed;
             }
             return null;
         }
@@ -80,7 +83,7 @@ public static class Spawn9
             var sampler = samplers[i % samplers.Length];
             if (sampler.Sample(rnd) is not { } seed) continue;
             if (!Apply(pk, species, form, seed, rolls)) continue;
-            if (pk.IsShiny == shiny && pk.Scale == want) return seed;
+            if (Fits() && pk.Scale == want) return seed;
         }
         return null;
     }

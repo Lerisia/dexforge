@@ -1,0 +1,257 @@
+<title>스칼렛 볼 고르기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  /* Layout: one long list, a family per row, the balls as a strip of real icons under each name; the sticky bar counts what is left. */
+  :root {
+    --paper: #fbf7f2;        /* warm paper, the Paldea sand */
+    --card: #ffffff;
+    --ink: #2b2420;
+    --muted: #7a6f68;
+    --line: #e6ddd4;
+    --scarlet: #c8372d;      /* the cartridge's red */
+    --scarlet-soft: #fbe3df;
+    --ok: #2f7d4f;
+    --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1d1a18; --card: #272321; --ink: #f0e9e3; --muted: #a79d95; --line: #3b3431; --scarlet: #e5574c; --scarlet-soft: #4a2622; --ok: #6fc08f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1d1a18; --card: #272321; --ink: #f0e9e3; --muted: #a79d95; --line: #3b3431; --scarlet: #e5574c; --scarlet-soft: #4a2622; --ok: #6fc08f;
+    color-scheme: dark;
+  }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
+  .wrap { max-width: 760px; margin: 0 auto; padding-block: 0 48px; padding-inline: 16px; }
+  header.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); border-bottom: 1px solid var(--line); padding-block: 12px 10px; }
+  h1 { font-size: 20px; margin: 0 0 2px; font-weight: 700; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+  .count { font-variant-numeric: tabular-nums; }
+  .count b { color: var(--scarlet); }
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tools input[type=search] { flex: 1 1 180px; min-width: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; font-size: 14px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 5px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--scarlet); border-color: var(--scarlet); color: #fff; }
+  .chip:focus-visible, .ball:focus-visible, .btn:focus-visible { outline: 2px solid var(--scarlet); outline-offset: 2px; }
+  .fam { display: grid; grid-template-columns: 44px 1fr; column-gap: 10px; padding-block: 12px; border-bottom: 1px solid var(--line); }
+  .icon { width: 40px; height: 30px; margin-top: 2px; background-image: url("icons-sheet.png"); background-repeat: no-repeat; image-rendering: pixelated; }
+  .name { font-weight: 700; font-size: 16px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .name .state { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .name .state.done { color: var(--ok); }
+  .members { color: var(--muted); font-size: 13px; margin-top: 1px; }
+  .finals { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; }
+  .final { display: grid; justify-items: center; gap: 0; font-size: 11px; color: var(--muted); max-width: 96px; text-align: center; }
+  .final .sp { width: 96px; height: 96px; background-image: url("shiny-sheet.png"); background-repeat: no-repeat; image-rendering: pixelated; }
+  .final span { line-height: 1.2; }
+  .draft { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .draft b { color: var(--ink); font-weight: 500; }
+  .balls { display: flex; gap: 2px; overflow-x: auto; padding-block: 6px 2px; margin-inline: -2px; scrollbar-width: thin; }
+  .ball { flex: 0 0 auto; width: 34px; height: 34px; border: 2px solid transparent; border-radius: 8px; background: transparent; padding: 0; cursor: pointer; display: grid; place-items: center; }
+  .ball img { width: 24px; height: 24px; image-rendering: pixelated; }
+  .ball[aria-pressed="true"] { border-color: var(--scarlet); background: var(--scarlet-soft); }
+  .ball.draft-hint:not([aria-pressed="true"]) { border-color: var(--line); border-style: dashed; }
+  .chosen { font-size: 13px; margin-top: 4px; min-height: 1.2em; }
+  .chosen b { color: var(--scarlet); font-weight: 700; }
+  .more { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px; padding: 4px 10px; font: inherit; font-size: 12.5px; cursor: pointer; }
+  .btn[aria-pressed="true"] { border-color: var(--scarlet); color: var(--scarlet); }
+  .per { margin-top: 6px; display: grid; gap: 6px; }
+  .per .row { display: grid; grid-template-columns: minmax(96px, 150px) 1fr; align-items: center; gap: 8px; font-size: 13px; }
+  .per .row .balls { padding-block: 2px; }
+  .per .row .ball { width: 30px; height: 30px; }
+  .per .row .ball img { width: 22px; height: 22px; }
+  .note { width: 100%; box-sizing: border-box; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); font: inherit; font-size: 13px; }
+  .empty { padding-block: 40px; text-align: center; color: var(--muted); }
+  .toast { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 14px; border-radius: 999px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <h1>스칼렛 볼 고르기</h1>
+    <p class="sub count" id="count">읽는 중…</p>
+    <div class="tools">
+      <input type="search" id="q" placeholder="이름으로 찾기" autocomplete="off">
+      <div class="chips" id="chips">
+        <button class="chip" data-filter="gen9" aria-pressed="true">9세대 신규</button>
+        <button class="chip" data-filter="gen9todo" aria-pressed="false">9세대 안 정함</button>
+        <button class="chip" data-filter="all" aria-pressed="false">전부</button>
+        <button class="chip" data-filter="todo" aria-pressed="false">안 정함</button>
+        <button class="chip" data-filter="changed" aria-pressed="false">초안과 다름</button>
+        <button class="chip" data-filter="nodraft" aria-pressed="false">초안 없음</button>
+      </div>
+    </div>
+  </header>
+  <main id="list"></main>
+  <p class="sub" id="foot" style="margin-top:16px">그림은 최종 진화체의 이로치입니다. 한 가족에 볼 하나를 누르면 바로 저장됩니다. 구성원마다 다르게 하려면 '구성원별'을 누르세요. 초안은 소드 세이브와 전국도감 세이브에 넣어 두신 볼(폼마다, 암수가 다르면 둘 다)이고, 점선이 초안 자리입니다. 사파리볼과 컴퍼티션볼(콤페볼)도 스칼렛 야생 포획에 됩니다. 스타팅·코라이돈처럼 볼이 정해진 것은 고른 것과 상관없이 그 볼입니다. 바이올렛 전용(미라이돈·무쇠암석·무쇠감투·아공이 계열 등 34)은 같은 이름의 바이올렛에서 잡아 교환한 것으로 만들며 볼은 여기서 고른 대로입니다. 이로치 배포가 있는 사흉수·코라이돈·미라이돈은 이로치로 만들 때 배포(프레셔스볼)이고, 일반으로 만들 때 여기서 고른 볼입니다.</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  const balls = DATA.balls, icons = DATA.icons, cols = DATA.sheet.cols, W = DATA.sheet.w, H = DATA.sheet.h;
+  const fams = DATA.sheet.families;
+  const SC = DATA.sheet.shiny.cols, SW = DATA.sheet.shiny.w, SH = DATA.sheet.shiny.h;
+  const saved = new Map();   // id -> {ball, members, note}
+  let db = null, filter = 'gen9', query = '';
+  // the families new in the ninth generation (a new species, a new final form, or a Paldean form): what is left to pick after the older ones were confirmed as drafted
+  const GEN9 = new Set(["56-0", "128-1", "128-2", "128-3", "194-1", "203-0", "206-0", "624-0", "840-0", "884-0", "906-0", "909-0", "912-0", "915-0", "917-0", "919-0", "921-0", "924-0", "926-0", "928-0", "931-0", "931-1", "931-2", "931-3", "932-0", "935-0", "938-0", "940-0", "942-0", "944-0", "946-0", "948-0", "950-0", "951-0", "953-0", "955-0", "957-0", "960-0", "962-0", "963-0", "965-0", "967-0", "968-0", "969-0", "971-0", "973-0", "974-0", "976-0", "977-0", "978-0", "978-1", "978-2", "984-0", "985-0", "986-0", "987-0", "988-0", "989-0", "990-0", "991-0", "992-0", "993-0", "994-0", "995-0", "996-0", "999-0", "1001-0", "1002-0", "1003-0", "1004-0", "1005-0", "1006-0", "1007-0", "1009-0", "1010-0", "1012-0", "1012-1", "1014-0", "1015-0", "1016-0", "1017-0", "1020-0", "1021-0", "1024-0", "1025-0", "1008-0", "1022-0", "1023-0"]);
+  const list = document.getElementById('list'), count = document.getElementById('count'), toast = document.getElementById('toast');
+  const open = new Set();    // families with the per-member rows shown
+  let toastTimer = 0;
+
+  function say(text) { toast.textContent = text; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1400); }
+
+  function draftOf(f) {
+    // a plain draft names one ball; a mixed one lists member=ball pairs, in which case the family draft is the first stage's
+    if (!f.draft) return '';
+    if (f.draft.indexOf('/') < 0) return f.draft.replace(/\(.*\)$/, '');
+    const first = f.draft.split(' / ')[0].split('=');
+    return first.length > 1 ? first[1] : '';
+  }
+  function draftMembers(f) {
+    const out = {};
+    if (f.draft && f.draft.indexOf('/') >= 0) f.draft.split(' / ').forEach(p => { const kv = p.split('='); if (kv.length > 1) out[kv[0]] = kv[1]; });
+    return out;
+  }
+  function stateOf(f) {
+    const s = saved.get(f.id);
+    if (!s || !s.ball) return 'todo';
+    return s.ball !== draftOf(f) || Object.keys(s.members || {}).length ? 'changed' : 'done';
+  }
+  function matches(f) {
+    if (query && !(f.name + ' ' + f.members.join(' ')).includes(query)) return false;
+    const st = stateOf(f);
+    if (filter === 'gen9') return GEN9.has(f.id);
+    if (filter === 'gen9todo') return GEN9.has(f.id) && st === 'todo';
+    if (filter === 'todo') return st === 'todo';
+    if (filter === 'changed') return st === 'changed';
+    if (filter === 'nodraft') return !f.draft;
+    return true;
+  }
+
+  function strip(f, member, current, hint) {
+    const div = document.createElement('div'); div.className = 'balls';
+    balls.forEach(b => {
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ball' + (hint === b ? ' draft-hint' : '');
+      btn.title = b; btn.setAttribute('aria-label', b); btn.setAttribute('aria-pressed', current === b ? 'true' : 'false');
+      const img = document.createElement('img'); img.src = icons[b]; img.alt = ''; btn.appendChild(img);
+      btn.addEventListener('click', () => choose(f, member, b));
+      div.appendChild(btn);
+    });
+    return div;
+  }
+
+  function render() {
+    list.textContent = '';
+    let shown = 0;
+    fams.forEach((f, i) => {
+      if (!matches(f)) return;
+      shown++;
+      const s = saved.get(f.id) || {};
+      const row = document.createElement('article'); row.className = 'fam'; row.id = 'f-' + f.id;
+      const icon = document.createElement('div'); icon.className = 'icon';
+      icon.style.backgroundPosition = `-${(f.pos % cols) * W}px -${Math.floor(f.pos / cols) * H}px`;
+      row.appendChild(icon);
+      const body = document.createElement('div');
+      const name = document.createElement('div'); name.className = 'name';
+      name.innerHTML = `<span>${f.name}</span><span class="state ${stateOf(f) === 'todo' ? '' : 'done'}">${stateOf(f) === 'todo' ? '안 정함' : stateOf(f) === 'changed' ? '초안과 다르게 정함' : '정함'}</span>`;
+      body.appendChild(name);
+      const mem = document.createElement('div'); mem.className = 'members'; mem.textContent = f.members.join(' · '); body.appendChild(mem);
+      if (f.finals && f.finals.length) {
+        const fin = document.createElement('div'); fin.className = 'finals';
+        f.finals.forEach(x => {
+          const el = document.createElement('div'); el.className = 'final';
+          const sp = document.createElement('div'); sp.className = 'sp';
+          sp.style.backgroundPosition = `-${(x.pos % SC) * SW}px -${Math.floor(x.pos / SC) * SH}px`;
+          el.appendChild(sp);
+          const cap = document.createElement('span'); cap.textContent = x.label; el.appendChild(cap);
+          fin.appendChild(el);
+        });
+        body.appendChild(fin);
+      }
+      const d = document.createElement('div'); d.className = 'draft';
+      d.innerHTML = f.draft ? `초안 <b>${f.draft}</b> <span>(${f.from})</span>` : '초안 없음';
+      body.appendChild(d);
+      body.appendChild(strip(f, null, s.ball || '', draftOf(f)));
+      const chosen = document.createElement('div'); chosen.className = 'chosen';
+      chosen.innerHTML = s.ball ? `가족 볼 <b>${s.ball}</b>` : '';
+      body.appendChild(chosen);
+      const more = document.createElement('div'); more.className = 'more';
+      const per = document.createElement('button'); per.type = 'button'; per.className = 'btn'; per.textContent = '구성원별'; per.setAttribute('aria-pressed', open.has(f.id) ? 'true' : 'false');
+      per.addEventListener('click', () => { if (open.has(f.id)) open.delete(f.id); else open.add(f.id); render(); });
+      more.appendChild(per);
+      if (s.ball) { const clear = document.createElement('button'); clear.type = 'button'; clear.className = 'btn'; clear.textContent = '지우기'; clear.addEventListener('click', () => clearFamily(f)); more.appendChild(clear); }
+      body.appendChild(more);
+      if (open.has(f.id)) {
+        const perBox = document.createElement('div'); perBox.className = 'per';
+        const dm = draftMembers(f);
+        f.members.forEach(m => {
+          const r = document.createElement('div'); r.className = 'row';
+          const label = document.createElement('div'); label.textContent = m; r.appendChild(label);
+          r.appendChild(strip(f, m, (s.members || {})[m] || '', dm[m] || ''));
+          perBox.appendChild(r);
+        });
+        const note = document.createElement('input'); note.className = 'note'; note.type = 'text'; note.id = 'note-' + f.id; note.placeholder = '메모 (수컷은 … 처럼 글로 적어도 됩니다)'; note.value = s.note || '';
+        note.addEventListener('change', () => saveFamily(f, { note: note.value.trim() }));
+        perBox.appendChild(note);
+        body.appendChild(perBox);
+      }
+      row.appendChild(body);
+      list.appendChild(row);
+    });
+    if (!shown) { const e = document.createElement('p'); e.className = 'empty'; e.textContent = '여기 맞는 가족이 없습니다.'; list.appendChild(e); }
+    const done = fams.filter(f => stateOf(f) !== 'todo').length;
+    const nine = fams.filter(f => GEN9.has(f.id)), nineDone = nine.filter(f => stateOf(f) !== 'todo').length;
+    count.innerHTML = `9세대 신규 ${nine.length}가족 · 정함 <b>${nineDone}</b> · 남음 <b>${nine.length - nineDone}</b> (전체 ${fams.length} 중 정함 ${done}; 8세대까지는 초안대로)${db ? '' : ' · <span style="color:var(--scarlet)">저장할 수 없는 상태입니다 (다시 열어 보세요)</span>'}`;
+  }
+
+  async function saveFamily(f, patch) {
+    const cur = saved.get(f.id) || { ball: '', members: {}, note: '' };
+    const next = Object.assign({}, cur, patch, { name: f.name, at: new Date().toISOString() });
+    saved.set(f.id, next);
+    render();
+    if (!db) { say('저장할 수 없습니다'); return; }
+    try { await db.collection('balls').doc(f.id).set(next); say('저장했습니다'); }
+    catch (e) { say('저장 실패: ' + (e && e.message ? e.message : e)); }
+  }
+  function choose(f, member, b) {
+    if (member === null) saveFamily(f, { ball: b });
+    else {
+      const members = Object.assign({}, (saved.get(f.id) || {}).members || {});
+      if (members[member] === b) delete members[member]; else members[member] = b;
+      saveFamily(f, { members });
+    }
+  }
+  async function clearFamily(f) {
+    saved.delete(f.id); render();
+    if (!db) return;
+    try { await db.collection('balls').doc(f.id).delete(); say('지웠습니다'); } catch (e) { say('지우기 실패'); }
+  }
+
+  document.getElementById('q').addEventListener('input', e => { query = e.target.value.trim(); render(); });
+  document.getElementById('chips').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    filter = b.dataset.filter;
+    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b ? 'true' : 'false'));
+    render();
+  });
+
+  render();
+  (async () => {
+    try {
+      db = await (window.claude && window.claude.use ? window.claude.use('db') : Promise.resolve(null));
+      if (!db) { render(); return; }
+      const snap = await db.collection('balls').get();
+      snap.docs.forEach(d => { const v = d.data(); if (v) saved.set(d.id, { ball: v.ball || '', members: v.members || {}, note: v.note || '' }); });
+      render();
+    } catch (e) { db = null; render(); }
+  })();
+})();
+</script>

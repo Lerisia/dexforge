@@ -46,8 +46,8 @@ public partial class MainWindow : Window
 
         foreach (var box in new[] { SidBox, TidBox }) box.PropertyChanged += (_, e) => { if (e.Property == TextBox.TextProperty) Ids(); };
         foreach (var r in new[] { OneBall, PickedBalls, Plain, Shiny, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred }) r.IsCheckedChanged += (_, _) => Hints();
-        foreach (var r in new[] { GameUltraSun, GameSword, GameEventBox, GameArceus }) r.IsCheckedChanged += (_, _) => { GameChanged(); Hints(); };
-        foreach (var r in new[] { SizeSmallest, SizeAlpha, SizeRandom }) r.IsCheckedChanged += (_, _) => Hints();
+        foreach (var r in new[] { GameUltraSun, GameSword, GameEventBox, GameArceus, GameScarlet }) r.IsCheckedChanged += (_, _) => { GameChanged(); Hints(); };
+        foreach (var r in new[] { SizeSmallest, SizeAlpha, SizeLargest, SizeRandom }) r.IsCheckedChanged += (_, _) => Hints();
         foreach (var r in new[] { ReceivedAnyDay, ReceivedFirstDays }) r.IsCheckedChanged += (_, _) => Hints();
         FirstDaysBox.GotFocus += (_, _) => ReceivedFirstDays.IsChecked = true;
         BallBox.SelectionChanged += (_, _) => { OneBall.IsChecked = true; Hints(); };
@@ -92,15 +92,19 @@ public partial class MainWindow : Window
                 ? $"{BallFits.Boxed}마리 중 {cannot}마리는 {balls[(int)chosen]}에 넣을 수 없어 몬스터볼에 넣습니다. 배포 포켓몬은 카드가 정한 볼에 넣습니다."
                 : "배포 포켓몬은 카드가 정한 볼에 넣습니다.";
         ColourHint.Text = Shiny.IsChecked == true
-            ? (IsArceus ? "전설·스타팅 같은 고정 조우는 이로치가 막혀 일반 색입니다." : IsSword ? "막힌 것과 마휘핑 크림 9폼은 일반 색입니다." : "이로치가 막힌 포켓몬은 일반 색입니다.")
-            : IsArceus ? "의뢰의 포니타는 늘 이로치입니다." : "카드가 이로치로 정한 배포는 이로치입니다.";
-        SizeHint.Text = SizeSmallest.IsChecked == true ? "키 0, 무게 0 (XXXS). 우두머리와 고정 조우는 게임이 정한 크기입니다. 시드를 찾느라 1분쯤 걸립니다."
+            ? (IsArceus ? "전설·스타팅 같은 고정 조우는 이로치가 막혀 일반 색입니다." : IsScarlet ? "고정 심볼·레이드·게임 안 교환은 이로치가 막혀 일반 색입니다." : IsSword ? "막힌 것과 마휘핑 크림 9폼은 일반 색입니다." : "이로치가 막힌 포켓몬은 일반 색입니다.")
+            : IsArceus ? "의뢰의 포니타는 늘 이로치입니다." : IsScarlet ? "전부 일반 색입니다." : "카드가 이로치로 정한 배포는 이로치입니다.";
+        SizeHint.Text = IsScarlet
+            ? (SizeSmallest.IsChecked == true ? "야생 포켓몬은 스케일 0 (XXXS) 에 조그만 증표. 고정·레이드는 게임이 정한 크기입니다."
+               : SizeLargest.IsChecked == true ? "야생 포켓몬은 스케일 255 (XXXL) 에 커다란 증표. 고정·레이드는 게임이 정한 크기입니다."
+               : "게임이 뽑은 대로입니다.")
+            : SizeSmallest.IsChecked == true ? "키 0, 무게 0 (XXXS). 우두머리와 고정 조우는 게임이 정한 크기입니다. 시드를 찾느라 1분쯤 걸립니다."
             : SizeAlpha.IsChecked == true ? "우두머리가 있는 종은 전부 우두머리로 (크기 최대). 없는 종은 게임이 뽑은 대로입니다."
             : "게임이 뽑은 대로입니다.";
         IvHint.Text = IvFive.IsChecked == true ? "알에서 나온 포켓몬은 5V가 됩니다."
             : "적법한 선에서 완전 랜덤입니다.";
         SexHint.Text = SexRandom.IsChecked == true ? "종마다 원래 성비대로 정해집니다." : "무성이거나 성별이 정해진 포켓몬은 그대로입니다.";
-        LevelHint.Text = LevelHundred.IsChecked == true ? "기술은 그대로입니다." : IsArceus ? "잡은 레벨 그대로, 진화에 필요한 만큼만 올립니다." : "포켓몬마다 가질 수 있는 가장 낮은 레벨입니다.";
+        LevelHint.Text = LevelHundred.IsChecked == true ? "기술은 그대로입니다." : IsArceus || IsScarlet ? "잡은 레벨 그대로, 진화에 필요한 만큼만 올립니다." : "포켓몬마다 가질 수 있는 가장 낮은 레벨입니다.";
         if (!busy && Last is null) Rest();
     }
 
@@ -112,6 +116,7 @@ public partial class MainWindow : Window
 
     /// <summary>Legends: Arceus: the Hisui dex, caught from seeds.</summary>
     public bool IsArceus => GameArceus.IsChecked == true;
+    public bool IsScarlet => GameScarlet.IsChecked == true;
 
     /// <summary>Sword or Ultra Sun: which rows there are to fill.</summary>
     public bool IsSword => GameSword.IsChecked == true;
@@ -145,14 +150,16 @@ public partial class MainWindow : Window
 
     private void GameChanged()
     {
-        bool sword = IsSword, events = IsEventBox, arceus = IsArceus;
-        foreach (var row in new Control[] { ForeignRow, IvRow }) row.IsVisible = !sword && !events && !arceus;
-        RibbonRow.IsVisible = !events && !arceus;
+        bool sword = IsSword, events = IsEventBox, arceus = IsArceus, scarlet = IsScarlet;
+        foreach (var row in new Control[] { ForeignRow, IvRow }) row.IsVisible = !sword && !events && !arceus && !scarlet;
+        RibbonRow.IsVisible = !events && !arceus && !scarlet;
         ShowRibbons();
         foreach (var row in new Control[] { SexRow, LevelRow, PeriodRow }) row.IsVisible = !sword && !events;
         foreach (var row in new Control[] { BallRow, ColourRow }) row.IsVisible = !events;
         YearRow.IsVisible = sword;
-        SizeRow.IsVisible = arceus;
+        SizeRow.IsVisible = arceus || scarlet;
+        SizeAlpha.IsVisible = arceus; SizeLargest.IsVisible = scarlet;
+        if (arceus && SizeLargest.IsChecked == true || scarlet && SizeAlpha.IsChecked == true) SizeRandom.IsChecked = true;
         PickedBalls.IsVisible = !arceus;
         ReceivedRow.IsVisible = events; CustomRow.IsVisible = events;
         // the shelf of balls is the game's
@@ -160,23 +167,30 @@ public partial class MainWindow : Window
         if (!ReferenceEquals(BallBox.Tag, shelf)) { BallBox.Tag = shelf; BallBox.ItemsSource = shelf.Select(b => balls[(int)b]).ToList(); BallBox.SelectedIndex = 0; OneBall.IsChecked = true; }
         switching = true;
         if (arceus && !datesTouched) { FromBox.Day = Arceus.Making8a.Released; ToBox.Day = new DateOnly(2022, 12, 31); }
-        else if (!arceus && !datesTouched) { FromBox.Day = DefaultFrom; ToBox.Day = DefaultTo; }
+        else if (scarlet && !datesTouched) { FromBox.Day = Scarlet.Making9.Released; ToBox.Day = new DateOnly(2024, 12, 31); }
+        else if (!arceus && !scarlet && !datesTouched) { FromBox.Day = DefaultFrom; ToBox.Day = DefaultTo; }
         switching = false;
-        Subtitle.Text = arceus
+        Subtitle.Text = scarlet
+            ? "스칼렛 도감 세이브 만들기 · 695종 836마리 (폼까지) · 한국어"
+            : arceus
             ? "LEGENDS 아르세우스 히스이도감 세이브 만들기 · 242종 313마리 (폼까지) · 한국어"
             : events
             ? "배포 박스 세이브 만들기 · 3~7세대 배포 751건 + 최종 진화체 · 울트라썬, 한국어"
             : sword
             ? "소드 전국도감 세이브 만들기 · 663종 760마리 (폼까지) + 배포 159마리 · 한국어"
             : "울트라썬 전국도감 세이브 만들기 · 807종 · 한국 본체, 한국어, 여자 주인공";
-        GameHint.Text = arceus
+        GameHint.Text = scarlet
+            ? "팔데아·기타카미·블루베리 도감의 전 종과 폼. 야생은 대량발생 이로치작처럼 시드에서 뽑고, 진화체는 야생에서 진화, 전설은 고정 심볼, 스타팅은 알, 레이드·교환은 그것밖에 없는 종만. 바이올렛 전용은 같은 이름의 바이올렛에서 잡아 교환. JKSV 로 복원하는 폴더가 나옵니다."
+            : arceus
             ? "히스이도감 242종의 전 폼. 야생은 스포너의 시드에서 뽑아(슬롯 추첨까지 맞음), 진화체는 야생에서 진화, 전설·스타팅은 고정 조우, 폼 체인지는 잡은 폼에서. 연구는 전 종 10. JKSV 로 복원하는 폴더가 나옵니다."
             : events
             ? "3세대부터 7세대까지의 모든 배포 카드(한국 > 일본 > 미국 > 유럽 순으로 하나씩), 알은 부화시켜, 미진화체는 최종 진화체도. 전부 배포 기간 안의 날짜로 받아 7세대까지 올린 것으로 만듭니다."
             : sword
             ? "가라르·갑옷섬·왕관설원 도감의 전 종과 폼. 알이 되는 것은 알, 화석은 화석, 전설은 고정 조우와 다이맥스 어드벤처, 환상은 배포 카드. 소드가 받은 배포 81건과 그 최종 진화체도 도감 뒤에. JKSV 로 복원하는 폴더가 나옵니다."
             : "전국도감 807종. 알이 되는 것은 알, 나머지는 이 게임에서 잡거나 받은 것, 배포, 이전 게임에서 온 것.";
-        WhereHint.Text = arceus
+        WhereHint.Text = scarlet
+            ? "이 안에 'Dexforge-Scarlet-이름-TID' 폴더를 만들어 JKSV 백업(main 등 네 파일)과 기록을 씁니다."
+            : arceus
             ? "이 안에 'Dexforge-Arceus-이름-TID' 폴더를 만들어 JKSV 백업(main 등 네 파일)과 기록을 씁니다."
             : events
             ? "이 안에 'Dexforge-EventBox-이름-TID' 폴더를 만들어 세이브(main)와 기록을 씁니다."
@@ -232,6 +246,23 @@ public partial class MainWindow : Window
         return true;
     }
 
+    /// <summary>What the form asks for Scarlet; or what on it cannot be read.</summary>
+    public bool Read9(out Scarlet.Options9 asked, out string why)
+    {
+        asked = null!; why = "";
+        var name = (NameBox.Text ?? "").Trim();
+        if (name.Length == 0) name = DefaultName;
+        if (name.Length > 6) { why = "어버이 이름은 6글자까지입니다."; NameBox.Focus(); return false; }
+        if (!Id(SidBox.Text, 4, out var sid)) { why = "SID 는 네 자리 수입니다."; return false; }
+        if (!Id(TidBox.Text, 6, out var tid)) { why = "TID 는 여섯 자리 수입니다."; return false; }
+        int? ball = PickedBalls.IsChecked == true ? null : (int)Shelf[Math.Max(BallBox.SelectedIndex, 0)];
+        var size = SizeSmallest.IsChecked == true ? SizeChoice.Smallest : SizeLargest.IsChecked == true ? SizeChoice.Largest : SizeChoice.Random;
+        var sex = SexMale.IsChecked == true ? SexChoice.Male : SexFemale.IsChecked == true ? SexChoice.Female : SexChoice.Random;
+        var level = LevelHundred.IsChecked == true ? LevelChoice.Hundred : LevelChoice.Lowest;
+        asked = new Scarlet.Options9(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, Shiny.IsChecked == true, size, level, sex);
+        return true;
+    }
+
     public bool Read8(out Options8 asked, out string why)
     {
         asked = null!; why = "";
@@ -280,6 +311,12 @@ public partial class MainWindow : Window
         {
             if (!ReadEvents(out var askedE, out var whyE)) { Refuse([whyE]); return; }
             Working = Work(into => EventBox.EventBoxMaking.Run(askedE, null, into, (done, of) => Dispatcher.UIThread.Post(() => Going(done, of))));
+            return;
+        }
+        if (IsScarlet)
+        {
+            if (!Read9(out var asked9, out var why9)) { Refuse([why9]); return; }
+            Working = Work(into => Scarlet.Making9.Run(asked9, null, into, (done, of) => Dispatcher.UIThread.Post(() => Going(done, of))));
             return;
         }
         if (IsArceus)

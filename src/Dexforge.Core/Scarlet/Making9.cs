@@ -1,0 +1,105 @@
+using System.Text;
+using PKHeX.Core;
+
+namespace Dexforge.Scarlet;
+
+/// <summary>One Scarlet save made to order: every species and form the plan holds, drawn, checked, and written as a JKSV backup folder with its record.</summary>
+public static class Making9
+{
+    public const string RecordName = "만든기록.txt";
+    public static readonly DateOnly Released = new(2022, 11, 18);
+
+    /// <summary>The files JKSV wants in a backup folder besides the save itself, carried inside with the template.</summary>
+    private static readonly (string Resource, string File)[] Sidecars = [("scarlet.backup", "backup"), ("scarlet.poke_trade", "poke_trade"), ("scarlet.nx_save_meta", ".nx_save_meta.bin")];
+
+    public static string FolderFor(string under, Trainer me) => Path.Combine(under, $"Dexforge-Scarlet-{me.Name}-{me.Shown:000000}");
+
+    /// <param name="outDir">Where to write; none, and the folder is named after the trainer, under <paramref name="under"/>.</param>
+    /// <param name="step">Told how many are done, and of how many.</param>
+    public static Made Run(Options9 opt, string? outDir, string under, Action<int, int>? step = null)
+    {
+        var ko = Plan9.Ko;
+        int room = Legal.GetMaxLengthOT(8, LanguageID.Korean);   // six Korean letters, as in the eighth generation
+        if (opt.Name.Length < 1 || opt.Name.Length > room) return new Made(2, null, [], [$"어버이 이름은 1글자에서 {room}글자 사이여야 합니다."]);
+        if (opt.Sid is > 4294) return new Made(2, null, [], ["SID 는 0000 에서 4294 사이여야 합니다."]);
+        if (opt.Tid is > 999_999) return new Made(2, null, [], ["TID 는 000000 에서 999999 사이여야 합니다."]);
+        if (opt.Sid == 4294 && opt.Tid > 967_295) return new Made(2, null, [], ["SID 4294 에서는 TID 가 967295 까지입니다."]);
+        if (opt.From < Released) return new Made(2, null, [], [$"첫날은 {Released:yyyy-MM-dd} (스칼렛 발매일) 이후여야 합니다."]);
+        if (opt.To < opt.From) return new Made(2, null, [], ["마지막 날이 첫날보다 앞섭니다."]);
+        if (opt.To.Year > 2099) return new Made(2, null, [], ["마지막 날은 2099년까지입니다."]);
+        if (opt.Size == SizeChoice.Alpha) return new Made(2, null, [], ["스칼렛에는 우두머리가 없습니다 (최소·최대·랜덤)."]);
+
+        var random = new Random(opt.Seed);
+        var sav = new SAV9SV(Embedded.Bytes("scarlet.main"));
+        uint sid7 = opt.Sid ?? (uint)random.Next(0, 4295);
+        uint tid7 = opt.Tid ?? (uint)random.Next(0, sid7 == 4294 ? 967_296 : 1_000_000);
+        uint id32 = sid7 * 1_000_000 + tid7;
+        var me = new Trainer(opt.Name, sav.Gender, (ushort)(id32 & 0xFFFF), (ushort)(id32 >> 16), sav.Language, GameVersion.SL, 0, 0, 0);
+        var trainer = new SimpleTrainerInfo(GameVersion.SL) { OT = opt.Name, Gender = sav.Gender, Language = sav.Language, ID32 = id32 };
+        var maker = new Maker9(trainer, new Balls9(), random, opt);
+
+        var entries = Plan9.All;
+        var made = new List<Made9>(); var failed = new List<string>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            var e = entries[i];
+            var m = maker.Make(e);
+            if (m.Legal) made.Add(m);
+            else failed.Add($"{Plan9.Label(e.Species, e.Form)}: {(m.Report.Contains("Invalid") ? string.Join(" | ", m.Report.Split('\n').Where(l => l.Contains("Invalid"))) : m.Report)}");
+            step?.Invoke(i + 1, entries.Count);
+        }
+
+        var lines = new List<string>
+        {
+            "스칼렛 도감 세이브 — 만든 기록",
+            "",
+            $"어버이        {me.Name} ({(me.Gender == 0 ? "남" : "여")})",
+            $"SID / TID     {me.Sid7:0000} / {me.Shown:000000}",
+            $"바이올렛      같은 이름, SID / TID {maker.Violet.ID32 / 1_000_000:0000} / {maker.Violet.ID32 % 1_000_000:000000} — 바이올렛 전용은 거기서 잡아 교환",
+            $"볼            {(opt.Ball is { } ob ? $"{ko.balllist[ob]}로 통일 (안 되는 포켓몬은 몬스터볼)" : "포켓몬마다 골라 둔 볼")}",
+            $"색            {(opt.Shiny ? "이로치 (고정·레이드·교환은 일반)" : "일반")}",
+            $"크기          {opt.Size switch { SizeChoice.Smallest => "가장 작게 (스케일 0, 조그만 증표)", SizeChoice.Largest => "가장 크게 (스케일 255, 커다란 증표)", _ => "게임이 뽑은 대로" }}",
+            $"레벨          {(opt.Level == LevelChoice.Hundred ? "100" : "잡은 레벨 그대로 (진화에 필요한 만큼만 올림)")}",
+            $"성별          {opt.Sex switch { SexChoice.Male => "수컷 (가능한 종)", SexChoice.Female => "암컷 (가능한 종)", _ => "게임이 뽑은 대로" }}",
+            $"잡은 기간     {opt.From:yyyy-MM-dd} ~ {opt.To:yyyy-MM-dd}",
+            $"시드          {opt.Seed}",
+            "",
+        };
+        if (failed.Count != 0)
+        {
+            var refused = new List<string> { $"만들지 못한 개체가 {failed.Count}마리 있어 세이브를 쓰지 않습니다." };
+            foreach (var f in failed.Take(30)) refused.Add("  " + f);
+            return new Made(1, null, lines, refused, me);
+        }
+        if (made.Count > sav.SlotCount) return new Made(1, null, lines, [$"박스가 모자랍니다: {made.Count} > {sav.SlotCount}"], me);
+
+        sav.OT = me.Name;
+        sav.ID32 = id32;
+        for (int i = 0; i < sav.SlotCount; i++) sav.SetBoxSlotAtIndex(sav.BlankPKM, i, EntityImportSettings.None);
+        for (int i = 0; i < made.Count; i++) sav.SetBoxSlotAtIndex(made[i].Pk, i, EntityImportSettings.None);
+        foreach (var m in made) sav.Zukan.SetDex(m.Pk);
+        var data = sav.Write().ToArray();
+
+        int seen = 0, caught = 0;
+        for (ushort s = 1; s <= sav.MaxSpeciesID; s++) { if (sav.GetSeen(s)) seen++; if (sav.GetCaught(s)) caught++; }
+        lines.Add($"포켓몬        {made.Count}마리 (박스), {made.Select(m => m.Pk.Species).Distinct().Count()}종, 폼까지 {made.Select(m => (m.Pk.Species, m.Pk.Form)).Distinct().Count()}");
+        lines.Add($"합법          {made.Count} / {made.Count}");
+        lines.Add($"이로치        {made.Count(m => m.Pk.IsShiny)}마리");
+        lines.Add($"출처          야생 {made.Count(m => m.Entry.Source == Source9.Wild)}, 고정 {made.Count(m => m.Entry.Source == Source9.Static)}, 알 {made.Count(m => m.Entry.Source == Source9.Egg)}, 레이드 {made.Count(m => m.Entry.Source == Source9.Raid)}, 교환 {made.Count(m => m.Entry.Source == Source9.Trade)}; 바이올렛에서 {made.Count(m => m.Entry.Violet)}");
+        lines.Add($"도감          본 것 {seen}, 잡은 것 {caught}");
+        lines.Add("");
+        lines.Add("마리마다: 이름 · 폼 · 색 · 레벨 · 성격 · 특성 · 개체값 · 스케일 · 테라 · 볼 · 출처 · 시드");
+        foreach (var m in made)
+        {
+            var pk = m.Pk;
+            lines.Add($"  {Plan9.Label(pk.Species, pk.Form)}{(pk.IsShiny ? " ★" : "")} Lv{pk.CurrentLevel} {ko.natures[(int)pk.Nature]} {ko.abilitylist[pk.Ability]} {pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE} 스케일{pk.Scale} {((int)pk.TeraTypeOriginal < ko.types.Length ? ko.types[(int)pk.TeraTypeOriginal] : "스텔라")} {ko.balllist[pk.Ball]} — {m.How}{(m.Entry.Evolves ? $" → {m.Entry.Note}" : "")}{(m.Seed is { } s ? $" · 시드 {s:X16}" : "")}");
+        }
+
+        outDir ??= FolderFor(under, me);
+        Directory.CreateDirectory(outDir);
+        File.WriteAllBytes(Path.Combine(outDir, "main"), data);
+        foreach (var (res, file) in Sidecars) File.WriteAllBytes(Path.Combine(outDir, file), Embedded.Bytes(res));
+        File.WriteAllLines(Path.Combine(outDir, RecordName), lines, new UTF8Encoding(true));
+        return new Made(0, outDir, lines, [], me);
+    }
+}
