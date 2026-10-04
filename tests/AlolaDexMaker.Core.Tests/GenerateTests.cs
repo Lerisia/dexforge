@@ -277,7 +277,8 @@ public class WhenSixPerfectValuesAreAskedFor(Perfect m) : IClassFixture<Perfect>
     [Fact]
     public void EachKeepsTheBallPickedForIt()
     {
-        for (int i = 0; i < m.Was.Count; i++) Assert.Equal(m.Was[i].Ball, m.All[i].Ball);
+        // The Ralts line and Mimikyu go by sex: a Moon Ball when male, a Love Ball when female.
+        for (int i = 0; i < m.Was.Count; i++) Assert.Equal(SexBalls.Expected(m.Was[i], m.All[i].Gender), m.All[i].Ball);
     }
 }
 

@@ -6,7 +6,7 @@ namespace AlolaDexMaker.Sword;
 public enum Source { Egg, Fossil, Static, Gift, Adventure, Wild, Card, Trade, Go, None }
 
 /// <summary>One box entry to make: a species and form, where it comes from, and what it is hatched or caught as before evolving.</summary>
-public sealed record Entry(ushort Species, byte Form, Source Source, ushort FromSpecies, byte FromForm, IEncounterTemplate? Template, string Note = "", bool Shiny = true, Ball? BallOverride = null)
+public sealed record Entry(ushort Species, byte Form, Source Source, ushort FromSpecies, byte FromForm, IEncounterTemplate? Template, string Note = "", bool Shiny = true, Ball? BallOverride = null, byte? Gender = null, bool FromShield = false)
 {
     public bool Evolves => FromSpecies != Species;
     public bool ChangesForm => FromSpecies == Species && FromForm != Form;
@@ -63,6 +63,13 @@ public static class Plan8
 
     private static readonly ushort[] Fossils = [880, 881, 882, 883];
 
+    /// <summary>Dynamax Adventure bosses only Shield has: caught there by a friend and traded over.</summary>
+    private static readonly ushort[] ShieldAdventures = [249, 380, 382, 484, 642, 644, 717, 792]; // Lugia, Latias, Kyogre, Palkia, Thundurus, Zekrom, Yveltal, Lunala
+
+    /// <summary>Species and forms the Alola dex keeps in both sexes, because they look different: the Sword dex does the same.</summary>
+    public static readonly HashSet<(ushort Species, byte Form)> BothSexes =
+        Sexes.Both(Enumerable.Range(0, 960).Select(i => new SAV7USUM(Making.Template()).GetBoxSlotAtIndex(i)).Where(p => p.Species != 0));
+
     /// <summary>Whether somebody in this species' line can breed, so that the line can be hatched.</summary>
     public static bool LineBreeds(ushort species, byte form) =>
         Family(species, form, Tree).Any(m => Table[m.Species, m.Form].EggGroup1 != 15 && Table[m.Species, m.Form].EggGroup2 != 15);
@@ -105,6 +112,13 @@ public static class Plan8
                 var entry = Decide(sp, f);
                 // Alcremie: the creams are its own colours, so they stay ordinary; one shiny one is added after them.
                 if (sp == 869) entry = entry with { Shiny = false };
+                if (BothSexes.Contains((sp, f)) && entry.Source != Source.None)
+                {
+                    // The sexes look different: one of each, as the Alola dex keeps them.
+                    list.Add(entry with { Gender = 0, Fallbacks = entry.Fallbacks.Select(x => x with { Gender = 0 }).ToList() });
+                    list.Add(entry with { Gender = 1, Fallbacks = entry.Fallbacks.Select(x => x with { Gender = 1 }).ToList() });
+                    continue;
+                }
                 list.Add(entry);
             }
             if (sp == 869) list.Add(Decide(sp, 0) with { Shiny = true, BallOverride = Ball.Luxury, Note = "이로치" });
@@ -140,17 +154,17 @@ public static class Plan8
         }
         if (Fossils.Contains(sp))
             yield return new Entry(sp, f, Source.Fossil, sp, f, Statics.First(e => e.Species == sp && e.Gift));
-        foreach (var pre in Tree.Reverse.GetPreEvolutions(sp, f))
-        {
-            var g = Statics.FirstOrDefault(e => e.Species == pre.Species && e.Form == pre.Form && e.Gift);
-            if (g is not null) yield return new Entry(sp, f, Source.Gift, pre.Species, pre.Form, g);
-        }
         foreach (var gift in Statics.Where(e => e.Species == sp && e.Form == f && e.Gift))
             yield return new Entry(sp, f, Source.Gift, sp, f, gift);
         foreach (var st in Statics.Where(e => e.Species == sp && e.Form == f && !e.Gift))
             yield return new Entry(sp, f, Source.Static, sp, f, st);
         foreach (var ad in Adventures.Where(e => e.Species == sp && e.Form == f))
-            yield return new Entry(sp, f, Source.Adventure, sp, f, ad);
+            yield return new Entry(sp, f, Source.Adventure, sp, f, ad, ShieldAdventures.Contains(sp) ? "실드에서 잡아 교환" : "", FromShield: ShieldAdventures.Contains(sp));
+        foreach (var pre in Tree.Reverse.GetPreEvolutions(sp, f))
+        {
+            var g = Statics.FirstOrDefault(e => e.Species == pre.Species && e.Form == pre.Form && e.Gift);
+            if (g is not null) yield return new Entry(sp, f, Source.Gift, pre.Species, pre.Form, g);
+        }
         foreach (var wild in Slots.Where(e => e.Species == sp && e.Form == f).Take(3))
             yield return new Entry(sp, f, Source.Wild, sp, f, wild);
         foreach (var pre in Tree.Reverse.GetPreEvolutions(sp, f))

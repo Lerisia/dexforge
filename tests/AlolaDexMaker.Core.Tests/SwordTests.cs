@@ -87,10 +87,10 @@ public class SwordTests
         {
             var made = Making8.Run(new Options8("우리", null, null, 2021, 20210101), dir, dir);
             Assert.Equal(0, made.Code);
-            Assert.Contains(made.Lines, l => l.StartsWith("합법") && l.Contains("755 / 755"));
+            Assert.Contains(made.Lines, l => l.StartsWith("합법") && l.Contains("760 / 760"));
             var sav = new SAV8SWSH(File.ReadAllBytes(Path.Combine(dir, "main")));
             Assert.Equal("우리", sav.OT);
-            Assert.Equal(755, Enumerable.Range(0, sav.SlotCount).Count(i => sav.GetBoxSlotAtIndex(i).Species != 0));
+            Assert.Equal(760, Enumerable.Range(0, sav.SlotCount).Count(i => sav.GetBoxSlotAtIndex(i).Species != 0));
             Assert.True(File.Exists(Path.Combine(dir, "backup")) && File.Exists(Path.Combine(dir, ".nx_save_meta.bin")));
         }
         finally { if (Directory.Exists(dir)) Directory.Delete(dir, true); }

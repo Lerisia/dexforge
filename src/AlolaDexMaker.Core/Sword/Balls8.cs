@@ -6,6 +6,7 @@ namespace AlolaDexMaker.Sword;
 public sealed class Balls8
 {
     private readonly Dictionary<(ushort, byte), Ball> chosen = new();
+    private readonly Dictionary<(ushort, byte, byte), Ball> bySex = new();
 
     public Balls8(GameStrings ko)
     {
@@ -21,10 +22,14 @@ public sealed class Balls8
             int idx = Array.IndexOf(forms, f[1].Trim());
             byte form = idx >= 0 ? (byte)idx : (byte)0;
             if (!ballNames.TryGetValue(f[2].Trim(), out var ball)) throw new InvalidDataException("balls: " + raw);
-            chosen.TryAdd((species, form), ball);
+            var sex = f.Length > 3 ? f[3].Trim() : "";
+            if (sex == "수") bySex.TryAdd((species, form, 0), ball);
+            else if (sex == "암") bySex.TryAdd((species, form, 1), ball);
+            else chosen.TryAdd((species, form), ball);
         }
     }
 
     /// <summary>The ball picked for this species and form, or none.</summary>
-    public Ball? For(ushort species, byte form) => chosen.TryGetValue((species, form), out var b) ? b : null;
+    public Ball? For(ushort species, byte form, byte? gender = null) =>
+        gender is { } g && bySex.TryGetValue((species, form, g), out var s) ? s : chosen.TryGetValue((species, form), out var b) ? b : null;
 }

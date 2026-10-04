@@ -75,7 +75,7 @@ public static class Check
                 if (ivs == IvChoice.FiveFromEggs && la.EncounterMatch is IEncounterEgg && perfect < 5) faults.Add($"{name}: 알인데 5V 가 아님 ({perfect})");
             }
             // Each in the ball picked for it; or, where one ball was asked for, in that one, and in a Poke Ball only where that one will not do.
-            if (ball is not { } want) { if (p.Ball != o.Ball) faults.Add($"{name}: 볼이 틀과 다름"); }
+            if (ball is not { } want) { if (p.Ball != SexBalls.Expected(o, p.Gender)) faults.Add($"{name}: 볼이 틀과 다름"); }
             else if (la.EncounterMatch is MysteryGift) { if (p.Ball != o.Ball) faults.Add($"{name}: 카드가 정한 볼이 바뀜"); }
             else if (p.Ball != want)
             {

@@ -11,6 +11,9 @@ public sealed record Made8(Entry Entry, PK8 Pk, string How, ulong? Seed, bool Le
 /// </summary>
 public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, Balls8 balls, Random random, int year, bool shiny, Ball? oneBall)
 {
+    /// <summary>The trainer's own Shield game: the same name, its own ids. What only Shield has is caught there and traded over.</summary>
+    private readonly SimpleTrainerInfo shield = new(GameVersion.SH) { OT = trainer.OT, Gender = trainer.Gender, Language = trainer.Language, ID32 = (uint)random.Next(0, 4295) * 1_000_000u + (uint)random.Next(0, 1_000_000) };
+
     /// <summary>The owner's HOME profile: the same name, its own id. HOME gifts are received in it, then handled by the game's trainer.</summary>
     private readonly SimpleTrainerInfo home = new(GameVersion.SW) { OT = trainer.OT, Gender = trainer.Gender, Language = trainer.Language, ID32 = (uint)random.Next(0, 4295) * 1_000_000u + (uint)random.Next(0, 1_000_000) };
 
@@ -45,13 +48,14 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
         PK8 pk;
         string how;
         ulong? seed = null;
-        // The one ball asked for, else the ball picked for this species, and a Poke Ball to fall back on.
-        Ball[] wanted = (e.BallOverride is { } ob ? new[] { ob } : oneBall is { } one ? new[] { one } : balls.For(e.Species, e.Form) is { } picked ? new[] { picked } : [])
+        // The one ball asked for, else the ball picked for this species (which may hang on the sex it comes out as), and a Poke Ball to fall back on.
+        Ball[] WantedFor(byte? gender) => (e.BallOverride is { } ob ? new[] { ob } : oneBall is { } one ? new[] { one } : balls.For(e.Species, e.Form, gender) is { } picked ? new[] { picked } : [])
             .Append(Ball.Poke).Distinct().ToArray();
+        Ball[] wanted = WantedFor(e.Gender);
         switch (e.Source)
         {
             case Source.Egg:
-                (pk, how, seed) = Hatch(e, wanted);
+                (pk, how, seed) = Hatch(e, WantedFor);
                 break;
             case Source.Card:
                 var wc = (WC8)e.Template!;
@@ -71,10 +75,16 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
             {
                 var t = (IEncounterConvertible)e.Template!;
                 bool wantShiny = shiny && e.Shiny && e.Template!.Shiny != Shiny.Never;
-                var criteria = EncounterCriteria.Unrestricted with { Shiny = wantShiny ? Shiny.Always : Shiny.Never };
-                pk = AsPk8(t.ConvertToPKM(trainer, criteria));
-                for (int i = 0; i < 50 && wantShiny && !pk.IsShiny; i++)
-                    pk = AsPk8(t.ConvertToPKM(trainer, criteria));
+                var criteria = EncounterCriteria.Unrestricted with { Shiny = wantShiny ? Shiny.Always : Shiny.Never, Gender = e.Gender is { } eg ? (eg == 0 ? Gender.Male : Gender.Female) : Gender.Random };
+                // What only Shield has was caught there, in the trainer's own Shield, and traded over.
+                var catcher = e.FromShield ? shield : trainer;
+                pk = AsPk8(t.ConvertToPKM(catcher, criteria));
+                // Where the game draws the PID with no seed to answer for (gifts, fossils, hidden grass), PKHeX only rolls it: keep rolling.
+                for (int i = 0; i < 40_000 && wantShiny && !pk.IsShiny; i++)
+                    pk = AsPk8(t.ConvertToPKM(catcher, criteria));
+                if (e.FromShield) { pk.Version = GameVersion.SH; pk.UpdateHandler(trainer); }
+                if (wantShiny && !pk.IsShiny)
+                    throw new InvalidOperationException("이로치가 나오지 않습니다 (PKHeX 는 가능하다는데 만들지 못함).");
                 how = Describe(e.Source) + (e.Template is ILocation l ? " " + Plan8.Ko.GetLocationName(false, l.Location, 8, 8, GameVersion.SW) : "");
                 break;
             }
@@ -103,6 +113,9 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
             pk.RefreshChecksum();
             bool wasValid = e.Source != Source.Card || new LegalityAnalysis(pk).Valid;
             pk.MetDate = Day();
+            // The shiny Zeraora was given out from 2020-06-30 09:00 to 2020-07-07 08:59 (KST): a day of that week.
+            if (e.Source == Source.Card && e.Species == 807 && ((WC8)e.Template!).IsHOMEGift)
+                pk.MetDate = new DateOnly(2020, 6, 30).AddDays(random.Next(7));
             // A card with a distribution window keeps its own date when the year falls outside it.
             if (e.Source == Source.Card)
             {
@@ -114,6 +127,7 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
         // The ball the owner wants, when the Pokémon can be in it; eggs already got it from the parent.
         if (e.Source != Source.Egg && e.Template!.FixedBall == Ball.None)
         {
+            wanted = WantedFor(pk.Gender == 2 ? null : pk.Gender);
             foreach (var b in wanted)
             {
                 pk.Ball = (byte)b;
@@ -136,15 +150,16 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
         if (e.Evolves)
         {
             byte target = Evolve8.CanReach(pk.Species, pk.Form, e.Species, e.Form) ? e.Form : (byte)0;
-            Evolve8.Evolve(pk, e.Species, target, trainer, friend, random);
+            Evolve8.Evolve(pk, e.Species, target, trainer, shield, random); // a trade evolution goes to the trainer's other cartridge and back
         }
         if (pk.Form != e.Form)
             Evolve8.ChangeForm(pk, e.Form);
     }
 
     /// <summary>An egg from the first stage's species and a Japanese 6V Ditto holding a Destiny Knot, drawn with the game's egg RNG until it is shiny.</summary>
-    private (PK8, string, ulong) Hatch(Entry e, Ball[] wanted)
+    private (PK8, string, ulong) Hatch(Entry e, Func<byte?, Ball[]> wantedFor)
     {
+        var wanted = wantedFor(e.Gender);
         var egg = new EncounterEgg8(e.FromSpecies, e.FromForm, GameVersion.SW);
         var pk = egg.ConvertToPKM(trainer);
         var pi = Plan8.Table.GetFormEntry(e.FromSpecies, e.FromForm);
@@ -186,13 +201,14 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
         {
             if (tries > 200_000) throw new InvalidOperationException($"{Plan8.Ko.specieslist[e.Species]}: 조건에 맞는 알 시드를 찾지 못했습니다 ({string.Join(", ", why.Select(kv => kv.Key + " " + kv.Value))}).");
             seed = (ulong)random.NextInt64() ^ ((ulong)random.Next() << 32);
+            h = Egg8.Generate(seed, parent, ditto, e.FromSpecies, e.FromForm, pi.Gender, trainer.ID32, shinyCharm: false);
+            if (h.Shiny != (shiny && e.Shiny)) { why["색"] = why.GetValueOrDefault("색") + 1; continue; }
+            if (!Fits(h, e, needGender, needNature)) { why["성별·성격·폼"] = why.GetValueOrDefault("성별·성격·폼") + 1; continue; }
+            wanted = wantedFor(h.Gender == 2 ? null : h.Gender);
             foreach (var b in wanted)
             {
-                var p = parent with { Ball = b };
-                h = Egg8.Generate(seed, p, ditto, e.FromSpecies, e.FromForm, pi.Gender, trainer.ID32, shinyCharm: false);
-                if (h.Shiny != (shiny && e.Shiny)) { why["색"] = why.GetValueOrDefault("색") + 1; break; }
-                if (!Fits(h, e, needGender, needNature)) { why["성별·성격·폼"] = why.GetValueOrDefault("성별·성격·폼") + 1; break; }
                 Apply(pk, h, e);
+                pk.Ball = (byte)b; // the parent's ball, which the egg inherits
                 pk.RefreshChecksum();
                 var check = new LegalityAnalysis(pk);
                 if (check.Valid)
@@ -235,6 +251,7 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
     /// <summary>The gender the hatched one must have: forms that are a gender (Meowstic, Indeedee), evolutions that need one.</summary>
     private static byte? NeededGender(Entry e)
     {
+        if (e.Gender is { } g) return g;
         if (e.Species is 678 or 876) return e.Form == 1 ? (byte)1 : (byte)0;
         if (e.FromSpecies is 876) return e.FromForm == 1 ? (byte)1 : (byte)0;
         return Evolve8.NeededGender(e.FromSpecies, e.FromForm, e.Species, e.Form);
