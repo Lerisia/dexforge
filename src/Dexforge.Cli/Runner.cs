@@ -24,7 +24,7 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
         if (order.ListRibbons)
         {
             // the ribbons the national dex can be asked for: the word to type, the name, the title, what it takes
-            foreach (var r in Ribbons.All) output.WriteLine($"{r.Name}\t{r.Title}\t{r.Note}{(r.OnlyOlder ? " (4세대 출신만)" : "")}");
+            foreach (var r in order.Game == Game.Sword ? Ribbons.Sword : Ribbons.All) output.WriteLine($"{r.Name}\t{r.Title}\t{r.Note}{(r.OnlyOlder ? " (4세대 출신만)" : "")}");
             return 0;
         }
         if (asking) new Questions(input, output).Fill(order);

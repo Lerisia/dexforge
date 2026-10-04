@@ -122,24 +122,33 @@ public partial class MainWindow : Window
     public List<string> Picks { get; } = [];
     /// <summary>The ribbons picked for the national dex, by PKHeX's keys.</summary>
     public List<string> RibbonKeys { get; } = [];
+    /// <summary>The ribbons picked for the Sword dex, by PKHeX's keys.</summary>
+    public List<string> SwordRibbonKeys { get; } = [];
     private RibbonWindow? ribbonPicker;
+
+    private List<string> RibbonKeysOfGame => IsSword ? SwordRibbonKeys : RibbonKeys;
+    private IReadOnlyList<Ribbon> RibbonsOfGame => IsSword ? Ribbons.Sword : Ribbons.All;
 
     private async void PickRibbons(object? sender, RoutedEventArgs e)
     {
         if (ribbonPicker is not null) { ribbonPicker.Activate(); return; }
-        ribbonPicker = new RibbonWindow(RibbonKeys);
-        ribbonPicker.Closed += (_, _) =>
-        {
-            ribbonPicker = null;
-            RibbonCount.Text = RibbonKeys.Count == 0 ? "고른 리본 없음" : string.Join(", ", RibbonKeys.Select(k => Ribbons.Find(k)?.Name ?? k));
-        };
+        ribbonPicker = new RibbonWindow(RibbonKeysOfGame, RibbonsOfGame);
+        ribbonPicker.Closed += (_, _) => { ribbonPicker = null; ShowRibbons(); };
         await ribbonPicker.ShowDialog(this);
+    }
+
+    private void ShowRibbons()
+    {
+        var keys = RibbonKeysOfGame; var among = RibbonsOfGame;
+        RibbonCount.Text = keys.Count == 0 ? "고른 리본 없음" : string.Join(", ", keys.Select(k => Ribbons.Find(k, among)?.Name ?? k));
     }
 
     private void GameChanged()
     {
         bool sword = IsSword, events = IsEventBox, arceus = IsArceus;
-        foreach (var row in new Control[] { ForeignRow, IvRow, RibbonRow }) row.IsVisible = !sword && !events && !arceus;
+        foreach (var row in new Control[] { ForeignRow, IvRow }) row.IsVisible = !sword && !events && !arceus;
+        RibbonRow.IsVisible = !events && !arceus;
+        ShowRibbons();
         foreach (var row in new Control[] { SexRow, LevelRow, PeriodRow }) row.IsVisible = !sword && !events;
         foreach (var row in new Control[] { BallRow, ColourRow }) row.IsVisible = !events;
         YearRow.IsVisible = sword;
@@ -233,7 +242,7 @@ public partial class MainWindow : Window
         Id(SidBox.Text, 4, out var sid); Id(TidBox.Text, 6, out var tid);
         if (!int.TryParse((YearBox.Text ?? "").Trim(), out var year) || year is < 2019 or > 2099) { why = "해는 2019 부터 2099 까지입니다."; YearBox.Focus(); return false; }
         int? ball = PickedBalls.IsChecked == true ? null : (int)Shelf[Math.Max(BallBox.SelectedIndex, 0)];
-        asked = new Options8(name, tid, sid, year, Random.Shared.Next(), ball, Shiny.IsChecked == true);
+        asked = new Options8(name, tid, sid, year, Random.Shared.Next(), ball, Shiny.IsChecked == true) { Ribbons = SwordRibbonKeys.ToList() };
         return true;
     }
 

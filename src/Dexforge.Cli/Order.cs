@@ -52,7 +52,13 @@ internal sealed class Order
         why = "";
         int? ball = null;
         if (Ball is not null && !BallNames.Find(Ball, out ball, out why)) return null;
-        return new Options8(Name, Tid, Sid, Year, Seed, ball, Shiny);
+        var ribbons = new List<string>();
+        foreach (var r in Ribbons)
+        {
+            if (Dexforge.Ribbons.Find(r, Dexforge.Ribbons.Sword) is not { } found) { why = $"'{r}' 라는 리본은 없거나 소드에서 붙일 수 없습니다. 고를 수 있는 리본: {string.Join(", ", Dexforge.Ribbons.Sword.Select(x => x.Name))}"; return null; }
+            if (!ribbons.Contains(found.Key)) ribbons.Add(found.Key);
+        }
+        return new Options8(Name, Tid, Sid, Year, Seed, ball, Shiny) { Ribbons = ribbons };
     }
 
     /// <summary>The Legends: Arceus options asked for; or why they cannot be.</summary>

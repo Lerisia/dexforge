@@ -9,4 +9,8 @@ namespace Dexforge;
 /// <param name="Year">The year everything was hatched, caught or received in; what a card dates itself outside it keeps its own date.</param>
 /// <param name="Ball">The one ball everything goes into where it can; none, and each keeps the ball picked for it.</param>
 /// <param name="Shiny">Shiny wherever it can be; or plain.</param>
-public sealed record Options8(string Name, uint? Tid, uint? Sid, int Year, int Seed, int? Ball = null, bool Shiny = true);
+public sealed record Options8(string Name, uint? Tid, uint? Sid, int Year, int Seed, int? Ball = null, bool Shiny = true)
+{
+    /// <summary>The ribbons to put on every Pokémon of the dex that can take them, by PKHeX's keys (see <see cref="Ribbons.Sword"/>).</summary>
+    public IReadOnlyList<string> Ribbons { get; init; } = [];
+}

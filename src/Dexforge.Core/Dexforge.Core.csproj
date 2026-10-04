@@ -15,6 +15,7 @@
     <EmbeddedResource Include="Data/sword/balls.tsv" LogicalName="sword.balls" />
     <EmbeddedResource Include="Data/sword/trackers.tsv" LogicalName="sword.trackers" />
     <EmbeddedResource Include="Data/sword/events.tsv" LogicalName="sword.events" />
+    <EmbeddedResource Include="Data/sword/effort.tsv" LogicalName="sword.effort" />
     <EmbeddedResource Include="Data/events/distributions.tsv" LogicalName="events.distributions" />
     <EmbeddedResource Include="Data/arceus/main" LogicalName="arceus.main" />
     <EmbeddedResource Include="Data/arceus/backup" LogicalName="arceus.backup" />

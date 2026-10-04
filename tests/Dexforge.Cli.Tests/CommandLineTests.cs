@@ -209,5 +209,14 @@ public class CommandLineTests
         Assert.Equal(["RibbonChampionAlola", "RibbonBestFriends", "RibbonEffort"], asked!.Ribbons);
         Assert.Null(Arguments.Parse(["--ribbons", "클래식"], out _)!.ToOptions(out why));
         Assert.Contains("없거나 붙일 수 없습니다", why);
+
+        // Sword has its own five
+        var sword = Arguments.Parse(["--game", "sword", "--ribbons", "가라르챔피언,마스터타워,마스터랭크"], out why);
+        Assert.NotNull(sword);
+        var asked8 = sword!.ToOptions8(out why);
+        Assert.NotNull(asked8); Assert.Equal("", why);
+        Assert.Equal(["RibbonChampionGalar", "RibbonTowerMaster", "RibbonMasterRank"], asked8!.Ribbons);
+        Assert.Null(Arguments.Parse(["--game", "sword", "--ribbons", "알로라챔피언"], out _)!.ToOptions8(out why));
+        Assert.Contains("소드에서 붙일 수 없습니다", why);
     }
 }

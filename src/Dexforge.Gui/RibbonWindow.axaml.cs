@@ -31,10 +31,11 @@ public partial class RibbonWindow : Window
     private readonly List<string> chosen;
     public List<RibbonRow> Rows { get; }
 
-    public RibbonWindow(List<string> chosen)
+    /// <param name="among">The game's list: the Ultra Sun one unless given.</param>
+    public RibbonWindow(List<string> chosen, IReadOnlyList<Ribbon>? among = null)
     {
         this.chosen = chosen;
-        Rows = Ribbons.All.Select(r => new RibbonRow(r, chosen.Contains(r.Key))).ToList();
+        Rows = (among ?? Ribbons.All).Select(r => new RibbonRow(r, chosen.Contains(r.Key))).ToList();
         DataContext = this;
         InitializeComponent();
         foreach (var r in Rows) r.PropertyChanged += (_, _) => Counted();

@@ -20,32 +20,40 @@ public enum EffortClass
 /// <summary>
 /// The effort spread the Effort Ribbon asks for, species by species: a tank, a slow attacker or a fast one, physical or
 /// special. A Pokémon not yet evolved spends as its final form does. The classes come from how the Pokémon are actually
-/// trained (Smogon's seventh-generation singles sets, by majority), with the owner's choice where a line forks into final
-/// forms that differ; the table is template.effort.
+/// trained (Smogon's singles sets of the generation, by majority), with the owner's choice where a line forks into final
+/// forms that differ; one table per game (template.effort for Ultra Sun, sword.effort for Sword, which takes the Ultra Sun
+/// class wherever the form is in that table).
 /// </summary>
-public static class Effort
+public sealed class Effort
 {
     public static readonly IReadOnlyDictionary<string, EffortClass> ByName = new Dictionary<string, EffortClass>
     {
         ["탱커"] = EffortClass.Tank, ["저속물리"] = EffortClass.SlowPhysical, ["저속특수"] = EffortClass.SlowSpecial, ["고속물리"] = EffortClass.FastPhysical, ["고속특수"] = EffortClass.FastSpecial,
     };
 
-    private static readonly Dictionary<(ushort Species, byte Form, int Sex), EffortClass> table = Load();   // after ByName, which Load reads
+    public static readonly Effort UltraSun = new("template.effort");
+    public static readonly Effort Sword = new("sword.effort");
 
-    private static Dictionary<(ushort, byte, int), EffortClass> Load()
+    /// <summary>The table for a Pokémon, by the game it is from.</summary>
+    public static Effort For(PKM pk) => pk is PK8 ? Sword : UltraSun;
+
+    private readonly Dictionary<(ushort Species, byte Form, int Sex), EffortClass> table;
+
+    private Effort(string resource)
     {
-        var rows = new EventBox.Rows(Embedded.Text("template.effort"));
-        var map = new Dictionary<(ushort, byte, int), EffortClass>();
+        var rows = new EventBox.Rows(Embedded.Text(resource));
+        table = new Dictionary<(ushort, byte, int), EffortClass>();
         foreach (var r in rows.All)
         {
             var sex = rows.Get(r, "sex") switch { "수" => 0, "암" => 1, _ => -1 };
-            map[(ushort.Parse(rows.Get(r, "species")), byte.Parse(rows.Get(r, "form")), sex)] = ByName[rows.Get(r, "class")];
+            table[(ushort.Parse(rows.Get(r, "species")), byte.Parse(rows.Get(r, "form")), sex)] = ByName[rows.Get(r, "class")];
         }
-        return map;
     }
 
+    public int Count => table.Count;
+
     /// <summary>The class of a species and form (for the sex given, where the table tells the sexes apart); none when the table has no line for it.</summary>
-    public static EffortClass? Of(ushort species, byte form, int sex)
+    public EffortClass? Of(ushort species, byte form, int sex)
         => table.TryGetValue((species, form, sex), out var c) || table.TryGetValue((species, form, -1), out c) ? c : null;
 
     /// <summary>The six values, in the Pokémon's own order (HP, Attack, Defense, Speed, Sp. Attack, Sp. Defense).</summary>
@@ -70,7 +78,7 @@ public static class Effort
     };
 
     /// <summary>Spends the Pokémon's effort points as its class says; a species the table does not know is spent as a tank.</summary>
-    public static EffortClass Apply(PKM pk)
+    public EffortClass Apply(PKM pk)
     {
         var c = Of(pk.Species, pk.Form, pk.Gender) ?? EffortClass.Tank;
         pk.SetEVs(Spread(c));

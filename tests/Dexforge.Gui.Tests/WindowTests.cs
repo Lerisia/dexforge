@@ -433,8 +433,27 @@ public class TheRibbonPicker
         w.RibbonKeys.Add("RibbonEffort");
         Assert.True(w.Read(out var asked, out var why), why);
         Assert.Equal(["RibbonEffort"], asked.Ribbons);
+        // Sword keeps its own picks, from its own list
         w.FindControl<RadioButton>("GameSword")!.IsChecked = true;
         Dispatcher.UIThread.RunJobs();
+        Assert.True(w.FindControl<Grid>("RibbonRow")!.IsVisible);
+        Assert.Equal("고른 리본 없음", w.FindControl<TextBlock>("RibbonCount")!.Text);
+        w.SwordRibbonKeys.Add("RibbonTowerMaster");
+        Assert.True(w.Read8(out var asked8, out why), why);
+        Assert.Equal(["RibbonTowerMaster"], asked8.Ribbons);
+        w.FindControl<RadioButton>("GameArceus")!.IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
         Assert.False(w.FindControl<Grid>("RibbonRow")!.IsVisible);
+    }
+
+    [AvaloniaFact]
+    public void TheSwordListIsItsOwn()
+    {
+        var keys = new List<string>();
+        var w = new RibbonWindow(keys, Ribbons.Sword); w.Show();
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(5, w.Rows.Count);
+        Assert.All(w.Rows, r => Assert.NotNull(r.Picture));
+        Assert.DoesNotContain(w.Rows, r => r.Ribbon.Key == "RibbonChampionAlola");
     }
 }

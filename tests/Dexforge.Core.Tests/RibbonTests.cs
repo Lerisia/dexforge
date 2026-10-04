@@ -1,3 +1,4 @@
+using Dexforge.Sword;
 using PKHeX.Core;
 using Xunit;
 
@@ -33,7 +34,7 @@ public class RibbonTests
         Assert.Equal(3, put);   // the Sinnoh one needs a game this Pokémon never saw
         Assert.True(pk.RibbonChampionAlola && pk.RibbonBestFriends && pk.RibbonEffort && !pk.RibbonChampionSinnoh);
         Assert.Equal(510, pk.EVTotal);
-        Assert.Equal(Effort.Spread(Effort.Of(25, 0, pk.Gender)!.Value), new[] { pk.EV_HP, pk.EV_ATK, pk.EV_DEF, pk.EV_SPE, pk.EV_SPA, pk.EV_SPD });
+        Assert.Equal(Effort.Spread(Effort.UltraSun.Of(25, 0, pk.Gender)!.Value), new[] { pk.EV_HP, pk.EV_ATK, pk.EV_DEF, pk.EV_SPE, pk.EV_SPA, pk.EV_SPD });
         Assert.Equal(255, pk.OriginalTrainerAffection);
         Assert.True(new LegalityAnalysis(pk).Valid);
 
@@ -54,15 +55,55 @@ public class RibbonTests
         var sav = Template.Read(Template.Bytes);
         foreach (var p in Template.Pokemon(sav, party: false))
             if (!p.FatefulEncounter && new LegalityAnalysis(p).EncounterMatch is not MysteryGift)
-                Assert.True(Effort.Of(p.Species, p.Form, p.Gender).HasValue, $"{p.Species}-{p.Form}");
-        Assert.Equal(EffortClass.Tank, Effort.Of(143, 0, 0));            // Snorlax
-        Assert.Equal(EffortClass.FastPhysical, Effort.Of(445, 0, 0));    // Garchomp
-        Assert.Equal(EffortClass.FastSpecial, Effort.Of(65, 0, 0));      // Alakazam
-        Assert.Equal(EffortClass.SlowSpecial, Effort.Of(133, 0, 0));     // Eevee, after Sylveon as the owner chose
-        Assert.Equal(EffortClass.FastSpecial, Effort.Of(789, 0, 2));     // Cosmog, after Lunala
-        Assert.Equal(EffortClass.Tank, Effort.Of(412, 1, 1));            // Burmy (Sandy), after Wormadam
-        Assert.Null(Effort.Of(25, 7, 0));                                // a cap Pikachu is from a card and has no line
+                Assert.True(Effort.UltraSun.Of(p.Species, p.Form, p.Gender).HasValue, $"{p.Species}-{p.Form}");
+        Assert.Equal(EffortClass.Tank, Effort.UltraSun.Of(143, 0, 0));            // Snorlax
+        Assert.Equal(EffortClass.FastPhysical, Effort.UltraSun.Of(445, 0, 0));    // Garchomp
+        Assert.Equal(EffortClass.FastSpecial, Effort.UltraSun.Of(65, 0, 0));      // Alakazam
+        Assert.Equal(EffortClass.SlowSpecial, Effort.UltraSun.Of(133, 0, 0));     // Eevee, after Sylveon as the owner chose
+        Assert.Equal(EffortClass.FastSpecial, Effort.UltraSun.Of(789, 0, 2));     // Cosmog, after Lunala
+        Assert.Equal(EffortClass.Tank, Effort.UltraSun.Of(412, 1, 1));            // Burmy (Sandy), after Wormadam
+        Assert.Null(Effort.UltraSun.Of(25, 7, 0));                                // a cap Pikachu is from a card and has no line
         Assert.Equal([252, 0, 252, 0, 0, 6], Effort.Spread(EffortClass.Tank));
         Assert.Equal([6, 0, 0, 252, 252, 0], Effort.Spread(EffortClass.FastSpecial));
+    }
+
+    [Fact]
+    public void The_Sword_ribbons_go_on_a_hatched_Pokemon_and_the_rank_one_not_on_Melmetal()
+    {
+        var sav = new SAV8SWSH(Embedded.Bytes("sword.main"));
+        var tr = new SimpleTrainerInfo(GameVersion.SW) { OT = "우리", ID32 = 123456, Gender = 0, Language = (int)LanguageID.Korean };
+        Assert.Equal(5, Ribbons.Sword.Count);
+        foreach (var r in Ribbons.Sword) { Assert.NotNull(typeof(PK8).GetProperty(r.Key)); Assert.Equal(r, Ribbons.Find(r.Name.Replace("리본", ""), Ribbons.Sword)); }
+        Assert.Null(Ribbons.Find("알로라챔피언", Ribbons.Sword));
+
+        var friend = new SimpleTrainerInfo(GameVersion.SW) { OT = "새아", Gender = 1, Language = 8, ID32 = 987654321 };
+        var egg = new Maker8(tr, friend, new Balls8(Plan8.Ko), new Random(1), 2021, true, null).Make(Plan8.All().First(x => x.Species == 25 && x.Form == 0)).Pk;
+        Assert.True(new LegalityAnalysis(egg).Valid);
+        int put = Ribbons.Put(egg, Ribbons.Sword.Select(r => r.Key));
+        Assert.Equal(5, put);
+        Assert.True(egg.RibbonChampionGalar && egg.RibbonTowerMaster && egg.RibbonMasterRank && egg.RibbonEffort && egg.RibbonBestFriends);
+        Assert.Equal(510, egg.EVTotal);
+        Assert.Equal(Effort.Spread(Effort.Sword.Of(25, 0, egg.Gender)!.Value), new[] { egg.EV_HP, egg.EV_ATK, egg.EV_DEF, egg.EV_SPE, egg.EV_SPA, egg.EV_SPD });
+        Assert.Equal(255, egg.CurrentFriendship);
+        Assert.True(new LegalityAnalysis(egg).Valid);
+
+        var rank = Ribbons.Sword.First(r => r.Key == "RibbonMasterRank");
+        Assert.False(rank.Allowed!(new PK8 { Species = 809 }));   // Melmetal, a mythical: barred from Ranked Battles
+        Assert.True(rank.Allowed!(egg));
+    }
+
+    [Fact]
+    public void The_Sword_effort_table_covers_the_dex_and_keeps_the_Ultra_Sun_classes()
+    {
+        // every entry a ribbon can go on: not a card, and not a HOME gift (fateful, so left as it came)
+        foreach (var e in Plan8.All())
+        {
+            if (e.Source is Source.None or Source.Card || e.Template is IFatefulEncounterReadOnly { FatefulEncounter: true }) continue;
+            Assert.True(Effort.Sword.Of(e.Species, e.Form, 0).HasValue || Effort.Sword.Of(e.Species, e.Form, 1).HasValue, $"{e.Species}-{e.Form}");
+        }
+        Assert.Equal(Effort.UltraSun.Of(143, 0, 0), Effort.Sword.Of(143, 0, 0));             // Snorlax, the same table
+        Assert.Equal(EffortClass.Tank, Effort.Sword.Of(79, 1, 0));                           // Galarian Slowpoke, from the gen 8 sets
+        Assert.Equal(EffortClass.SlowSpecial, Effort.Sword.Of(133, 0, 0));                   // Eevee after Sylveon, as in Ultra Sun
+        Assert.Equal(EffortClass.FastPhysical, Effort.Sword.Of(888, 0, 2));                  // Zacian
     }
 }

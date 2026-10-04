@@ -37,13 +37,18 @@ public static class Making8
 
         var entries = Plan8.All().Where(e => e.Source != Source.None).ToList();
         var made = new List<Made8>(); var failed = new List<string>();
+        var ribbonsPut = new Dictionary<string, int>();
         for (int i = 0; i < entries.Count; i++)
         {
             var e = entries[i];
             try
             {
                 var m = maker.Make(e);
-                if (m.Legal) made.Add(m);
+                if (m.Legal)
+                {
+                    foreach (var key in opt.Ribbons) if (Ribbons.Put(m.Pk, [key]) > 0) ribbonsPut[key] = ribbonsPut.GetValueOrDefault(key) + 1;
+                    made.Add(m);
+                }
                 else failed.Add($"{ko.specieslist[e.Species]} {Plan8.FormName(e.Species, e.Form)}: {string.Join(" | ", m.Report.Split('\n').Where(l => l.Contains("Invalid")))}");
             }
             catch (InvalidOperationException ex) { failed.Add($"{ko.specieslist[e.Species]} {Plan8.FormName(e.Species, e.Form)}: {ex.Message}"); }
@@ -70,6 +75,7 @@ public static class Making8
             $"색            {(opt.Shiny ? "이로치 (안 되는 것은 일반)" : "일반")}",
             $"해            {opt.Year}년 (배포 카드가 그 해에 없던 것은 카드의 날짜)",
             $"레벨          가능한 최저",
+            $"리본          {(opt.Ribbons.Count == 0 ? "없음" : string.Join(", ", opt.Ribbons.Select(k => Ribbons.Find(k, Ribbons.Sword)?.Name ?? k)))}",
             $"시드          {opt.Seed}",
             "",
         };
@@ -104,6 +110,8 @@ public static class Making8
         lines.Add($"빠진 것       디안시, 마기아나(노말 색) — 소드에서 얻는 길이 없음");
         lines.Add($"배포          {Events8.All.Count}건 (소드에서 받을 수 있는 게임 내 배포 전부, 각각 배포 기간 안의 날짜) + 최종 진화체 {events.Count - Events8.All.Count}마리 = {events.Count}마리, 도감 뒤에");
         lines.Add($"              HOME 선물은 트래커가 있는 넷만 (도감 쪽에). 전부 {made.Count + events.Count} / {sav.SlotCount}칸");
+        if (opt.Ribbons.Count != 0)
+            lines.Add($"리본 붙은 수  {string.Join(", ", opt.Ribbons.Select(k => $"{Ribbons.Find(k, Ribbons.Sword)?.Name ?? k} {ribbonsPut.GetValueOrDefault(k)}"))} (배포 포켓몬과 PKHeX 가 거절한 것은 제외)");
         lines.Add("");
         lines.Add("마리마다: 이름 · 폼 · 색 · 레벨 · 성격 · 특성 · 개체값 · 볼 · 출처 · 시드");
         foreach (var m in made.Concat(events))

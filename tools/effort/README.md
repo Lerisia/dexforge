@@ -13,3 +13,11 @@ physical or special attacker (the attacking stat, Speed).
 3. `rows.py` turns that into one row per final form, or per family whose final forms disagree.
 4. `effort.py` writes the table, with the owner's picks for the families that fork (Slowbro, Alolan Exeggutor, Sylveon,
    Hitmonchan, Beautifly, Glalie, Huntail, Lunala). Pre-evolutions take the class of the final form they reach for their sex.
+
+## Sword
+
+`Dump8.cs` reads the Sword save with the gen 8 evolution tree, and `effort8.py` writes `Data/sword/effort.tsv`: the final form
+each entry reaches in Sword takes its Ultra Sun class where that form is in the Ultra Sun table, and the majority of Smogon's
+gen 8 singles sets (`https://data.pkmn.cc/sets/gen8.json`; Ubers to ZU, Monotype, 1v1, Battle Stadium Singles, AG, National
+Dex tiers) where it is not — gen 8 species, Galarian forms, and what Ultra Sun only had from cards. The owner's picks for
+forking lines carry over; Applin defaults to Flapple, the lower number, until picked.
