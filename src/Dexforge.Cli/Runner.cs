@@ -55,6 +55,13 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
             int shown9 = 0;
             made = Dexforge.Scarlet.Making9.Run(asked9, order.Out, here, (done, of) => { if (done * 10 / of > shown9) { shown9 = done * 10 / of; output.WriteLine($"  {done} / {of}"); } });
         }
+        else if (order.Game == Game.ZA)
+        {
+            if (order.ToOptions9a(out var why9a) is not { } asked9a) { error.WriteLine(why9a); return 2; }
+            output.WriteLine("만드는 중입니다. 몇 초 걸립니다 (433마리의 시드를 하나씩 찾습니다)...");
+            int shown9a = 0;
+            made = Dexforge.ZA.Making9a.Run(asked9a, order.Out, here, (done, of) => { if (done * 10 / of > shown9a) { shown9a = done * 10 / of; output.WriteLine($"  {done} / {of}"); } });
+        }
         else if (order.Game == Game.Sword)
         {
             if (order.ToOptions8(out var why8) is not { } asked8) { error.WriteLine(why8); return 2; }
@@ -74,8 +81,8 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
             return made.Code;
         }
         foreach (var l in made.Lines.Take(20)) output.WriteLine(l);
-        output.WriteLine($"썼습니다: {(order.Game is Game.Sword or Game.Arceus or Game.Scarlet ? made.Folder : made.Save)}");
-        output.WriteLine($"기록:     {order.Game switch { Game.Sword => Path.Combine(made.Folder!, Dexforge.Sword.Making8.RecordName), Game.Arceus => Path.Combine(made.Folder!, Dexforge.Arceus.Making8a.RecordName), Game.Scarlet => Path.Combine(made.Folder!, Dexforge.Scarlet.Making9.RecordName), Game.EventBox => Path.Combine(made.Folder!, Dexforge.EventBox.EventBoxMaking.RecordName), _ => made.Record }}");
+        output.WriteLine($"썼습니다: {(order.Game is Game.Sword or Game.Arceus or Game.Scarlet or Game.ZA ? made.Folder : made.Save)}");
+        output.WriteLine($"기록:     {order.Game switch { Game.Sword => Path.Combine(made.Folder!, Dexforge.Sword.Making8.RecordName), Game.Arceus => Path.Combine(made.Folder!, Dexforge.Arceus.Making8a.RecordName), Game.Scarlet => Path.Combine(made.Folder!, Dexforge.Scarlet.Making9.RecordName), Game.ZA => Path.Combine(made.Folder!, Dexforge.ZA.Making9a.RecordName), Game.EventBox => Path.Combine(made.Folder!, Dexforge.EventBox.EventBoxMaking.RecordName), _ => made.Record }}");
         return 0;
     }
 

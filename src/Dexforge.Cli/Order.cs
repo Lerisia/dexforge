@@ -83,6 +83,17 @@ internal sealed class Order
         return new Dexforge.Scarlet.Options9(Name, Tid, Sid, from, to, Seed, ball, Shiny, Size, Level, Sex);
     }
 
+    /// <summary>The Legends: Z-A options asked for; or why they cannot be.</summary>
+    public Dexforge.ZA.Options9a? ToOptions9a(out string why)
+    {
+        why = "";
+        int? ball = null;
+        if (Ball is not null && !BallNames.Find(Ball, out ball, out why)) return null;
+        var from = DatesGiven ? From : new DateOnly(2026, 1, 1);
+        var to = DatesGiven ? To : new DateOnly(2026, 12, 31);
+        return new Dexforge.ZA.Options9a(Name, Tid, Sid, from, to, Seed, ball, Shiny, Size, Level, Sex);
+    }
+
     /// <summary>The event box options asked for; or why they cannot be.</summary>
     public Dexforge.EventBox.EventOptions? ToEventOptions(out string why)
     {
@@ -93,5 +104,5 @@ internal sealed class Order
     }
 }
 
-/// <summary>The games a save can be made for: the national dex of Ultra Sun, the Sword dex, the event box (an Ultra Sun save of every distribution), the Hisui dex of Legends: Arceus, and the Scarlet dex.</summary>
-internal enum Game { UltraSun, Sword, EventBox, Arceus, Scarlet }
+/// <summary>The games a save can be made for: the national dex of Ultra Sun, the Sword dex, the event box (an Ultra Sun save of every distribution), the Hisui dex of Legends: Arceus, the Scarlet dex, and the Lumiose dex of Legends: Z-A.</summary>
+internal enum Game { UltraSun, Sword, EventBox, Arceus, Scarlet, ZA }

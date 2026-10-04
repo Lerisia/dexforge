@@ -29,6 +29,10 @@
     <EmbeddedResource Include="Data/scarlet/backup" LogicalName="scarlet.backup" />
     <EmbeddedResource Include="Data/scarlet/poke_trade" LogicalName="scarlet.poke_trade" />
     <EmbeddedResource Include="Data/scarlet/nx_save_meta.bin" LogicalName="scarlet.nx_save_meta" />
+    <EmbeddedResource Include="Data/za/balls.tsv" LogicalName="za.balls" />
+    <EmbeddedResource Include="Data/za/main" LogicalName="za.main" />
+    <EmbeddedResource Include="Data/za/backup" LogicalName="za.backup" />
+    <EmbeddedResource Include="Data/za/nx_save_meta.bin" LogicalName="za.nx_save_meta" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Dexforge.Core.Tests" />

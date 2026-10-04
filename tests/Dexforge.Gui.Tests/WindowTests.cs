@@ -403,6 +403,36 @@ public class TheScarletSide
     }
 }
 
+public class TheZASide
+{
+    private static T The<T>(Window w, string name) where T : Control => w.FindControl<T>(name) ?? throw new InvalidOperationException($"no {name} on the form");
+
+    [AvaloniaFact]
+    public void ChoosingZAChangesTheForm()
+    {
+        var w = new MainWindow(); w.Show();
+        Assert.False(w.IsZA);
+        The<RadioButton>(w, "GameZA").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.IsZA);
+        Assert.True(The<Grid>(w, "SizeRow").IsVisible);
+        Assert.True(The<RadioButton>(w, "SizeLargest").IsVisible);
+        Assert.True(The<RadioButton>(w, "SizeAlpha").IsVisible);
+        Assert.True(The<RadioButton>(w, "PickedBalls").IsVisible);
+        Assert.False(The<Grid>(w, "RibbonRow").IsVisible);
+        Assert.False(The<Grid>(w, "IvRow").IsVisible);
+        Assert.Equal(MainWindow.Shelf.Length, The<ComboBox>(w, "BallBox").ItemCount);
+        Assert.Contains("Z-A", The<TextBlock>(w, "Subtitle").Text);
+        The<RadioButton>(w, "SizeAlpha").IsChecked = true;
+        The<RadioButton>(w, "PickedBalls").IsChecked = true;
+        Assert.True(w.Read9a(out var asked, out var why), why);
+        Assert.Equal("미월", asked.Name);
+        Assert.Equal(new DateOnly(2026, 1, 1), asked.From);
+        Assert.Equal(SizeChoice.Alpha, asked.Size);
+        Assert.Null(asked.Ball);
+    }
+}
+
 public class TheArceusSide
 {
     private static T The<T>(Window w, string name) where T : Control => w.FindControl<T>(name) ?? throw new InvalidOperationException($"no {name} on the form");

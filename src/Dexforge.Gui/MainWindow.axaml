@@ -28,6 +28,7 @@
               <RadioButton x:Name="GameEventBox" GroupName="game" Content="배포 박스" />
               <RadioButton x:Name="GameArceus" GroupName="game" Content="LEGENDS 아르세우스" />
               <RadioButton x:Name="GameScarlet" GroupName="game" Content="스칼렛" />
+              <RadioButton x:Name="GameZA" GroupName="game" Content="LEGENDS Z-A" />
             </StackPanel>
             <TextBlock x:Name="GameHint" Classes="hint" />
           </StackPanel>

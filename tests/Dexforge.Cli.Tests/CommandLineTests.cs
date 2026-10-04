@@ -198,6 +198,22 @@ public class CommandLineTests
     }
 
     [Fact]
+    public void ZAIsAskedForWithItsOwnOptions()
+    {
+        var o = Arguments.Parse(["--game", "za", "--name", "재연", "--size", "우두머리", "--ball", "문볼"], out var why);
+        Assert.NotNull(o); Assert.Equal("", why);
+        Assert.Equal(Game.ZA, o!.Game);
+        var asked = o.ToOptions9a(out why);
+        Assert.NotNull(asked); Assert.Equal("", why);
+        Assert.Equal(SizeChoice.Alpha, asked!.Size);
+        Assert.Equal((int)PKHeX.Core.Ball.Moon, asked.Ball);
+        Assert.Equal(new DateOnly(2026, 1, 1), asked.From);   // no period typed: 2026
+        Assert.Equal(new DateOnly(2026, 12, 31), asked.To);
+        Assert.Null(Arguments.Parse(["--game", "lumiose"], out var refused));
+        Assert.Contains("za", refused);
+    }
+
+    [Fact]
     public void ArceusIsAskedForWithItsOwnOptions()
     {
         var o = Arguments.Parse(["--game", "아르세우스", "--name", "달님", "--ball", "페더볼", "--size", "우두머리", "--sex", "암컷", "--seed", "5"], out var why);
