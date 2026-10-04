@@ -81,7 +81,9 @@ public class ScarletTests
         Assert.Contains(all, e => e.Species == 1006 && e.Violet && e.Source == Source9.Wild);     // Iron Valiant from Violet
         Assert.Contains(all, e => e.Species == 3 && e.FromSpecies == 1 && e.Source == Source9.Wild); // Venusaur from a wild Bulbasaur
         Assert.Contains(all, e => e.Species == 1000 && e.FromSpecies == 999 && e.Source == Source9.Static);   // Gholdengo from the chest
-        Assert.Equal(34, all.Count(e => e.Violet));
+        Assert.Equal(35, all.Count(e => e.Violet));   // Serebii's exclusives and Palkia, whose raid is Violet's
+        Assert.All(all.Where(e => e.Source == Source9.Raid), e => Assert.NotEmpty(e.RaidWindows));
+        Assert.Contains(all, e => e.Species == 150 && e.RaidWindows.Single() == (new DateOnly(2023, 9, 1), new DateOnly(2023, 9, 18)));
     }
 
     [Fact]
@@ -90,7 +92,7 @@ public class ScarletTests
         var into = Path.Combine(Path.GetTempPath(), "dexforge-scarlet-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var made = Making9.Run(new Options9("재연", 123456, 1234, new DateOnly(2024, 1, 1), new DateOnly(2024, 12, 31), 20261005), into, into);
+            var made = Making9.Run(new Options9("재연", 123456, 1234, new DateOnly(2023, 1, 1), new DateOnly(2024, 12, 31), 20261005), into, into);
             Assert.True(made.Code == 0, string.Join("\n", made.Refused.Take(40)));
             var sav = new SAV9SV(File.ReadAllBytes(Path.Combine(into, "main")));
             Assert.True(sav.ChecksumsValid);
@@ -99,7 +101,13 @@ public class ScarletTests
             Assert.Equal(Plan9.All.Count, boxed.Count);
             Assert.All(boxed, p => Assert.True(new LegalityAnalysis(p, sav.Personal).Valid, Plan9.Label(p.Species, p.Form)));
             Assert.True(boxed.Count(p => p.IsShiny) > 700);
-            Assert.All(boxed, p => Assert.InRange(p.MetDate!.Value, new DateOnly(2024, 1, 1), new DateOnly(2024, 12, 31)));
+            Assert.All(boxed, p => Assert.InRange(p.MetDate!.Value, new DateOnly(2023, 1, 1), new DateOnly(2024, 12, 31)));
+            // not before the DLC that holds the place: Kitakami's, the Terarium's, Snacksworth's legendaries, the epilogue's Pecharunt
+            Assert.All(boxed.Where(p => p.MetLocation is >= 132 and <= 170), p => Assert.True(p.MetDate >= Maker9.TealMask, Plan9.Label(p.Species, p.Form)));
+            Assert.All(boxed.Where(p => p.MetLocation is >= 174 and <= 198 || p.Species is 144 or 249 or 384 or 891), p => Assert.True(p.MetDate >= Maker9.IndigoDisk, Plan9.Label(p.Species, p.Form)));
+            Assert.All(boxed.Where(p => p.Species == 1025), p => Assert.True(p.MetDate >= Maker9.Epilogue));
+            Assert.All(boxed.Where(p => p.Species == 150), p => Assert.InRange(p.MetDate!.Value, new DateOnly(2023, 9, 1), new DateOnly(2023, 9, 18)));   // the Mewtwo raid's window
+            Assert.Contains(boxed, p => p.Species == 484 && p.Version == GameVersion.VL);   // Palkia from Violet's raid
         }
         finally { if (Directory.Exists(into)) Directory.Delete(into, true); }
     }

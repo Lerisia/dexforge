@@ -24,6 +24,8 @@ public enum Source9
 /// </summary>
 public sealed record Entry9(ushort Species, byte Form, Source9 Source, ushort FromSpecies, byte FromForm, IEncounterTemplate Template, bool Violet, bool ShinyLocked, string Note)
 {
+    /// <summary>When an event raid ran (Korean dates); empty for anything but a raid.</summary>
+    public IReadOnlyList<(DateOnly From, DateOnly To)> RaidWindows { get; init; } = [];
     public bool Evolves => FromSpecies != Species || FromForm != Form;
 }
 
@@ -60,13 +62,15 @@ public static class Plan9
     }
 
     /// <summary>One line of the plan.</summary>
-    public sealed record Row(ushort Species, byte Form, string Name, string FormName, string Source, string Why, bool ShinyLocked, bool Violet, bool Final);
+    /// <param name="RaidWindows">When an event raid ran, as Korean dates (its UTC window starts at 09:00 and ends the next morning): one or more first~last pairs.</param>
+    public sealed record Row(ushort Species, byte Form, string Name, string FormName, string Source, string Why, bool ShinyLocked, bool Violet, bool Final, IReadOnlyList<(DateOnly From, DateOnly To)> RaidWindows);
 
     private static readonly Lazy<IReadOnlyList<Row>> rows = new(() =>
     {
         var table = new EventBox.Rows(Embedded.Text("scarlet.plan"));
         return table.All.Select(r => new Row(ushort.Parse(table.Get(r, "번호")), byte.Parse(table.Get(r, "폼")), table.Get(r, "이름"), table.Get(r, "폼이름"), table.Get(r, "출처"), table.Get(r, "근거"),
-                                             table.Get(r, "이로치") == "불가", table.Get(r, "버전") == "바이올렛", table.Get(r, "최종") == "1")).ToList();
+                                             table.Get(r, "이로치") == "불가", table.Get(r, "버전") == "바이올렛", table.Get(r, "최종") == "1",
+                                             table.Get(r, "레이드기간").Split(';', StringSplitOptions.RemoveEmptyEntries).Select(w => w.Split('~')).Select(w => (DateOnly.Parse(w[0]), DateOnly.Parse(w[1]))).ToList())).ToList();
     });
     public static IReadOnlyList<Row> Rows => rows.Value;
 
@@ -116,7 +120,8 @@ public static class Plan9
             case "레이드":
                 IEncounterTemplate raid = (IEncounterTemplate?)Might.FirstOrDefault(m => m.Species == sp && m.Form == f) ?? (IEncounterTemplate?)Dist.FirstOrDefault(d => d.Species == sp && d.Form == f)
                     ?? throw new InvalidOperationException($"plan: no raid for {Label(sp, f)}");
-                return new Entry9(sp, f, Source9.Raid, sp, f, raid, r.Violet, raid.Shiny == Shiny.Never, "레이드에서만 (이로치 불가)");
+                if (r.RaidWindows.Count == 0) throw new InvalidOperationException($"plan: no raid window for {Label(sp, f)}");
+                return new Entry9(sp, f, Source9.Raid, sp, f, raid, r.Violet, raid.Shiny == Shiny.Never, "레이드에서만 (이로치 불가)" + (r.Violet ? ", 바이올렛의 레이드라 잡아 교환" : "")) { RaidWindows = r.RaidWindows };
             case "진화":
             case "진화(고정)":
             {
