@@ -148,6 +148,8 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
     /// A distribution this trainer received on a day of its window, and the final evolutions the event box's rules add to it.
     /// A card that leaves the colour to chance is made shiny when shinies are asked for, as the event box does.
     /// </summary>
+    private readonly Dictionary<string, DateOnly> eventDays = new();
+
     public List<Made8> MakeEvent(Event8 ev)
     {
         var wc = ev.Card;
@@ -158,7 +160,9 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
             criteria = criteria with { Shiny = Shiny.Always };
             for (int i = 0; i < 40_000 && !pk.IsShiny; i++) pk = (PK8)wc.ConvertToPKM(trainer, criteria);
         }
-        pk.MetDate = ev.Day(random);
+        // one day for everything the same code handed over
+        if (!eventDays.TryGetValue(ev.Group, out var day)) eventDays[ev.Group] = day = ev.Day(random);
+        pk.MetDate = day;
         pk.RefreshChecksum();
         string when = ev.End is { } end ? $"{ev.Start:yyyy-MM-dd}~{end:yyyy-MM-dd}" : $"{ev.Start:yyyy-MM-dd}~";
         var entry = new Entry(wc.Species, wc.Form, Source.Card, wc.Species, wc.Form, wc, ev.Title);

@@ -3,7 +3,8 @@ using PKHeX.Core;
 namespace Dexforge.Sword;
 
 /// <summary>One distribution Sword received: its card, when it was given out, and what its final evolutions are by the event box's rules.</summary>
-public sealed record Event8(WC8 Card, string Title, DateOnly Start, DateOnly? End, string Region, string Verdict, IReadOnlyList<(ushort Species, byte Form)> Evolutions)
+/// <param name="Group">What one code hands over together; cards of a group are received on one day. A card alone is its own group.</param>
+public sealed record Event8(WC8 Card, string Title, DateOnly Start, DateOnly? End, string Region, string Verdict, IReadOnlyList<(ushort Species, byte Form)> Evolutions, string Group)
 {
     /// <summary>A day it was received: inside the window; an open window closes a year after it opened.</summary>
     public DateOnly Day(Random random)
@@ -53,7 +54,8 @@ public static class Events8
             DateOnly? end = G("끝").Length > 0 ? DateOnly.Parse(G("끝")) : null;
             // a Pokémon with the Gigantamax factor cannot evolve, Pikachu is left as it is, and a plain gift in a Poké Ball is not evolved either
             var evolutions = card.Species == 25 || card.CanGigantamax || (card.Ball == (int)Ball.Poke && !card.IsShiny) ? [] : Finals(card.Species, card.Form);
-            list.Add(new Event8(card, title, start, end, G("지역단"), G("교차"), evolutions));
+            var group = G("같은 코드").Length > 0 ? G("같은 코드") : $"row-{list.Count}";   // alone unless the table says otherwise (birthday cards share an id)
+            list.Add(new Event8(card, title, start, end, G("지역단"), G("교차"), evolutions, group));
         }
         return list;
     }

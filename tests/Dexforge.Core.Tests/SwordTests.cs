@@ -111,5 +111,19 @@ public class SwordTests
         Assert.Contains(all, e => e.Card.Species == 133 && e.Evolutions.Count == 8);      // a birthday Eevee: all eight
         Assert.DoesNotContain(all, e => e.Card.CanGigantamax && e.Evolutions.Count > 0);  // a Gigantamax gift cannot evolve
         Assert.Contains(all, e => e.Card.Species == 25 && e.Card.Form == 7 && e.Start == new DateOnly(2020, 9, 29));   // Ash's Partner Cap, looked up by hand
+        Assert.Equal(all.Count - 2, all.Select(e => e.Group).Distinct().Count());   // the shiny heroes and HOME's two starters: one code each
+    }
+
+    [Fact]
+    public void What_one_code_hands_over_is_received_on_one_day()
+    {
+        var tr = new SimpleTrainerInfo(GameVersion.SW) { OT = "우리", Gender = 1, Language = 8, ID32 = 123456789 };
+        var friend = new SimpleTrainerInfo(GameVersion.SW) { OT = "새아", Gender = 1, Language = 8, ID32 = 987654321 };
+        var maker = new Maker8(tr, friend, new Balls8(Plan8.Ko), new Random(5), 2021, true, null);
+        var heroes = Events8.All.Where(e => e.Card.Species is 888 or 889 && e.Card.IsShiny).ToList();
+        Assert.Equal(2, heroes.Count);
+        var days = heroes.Select(e => maker.MakeEvent(e).First().Pk.MetDate).ToList();
+        Assert.Equal(days[0], days[1]);
+        Assert.InRange(days[0]!.Value, heroes[0].Start, heroes[0].End!.Value);
     }
 }
