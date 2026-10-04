@@ -26,6 +26,8 @@ public static class Plan8
     public static readonly GameStrings Ko = GameInfo.GetStrings("ko");
 
     public static readonly EncounterStatic8[] Statics;
+    /// <summary>What stands still in Shield: taken only for a species Sword has no way to itself, caught there and traded over (Zamazenta).</summary>
+    public static readonly EncounterStatic8[] ShieldStatics;
     public static readonly EncounterStatic8U[] Adventures;
     public static readonly EncounterSlot8[] Slots;
     public static readonly EncounterTrade8[] Trades;
@@ -39,6 +41,7 @@ public static class Plan8
         var asm = typeof(PK8).Assembly;
         T Get<T>(string type, string field) => (T)(asm.GetType(type)!.GetField(field, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static) ?? throw new MissingFieldException(field)).GetValue(null)!;
         Statics = Get<EncounterStatic8[]>("PKHeX.Core.Encounters8", "StaticSWSH").Concat(Get<EncounterStatic8[]>("PKHeX.Core.Encounters8", "StaticSW")).ToArray();
+        ShieldStatics = Get<EncounterStatic8[]>("PKHeX.Core.Encounters8", "StaticSH");
         Adventures = Get<EncounterStatic8U[]>("PKHeX.Core.Encounters8Nest", "DynAdv_SWSH");
         Slots = Get<EncounterArea8[]>("PKHeX.Core.Encounters8", "SlotsSW_Symbol").Concat(Get<EncounterArea8[]>("PKHeX.Core.Encounters8", "SlotsSW_Hidden")).SelectMany(a => a.Slots).ToArray();
         Trades = Get<EncounterTrade8[]>("PKHeX.Core.Encounters8", "TradeSWSH").Concat(Get<EncounterTrade8[]>("PKHeX.Core.Encounters8", "TradeSW")).ToArray();
@@ -175,6 +178,9 @@ public static class Plan8
             foreach (var go in GoSlots.Where(e => e.Species == sp && e.Form == f && e.Shiny != Shiny.Never)
                          .OrderByDescending(e => e.LongName.Contains($"{Maker8.DefaultYear}.")).ThenBy(e => e.LevelMin))
                 yield return new Entry(sp, f, Source.Go, sp, f, go);
+        // Shield's own statics, before a card: a species that is shiny only by a card is kept as its plain catch (owner, 2026-10-05)
+        foreach (var st in ShieldStatics.Where(e => e.Species == sp && e.Form == f && !e.Gift))
+            yield return new Entry(sp, f, Source.Static, sp, f, st, "실드에서 잡아 교환", FromShield: true);
         foreach (var card in Cards.Where(c => c.Species == sp && c.Form == f))
             yield return new Entry(sp, f, Source.Card, sp, f, card);
         foreach (var trade in Trades.Where(e => e.Species == sp && e.Form == f))

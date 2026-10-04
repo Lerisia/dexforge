@@ -65,6 +65,7 @@ public class SwordTests
     [InlineData(445, 0)]   // Garchomp: hatched as Gible, evolved
     [InlineData(880, 0)]   // Dracozolt: fossil
     [InlineData(888, 0)]   // Zacian: static, not shiny
+    [InlineData(889, 0)]   // Zamazenta: Shield's static, caught there and traded over, not shiny
     [InlineData(150, 0)]   // Mewtwo: Dynamax Adventure
     [InlineData(865, 0)]   // Sirfetch'd: hatched as Galarian Farfetch'd, evolved
     public void A_few_made_pass_the_check(int species, int form)
@@ -77,6 +78,8 @@ public class SwordTests
         Assert.True(m.Legal, m.Report);
         Assert.Equal(species, m.Pk.Species);
         Assert.Equal(2021, m.Pk.MetDate!.Value.Year);
+        if (species == 889) { Assert.Equal(GameVersion.SH, m.Pk.Version); Assert.False(m.Pk.IsShiny); Assert.Equal((int)Ball.Sport, m.Pk.Ball); Assert.Equal(Source.Static, e.Source); }
+        if (species == 888) Assert.Equal((int)Ball.Lure, m.Pk.Ball);
     }
 
     [Fact]

@@ -726,6 +726,7 @@ species	form	sex	class	name	via	basis
 886	0		고속특수	드래런치	드래펄트	ou 18세트 {'fast-spec': 9, 'fast-phys': 6, 'slow-phys': 1, 'tank': 2}
 887	0		고속특수	드래펄트		ou 18세트 {'fast-spec': 9, 'fast-phys': 6, 'slow-phys': 1, 'tank': 2}
 888	0		고속물리	자시안		anythinggoes 2세트 {'fast-phys': 2}
+889	0		고속물리	자마젠타	자마젠타	ubers 1세트 {'fast-phys': 1}
 890	0		고속특수	무한다이노		ubers 10세트 {'tank': 3, 'fast-spec': 7}
 891	0		고속물리	치고마	우라오스	ubers 8세트 {'fast-phys': 4, 'slow-phys': 2, 'fast-spec': 1, 'tank': 1}
 892	0		고속물리	우라오스		ubers 8세트 {'fast-phys': 4, 'slow-phys': 2, 'fast-spec': 1, 'tank': 1}
