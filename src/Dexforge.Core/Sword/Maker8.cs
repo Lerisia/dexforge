@@ -144,6 +144,39 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
         return new Made8(e, pk, how, seed, la.Valid, la.Valid ? "" : la.Report());
     }
 
+    /// <summary>
+    /// A distribution this trainer received on a day of its window, and the final evolutions the event box's rules add to it.
+    /// A card that leaves the colour to chance is made shiny when shinies are asked for, as the event box does.
+    /// </summary>
+    public List<Made8> MakeEvent(Event8 ev)
+    {
+        var wc = ev.Card;
+        var criteria = EncounterCriteria.Unrestricted;
+        var pk = (PK8)wc.ConvertToPKM(trainer, criteria);
+        if (shiny && wc.Shiny == Shiny.Random)
+        {
+            criteria = criteria with { Shiny = Shiny.Always };
+            for (int i = 0; i < 40_000 && !pk.IsShiny; i++) pk = (PK8)wc.ConvertToPKM(trainer, criteria);
+        }
+        pk.MetDate = ev.Day(random);
+        pk.RefreshChecksum();
+        string when = ev.End is { } end ? $"{ev.Start:yyyy-MM-dd}~{end:yyyy-MM-dd}" : $"{ev.Start:yyyy-MM-dd}~";
+        var entry = new Entry(wc.Species, wc.Form, Source.Card, wc.Species, wc.Form, wc, ev.Title);
+        var la = new LegalityAnalysis(pk);
+        var made = new List<Made8> { new(entry, pk, $"배포 카드 {ev.Title} ({ev.Region} {when})", null, la.Valid, la.Valid ? "" : la.Report()) };
+        foreach (var (sp, f) in ev.Evolutions)
+        {
+            var e2 = new Entry(sp, f, Source.Card, wc.Species, wc.Form, wc, ev.Title);
+            var pk2 = (PK8)pk.Clone();
+            try { Finish(pk2, e2); }
+            catch (InvalidOperationException ex) { made.Add(new Made8(e2, pk2, made[0].How, null, false, ex.Message)); continue; }
+            pk2.RefreshChecksum();
+            var la2 = new LegalityAnalysis(pk2);
+            made.Add(new Made8(e2, pk2, made[0].How + " → " + Plan8.Ko.specieslist[sp] + (f != 0 ? " " + Plan8.FormName(sp, f) : ""), null, la2.Valid, la2.Valid ? "" : la2.Report()));
+        }
+        return made;
+    }
+
     /// <summary>Evolves and changes form as the entry asks: to the wanted species (at the form reachable), then the form itself if it is a form change.</summary>
     private void Finish(PK8 pk, Entry e)
     {

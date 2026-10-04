@@ -45,7 +45,7 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
         else if (order.Game == Game.Sword)
         {
             if (order.ToOptions8(out var why8) is not { } asked8) { error.WriteLine(why8); return 2; }
-            output.WriteLine("만드는 중입니다. 몇 분 걸립니다 (755마리의 시드를 하나씩 찾습니다)...");
+            output.WriteLine("만드는 중입니다. 몇 분 걸립니다 (도감 760마리의 시드를 하나씩 찾고 배포 159마리를 더합니다)...");
             int shown = 0;
             made = Dexforge.Sword.Making8.Run(asked8, order.Out, here, (done, of) => { if (done * 10 / of > shown) { shown = done * 10 / of; output.WriteLine($"  {done} / {of}"); } });
         }

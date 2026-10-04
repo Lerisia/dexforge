@@ -88,11 +88,28 @@ public class SwordTests
             var made = Making8.Run(new Options8("우리", null, null, 2021, 20210101), dir, dir);
             Assert.Equal(0, made.Code);
             Assert.Contains(made.Lines, l => l.StartsWith("합법") && l.Contains("760 / 760"));
+            Assert.Contains(made.Lines, l => l.StartsWith("배포") && l.Contains("81건"));
             var sav = new SAV8SWSH(File.ReadAllBytes(Path.Combine(dir, "main")));
             Assert.Equal("우리", sav.OT);
-            Assert.Equal(760, Enumerable.Range(0, sav.SlotCount).Count(i => sav.GetBoxSlotAtIndex(i).Species != 0));
+            var boxed = Enumerable.Range(0, sav.SlotCount).Select(i => sav.GetBoxSlotAtIndex(i)).Where(p => p.Species != 0).ToList();
+            Assert.Equal(760 + 81 + 78, boxed.Count);   // the dex, every distribution Sword received, their final evolutions
+            Assert.Contains(boxed.Skip(760), p => p.Species == 893 && p.MetDate >= new DateOnly(2020, 8, 7));   // a Zarude on a day of its window
+            Assert.Contains(boxed, p => p.Species == 38 && p.Form == 1 && p.Ball == (int)(p.Gender == 0 ? Ball.Premier : Ball.Love));   // Alolan Ninetales by sex
             Assert.True(File.Exists(Path.Combine(dir, "backup")) && File.Exists(Path.Combine(dir, ".nx_save_meta.bin")));
         }
         finally { if (Directory.Exists(dir)) Directory.Delete(dir, true); }
+    }
+
+    [Fact]
+    public void The_distributions_are_the_cards_this_PKHeX_carries_with_their_windows()
+    {
+        var all = Events8.All;
+        Assert.Equal(81, all.Count);
+        Assert.All(all, e => Assert.False(e.Card.IsHOMEGift));
+        Assert.All(all, e => Assert.True(e.End is null || e.End >= e.Start, e.Title));
+        Assert.Equal(78, all.Sum(e => e.Evolutions.Count));
+        Assert.Contains(all, e => e.Card.Species == 133 && e.Evolutions.Count == 8);      // a birthday Eevee: all eight
+        Assert.DoesNotContain(all, e => e.Card.CanGigantamax && e.Evolutions.Count > 0);  // a Gigantamax gift cannot evolve
+        Assert.Contains(all, e => e.Card.Species == 25 && e.Card.Form == 7 && e.Start == new DateOnly(2020, 9, 29));   // Ash's Partner Cap, looked up by hand
     }
 }

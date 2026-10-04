@@ -50,6 +50,16 @@ public static class Making8
             step?.Invoke(i + 1, entries.Count);
         }
 
+        // the distributions Sword received, after the dex: every card, then its final evolutions
+        var events = new List<Made8>();
+        foreach (var ev in Events8.All)
+            foreach (var m in maker.MakeEvent(ev))
+            {
+                if (m.Legal) events.Add(m);
+                else failed.Add($"배포 {ev.Title} → {ko.specieslist[m.Entry.Species]}: {(m.Report.Contains("Invalid") ? string.Join(" | ", m.Report.Split('\n').Where(l => l.Contains("Invalid"))) : m.Report)}");
+            }
+        if (made.Count + events.Count > sav.SlotCount) failed.Add($"박스가 모자랍니다: 도감 {made.Count} + 배포 {events.Count} > {sav.SlotCount}");
+
         var lines = new List<string>
         {
             "소드 전국도감 세이브 — 만든 기록",
@@ -80,6 +90,8 @@ public static class Making8
         }
         for (int i = 0; i < made.Count && i < sav.SlotCount; i++)
             sav.SetBoxSlotAtIndex(made[i].Pk, i, EntityImportSettings.All);
+        for (int i = 0; i < events.Count && made.Count + i < sav.SlotCount; i++)
+            sav.SetBoxSlotAtIndex(events[i].Pk, made.Count + i, EntityImportSettings.All);
         var data = sav.Write().ToArray();
 
         var shiny = made.Count(m => m.Pk.IsShiny);
@@ -90,9 +102,11 @@ public static class Making8
         lines.Add($"이로치        {shiny}마리");
         lines.Add($"도감          본 것 {seen}, 잡은 것 {caught} (가라르·갑옷섬·왕관설원 세 도감의 종; 도감 밖의 종은 박스에만)");
         lines.Add($"빠진 것       디안시, 마기아나(노말 색) — 소드에서 얻는 길이 없음");
+        lines.Add($"배포          {Events8.All.Count}건 (소드에서 받을 수 있는 게임 내 배포 전부, 각각 배포 기간 안의 날짜) + 최종 진화체 {events.Count - Events8.All.Count}마리 = {events.Count}마리, 도감 뒤에");
+        lines.Add($"              HOME 선물은 트래커가 있는 넷만 (도감 쪽에). 전부 {made.Count + events.Count} / {sav.SlotCount}칸");
         lines.Add("");
         lines.Add("마리마다: 이름 · 폼 · 색 · 레벨 · 성격 · 특성 · 개체값 · 볼 · 출처 · 시드");
-        foreach (var m in made)
+        foreach (var m in made.Concat(events))
         {
             var pk = m.Pk;
             lines.Add($"  {ko.specieslist[pk.Species]}{(pk.Form != 0 ? " " + Plan8.FormName(pk.Species, pk.Form) : "")}{(pk.IsShiny ? " ★" : "")} Lv{pk.CurrentLevel} {ko.natures[(int)pk.Nature]} {ko.abilitylist[pk.Ability]} {pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE} {ko.balllist[pk.Ball]} — {m.How}");
