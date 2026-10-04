@@ -192,7 +192,7 @@ public class CommandLineTests
         Assert.Equal(SizeChoice.Largest, asked!.Size);
         Assert.Equal(SexChoice.Female, asked.Sex);
         Assert.Null(asked.Ball);
-        Assert.Equal(Dexforge.Scarlet.Making9.Released, asked.From);
+        Assert.Equal(new DateOnly(2024, 1, 1), asked.From);   // no period typed: 2024
         var o2 = Arguments.Parse(["--game", "sv", "--size", "우두머리"], out _)!;
         Assert.Equal(SizeChoice.Alpha, o2.ToOptions9(out _)!.Size);   // refused later by the maker, which has no alphas
     }

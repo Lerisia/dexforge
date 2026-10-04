@@ -167,7 +167,7 @@ public partial class MainWindow : Window
         if (!ReferenceEquals(BallBox.Tag, shelf)) { BallBox.Tag = shelf; BallBox.ItemsSource = shelf.Select(b => balls[(int)b]).ToList(); BallBox.SelectedIndex = 0; OneBall.IsChecked = true; }
         switching = true;
         if (arceus && !datesTouched) { FromBox.Day = Arceus.Making8a.Released; ToBox.Day = new DateOnly(2022, 12, 31); }
-        else if (scarlet && !datesTouched) { FromBox.Day = Scarlet.Making9.Released; ToBox.Day = new DateOnly(2024, 12, 31); }
+        else if (scarlet && !datesTouched) { FromBox.Day = new DateOnly(2024, 1, 1); ToBox.Day = new DateOnly(2024, 12, 31); }
         else if (!arceus && !scarlet && !datesTouched) { FromBox.Day = DefaultFrom; ToBox.Day = DefaultTo; }
         switching = false;
         Subtitle.Text = scarlet

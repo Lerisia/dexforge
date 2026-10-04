@@ -15,31 +15,8 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Balls9 balls, Random rando
     /// <summary>The trainer's own Violet: the same name, its own ids. What only Violet has is caught there and traded over.</summary>
     public SimpleTrainerInfo Violet { get; } = new(GameVersion.VL) { OT = trainer.OT, Gender = trainer.Gender, Language = trainer.Language, ID32 = (uint)random.Next(0, 4295) * 1_000_000u + (uint)random.Next(0, 1_000_000) };
 
-    public static readonly DateOnly TealMask = new(2023, 9, 13), IndigoDisk = new(2023, 12, 14), Epilogue = new(2024, 1, 11);
-
-    /// <summary>The legendaries Snacksworth's treats bring out, in Paldea's own places but only once The Indigo Disk is there.</summary>
-    private static readonly HashSet<ushort> Snacksworth = [144, 145, 146, 243, 244, 245, 249, 250, 380, 381, 382, 383, 384, 638, 639, 640, 643, 644, 646, 791, 792, 800, 891, 896, 897];
-
-    /// <summary>The first day a catch could have happened: the game's release, or the DLC's that holds the place or the Pokémon.</summary>
-    public static DateOnly NotBefore(Entry9 e)
-    {
-        if (e.FromSpecies == 1025) return Epilogue;                                   // Pecharunt: the epilogue
-        if (Snacksworth.Contains(e.FromSpecies) && e.Source == Source9.Static) return IndigoDisk;
-        if (e.Template is ILocation l)
-        {
-            if (l.Location is >= 174 and <= 198) return IndigoDisk;                    // the Terarium and the Underdepths
-            if (l.Location is >= 132 and <= 170) return TealMask;                      // Kitakami
-        }
-        return Making9.Released;
-    }
-
-    /// <summary>A day of the period, not before the catch could have happened.</summary>
-    private DateOnly Day(Entry9 e)
-    {
-        var from = NotBefore(e) > opt.From ? NotBefore(e) : opt.From;
-        if (from > opt.To) throw new InvalidOperationException($"고른 기간이 {Plan9.Label(e.FromSpecies, e.FromForm)}을(를) 얻을 수 있게 된 {from:yyyy-MM-dd} 보다 앞섭니다.");
-        return from.AddDays(random.Next(opt.To.DayNumber - from.DayNumber + 1));
-    }
+    /// <summary>A day of the period. The console's clock is the player's to set, so no day is held back for a DLC's release (owner, 2026-10-05).</summary>
+    private DateOnly Day(Entry9 e) => opt.From.AddDays(random.Next(opt.To.DayNumber - opt.From.DayNumber + 1));
     private Scale9 Scale => opt.Size switch { SizeChoice.Smallest => Scale9.Smallest, SizeChoice.Largest => Scale9.Largest, _ => Scale9.Random };
 
     private byte? WantedGender(ushort species, byte form)

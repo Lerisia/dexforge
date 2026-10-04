@@ -78,7 +78,7 @@ internal sealed class Order
         why = "";
         int? ball = null;
         if (Ball is not null && !BallNames.Find(Ball, out ball, out why)) return null;
-        var from = DatesGiven ? From : Dexforge.Scarlet.Making9.Released;
+        var from = DatesGiven ? From : new DateOnly(2024, 1, 1);
         var to = DatesGiven ? To : new DateOnly(2024, 12, 31);
         return new Dexforge.Scarlet.Options9(Name, Tid, Sid, from, to, Seed, ball, Shiny, Size, Level, Sex);
     }

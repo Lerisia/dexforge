@@ -45,7 +45,7 @@ For Sword put `--game sword` first. The options that apply are `--name --sid --t
 Dexforge.Cli --game sword --name 우리 --ball 볼맞춤 --color shiny --year 2021
 ```
 
-For Scarlet put `--game scarlet` first; the options are the same as Legends: Arceus's but the ball is any of the 25 (or `볼맞춤` for the ones picked) and `--size` takes `smallest` or `largest`; the period defaults to the release day 2022-11-18 through 2024-12-31.
+For Scarlet put `--game scarlet` first; the options are the same as Legends: Arceus's but the ball is any of the 25 (or `볼맞춤` for the ones picked) and `--size` takes `smallest` or `largest`; the period defaults to 2024.
 
 For Legends: Arceus put `--game arceus` first. The options are `--name --sid --tid --ball --color --size --sex --level --from --to --seed --out`; the ball is one of the Hisuian balls, and the period defaults to the release year 2022.
 

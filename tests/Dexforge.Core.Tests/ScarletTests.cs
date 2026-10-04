@@ -102,10 +102,6 @@ public class ScarletTests
             Assert.All(boxed, p => Assert.True(new LegalityAnalysis(p, sav.Personal).Valid, Plan9.Label(p.Species, p.Form)));
             Assert.True(boxed.Count(p => p.IsShiny) > 700);
             Assert.All(boxed, p => Assert.InRange(p.MetDate!.Value, new DateOnly(2023, 1, 1), new DateOnly(2024, 12, 31)));
-            // not before the DLC that holds the place: Kitakami's, the Terarium's, Snacksworth's legendaries, the epilogue's Pecharunt
-            Assert.All(boxed.Where(p => p.MetLocation is >= 132 and <= 170), p => Assert.True(p.MetDate >= Maker9.TealMask, Plan9.Label(p.Species, p.Form)));
-            Assert.All(boxed.Where(p => p.MetLocation is >= 174 and <= 198 || p.Species is 144 or 249 or 384 or 891), p => Assert.True(p.MetDate >= Maker9.IndigoDisk, Plan9.Label(p.Species, p.Form)));
-            Assert.All(boxed.Where(p => p.Species == 1025), p => Assert.True(p.MetDate >= Maker9.Epilogue));
             Assert.All(boxed.Where(p => p.Species == 150), p => Assert.InRange(p.MetDate!.Value, new DateOnly(2023, 9, 1), new DateOnly(2023, 9, 18)));   // the Mewtwo raid's window
             Assert.Contains(boxed, p => p.Species == 484 && p.Version == GameVersion.VL);   // Palkia from Violet's raid
         }

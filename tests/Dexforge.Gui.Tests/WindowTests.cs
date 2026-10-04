@@ -392,7 +392,7 @@ public class TheScarletSide
         The<RadioButton>(w, "PickedBalls").IsChecked = true;
         Assert.True(w.Read9(out var asked, out var why), why);
         Assert.Equal("미월", asked.Name);
-        Assert.Equal(Dexforge.Scarlet.Making9.Released, asked.From);
+        Assert.Equal(new DateOnly(2024, 1, 1), asked.From);
         Assert.Equal(SizeChoice.Largest, asked.Size);
         Assert.Null(asked.Ball);
         // back to Arceus: the largest size is not its, so the choice falls back to random
