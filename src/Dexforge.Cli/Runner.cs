@@ -35,6 +35,13 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
             int shownE = 0;
             made = Dexforge.EventBox.EventBoxMaking.Run(askedE, order.Out, here, (done, of) => { if (done * 10 / of > shownE) { shownE = done * 10 / of; output.WriteLine($"  {done} / {of}"); } });
         }
+        else if (order.Game == Game.Arceus)
+        {
+            if (order.ToOptions8a(out var whyA) is not { } askedA) { error.WriteLine(whyA); return 2; }
+            output.WriteLine(askedA.Size == SizeChoice.Smallest ? "만드는 중입니다. 1분쯤 걸립니다 (313마리의 시드를 하나씩 찾습니다)..." : "만드는 중입니다. 몇 초 걸립니다...");
+            int shownA = 0;
+            made = Dexforge.Arceus.Making8a.Run(askedA, order.Out, here, (done, of) => { if (done * 10 / of > shownA) { shownA = done * 10 / of; output.WriteLine($"  {done} / {of}"); } });
+        }
         else if (order.Game == Game.Sword)
         {
             if (order.ToOptions8(out var why8) is not { } asked8) { error.WriteLine(why8); return 2; }
@@ -54,8 +61,8 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
             return made.Code;
         }
         foreach (var l in made.Lines.Take(20)) output.WriteLine(l);
-        output.WriteLine($"썼습니다: {(order.Game == Game.Sword ? made.Folder : made.Save)}");
-        output.WriteLine($"기록:     {(order.Game == Game.Sword ? Path.Combine(made.Folder!, Dexforge.Sword.Making8.RecordName) : order.Game == Game.EventBox ? Path.Combine(made.Folder!, Dexforge.EventBox.EventBoxMaking.RecordName) : made.Record)}");
+        output.WriteLine($"썼습니다: {(order.Game is Game.Sword or Game.Arceus ? made.Folder : made.Save)}");
+        output.WriteLine($"기록:     {order.Game switch { Game.Sword => Path.Combine(made.Folder!, Dexforge.Sword.Making8.RecordName), Game.Arceus => Path.Combine(made.Folder!, Dexforge.Arceus.Making8a.RecordName), Game.EventBox => Path.Combine(made.Folder!, Dexforge.EventBox.EventBoxMaking.RecordName), _ => made.Record }}");
         return 0;
     }
 

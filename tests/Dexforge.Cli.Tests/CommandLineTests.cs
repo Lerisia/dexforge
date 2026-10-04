@@ -180,4 +180,22 @@ public class CommandLineTests
         Assert.Equal(2, code);
         Assert.Contains(said, err);
     }
+
+    [Fact]
+    public void ArceusIsAskedForWithItsOwnOptions()
+    {
+        var o = Arguments.Parse(["--game", "아르세우스", "--name", "달님", "--ball", "페더볼", "--size", "우두머리", "--sex", "암컷", "--seed", "5"], out var why);
+        Assert.NotNull(o); Assert.Equal("", why);
+        Assert.Equal(Game.Arceus, o!.Game);
+        var asked = o.ToOptions8a(out why);
+        Assert.NotNull(asked); Assert.Equal("", why);
+        Assert.Equal((int)PKHeX.Core.Ball.LAFeather, asked!.Ball);
+        Assert.Equal(SizeChoice.Alpha, asked.Size);
+        Assert.Equal(SexChoice.Female, asked.Sex);
+        Assert.Equal(Dexforge.Arceus.Making8a.Released, asked.From);   // no period typed: the release year
+        Assert.Null(Arguments.Parse(["--game", "arceus", "--size", "거대"], out why));
+        Assert.Contains("최소, 우두머리, 랜덤", why);
+        Assert.Null(Arguments.Parse(["--game", "arceus", "--ball", "마스터볼"], out _)?.ToOptions8a(out why));
+        Assert.Contains("히스이 볼", why);
+    }
 }

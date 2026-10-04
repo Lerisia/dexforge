@@ -28,3 +28,22 @@ public static class BallNames
         return true;
     }
 }
+
+/// <summary>The Hisuian balls by name: PKHeX numbers them from 28, after the ordinary balls, with the same Korean names for some.</summary>
+public static class BallNames8a
+{
+    private static readonly Dictionary<string, string> Also = new() { ["몬볼"] = "몬스터볼", ["수퍼볼"] = "슈퍼볼", ["깃털볼"] = "페더볼", ["레드볼"] = "메가톤볼" };
+
+    public static bool Find(string asked, out int ball, out string why)
+    {
+        ball = (int)Ball.LAPoke; why = "";
+        var name = asked.Replace(" ", "");
+        if (Also.TryGetValue(name, out var proper)) name = proper;
+        if (!name.EndsWith('볼')) name += "볼";
+        var list = GameInfo.GetStrings("ko").balllist;
+        foreach (var b in Dexforge.Arceus.Making8a.Balls)
+            if (list[(int)b] == name) { ball = (int)b; return true; }
+        why = $"'{asked}' 라는 히스이 볼은 없습니다. 고를 수 있는 볼: {string.Join(", ", Dexforge.Arceus.Making8a.Balls.Select(b => list[(int)b]))}";
+        return false;
+    }
+}

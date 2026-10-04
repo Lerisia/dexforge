@@ -17,6 +17,9 @@ internal sealed class Order
     public SexChoice Sex = SexChoice.Random;
     public LevelChoice Level = LevelChoice.Lowest;
     public DateOnly From = new(2018, 1, 1), To = new(2018, 12, 31);
+    /// <summary>Whether a period was typed; Legends: Arceus otherwise takes its own release year.</summary>
+    public bool DatesGiven;
+    public SizeChoice Size = SizeChoice.Random;
     public int Seed = Random.Shared.Next();
     public string? Out;
     /// <summary>Event box: received within the first so many days of each distribution (0: anywhere in its window), and what was picked for the spare room.</summary>
@@ -43,6 +46,17 @@ internal sealed class Order
         return new Options8(Name, Tid, Sid, Year, Seed, ball, Shiny);
     }
 
+    /// <summary>The Legends: Arceus options asked for; or why they cannot be.</summary>
+    public Options8a? ToOptions8a(out string why)
+    {
+        why = "";
+        int ball = (int)PKHeX.Core.Ball.LAPoke;
+        if (Ball is not null && !BallNames8a.Find(Ball, out ball, out why)) return null;
+        var from = DatesGiven ? From : Dexforge.Arceus.Making8a.Released;
+        var to = DatesGiven ? To : new DateOnly(2022, 12, 31);
+        return new Options8a(Name, Tid, Sid, from, to, Seed, ball, Shiny, Size, Level, Sex);
+    }
+
     /// <summary>The event box options asked for; or why they cannot be.</summary>
     public Dexforge.EventBox.EventOptions? ToEventOptions(out string why)
     {
@@ -53,5 +67,5 @@ internal sealed class Order
     }
 }
 
-/// <summary>The games a save can be made for: the national dex of Ultra Sun, the Sword dex, and the event box (an Ultra Sun save of every distribution).</summary>
-internal enum Game { UltraSun, Sword, EventBox }
+/// <summary>The games a save can be made for: the national dex of Ultra Sun, the Sword dex, the event box (an Ultra Sun save of every distribution), and the Hisui dex of Legends: Arceus.</summary>
+internal enum Game { UltraSun, Sword, EventBox, Arceus }

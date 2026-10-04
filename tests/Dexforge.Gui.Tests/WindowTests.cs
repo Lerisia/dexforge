@@ -368,3 +368,41 @@ public class TheEventBoxSide
         Assert.StartsWith("E:", picks[0]);
     }
 }
+
+public class TheArceusSide
+{
+    private static T The<T>(Window w, string name) where T : Control => w.FindControl<T>(name) ?? throw new InvalidOperationException($"no {name} on the form");
+
+    [AvaloniaFact]
+    public void ChoosingArceusChangesTheForm()
+    {
+        var w = new MainWindow(); w.Show();
+        Assert.False(w.IsArceus);
+        Assert.False(The<Grid>(w, "SizeRow").IsVisible);
+        The<RadioButton>(w, "GameArceus").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.IsArceus);
+        Assert.True(The<Grid>(w, "SizeRow").IsVisible);
+        Assert.True(The<Grid>(w, "BallRow").IsVisible);
+        Assert.True(The<Grid>(w, "PeriodRow").IsVisible);
+        Assert.False(The<Grid>(w, "IvRow").IsVisible);
+        Assert.False(The<Grid>(w, "ForeignRow").IsVisible);
+        Assert.False(The<RadioButton>(w, "PickedBalls").IsVisible);
+        Assert.Equal(Dexforge.Arceus.Making8a.Balls.Length, The<ComboBox>(w, "BallBox").ItemCount);
+        Assert.True(w.Read8a(out var asked, out var why), why);
+        Assert.Equal("미월", asked.Name);
+        Assert.Equal(Dexforge.Arceus.Making8a.Released, asked.From);
+        Assert.Equal(SizeChoice.Random, asked.Size);
+        Assert.Equal((int)PKHeX.Core.Ball.LAPoke, asked.Ball);
+        The<RadioButton>(w, "SizeAlpha").IsChecked = true;
+        The<ComboBox>(w, "BallBox").SelectedIndex = 3;
+        Assert.True(w.Read8a(out asked, out why), why);
+        Assert.Equal(SizeChoice.Alpha, asked.Size);
+        Assert.Equal((int)PKHeX.Core.Ball.LAFeather, asked.Ball);
+        // back to Ultra Sun: its own balls and dates again
+        The<RadioButton>(w, "GameUltraSun").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(MainWindow.Shelf.Length, The<ComboBox>(w, "BallBox").ItemCount);
+        Assert.Equal(MainWindow.DefaultFrom, The<DayBox>(w, "FromBox").Day);
+    }
+}

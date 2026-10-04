@@ -5,7 +5,7 @@
     <RootNamespace>Dexforge</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="PKHeX.Core" Version="26.7.7" />
+    <PackageReference Include="PKHeX.Core" Version="26.8.26" />
     <EmbeddedResource Include="Data/template/dex" LogicalName="template.dex" />
     <EmbeddedResource Include="Data/sword/main" LogicalName="sword.main" />
     <EmbeddedResource Include="Data/sword/backup" LogicalName="sword.backup" />
@@ -14,6 +14,11 @@
     <EmbeddedResource Include="Data/sword/balls.tsv" LogicalName="sword.balls" />
     <EmbeddedResource Include="Data/sword/trackers.tsv" LogicalName="sword.trackers" />
     <EmbeddedResource Include="Data/events/distributions.tsv" LogicalName="events.distributions" />
+    <EmbeddedResource Include="Data/arceus/main" LogicalName="arceus.main" />
+    <EmbeddedResource Include="Data/arceus/backup" LogicalName="arceus.backup" />
+    <EmbeddedResource Include="Data/arceus/main2" LogicalName="arceus.main2" />
+    <EmbeddedResource Include="Data/arceus/nx_save_meta.bin" LogicalName="arceus.nx_save_meta" />
+    <EmbeddedResource Include="Data/arceus/spawners.tsv" LogicalName="arceus.spawners" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Dexforge.Core.Tests" />

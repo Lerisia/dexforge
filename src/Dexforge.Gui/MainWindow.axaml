@@ -26,6 +26,7 @@
               <RadioButton x:Name="GameUltraSun" GroupName="game" IsChecked="True" Content="울트라썬" />
               <RadioButton x:Name="GameSword" GroupName="game" Content="소드" />
               <RadioButton x:Name="GameEventBox" GroupName="game" Content="배포 박스" />
+              <RadioButton x:Name="GameArceus" GroupName="game" Content="LEGENDS 아르세우스" />
             </StackPanel>
             <TextBlock x:Name="GameHint" Classes="hint" />
           </StackPanel>
@@ -119,6 +120,18 @@
               <RadioButton x:Name="LevelHundred" GroupName="level" Content="100" />
             </StackPanel>
             <TextBlock x:Name="LevelHint" Classes="hint" />
+          </StackPanel>
+        </Grid>
+
+        <Grid x:Name="SizeRow" ColumnDefinitions="112,*" IsVisible="False">
+          <TextBlock Classes="label" Text="크기" />
+          <StackPanel Grid.Column="1" Spacing="2">
+            <StackPanel Orientation="Horizontal">
+              <RadioButton x:Name="SizeSmallest" GroupName="size" Content="최소" />
+              <RadioButton x:Name="SizeAlpha" GroupName="size" Content="우두머리" />
+              <RadioButton x:Name="SizeRandom" GroupName="size" IsChecked="True" Content="랜덤" />
+            </StackPanel>
+            <TextBlock x:Name="SizeHint" Classes="hint" />
           </StackPanel>
         </Grid>
 

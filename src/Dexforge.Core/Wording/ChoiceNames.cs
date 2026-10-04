@@ -87,3 +87,27 @@ public static class LevelNames
         ? "100 (박스의 포켓몬; 기술은 그대로, 파티는 그대로)"
         : "가능한 최저";
 }
+
+/// <summary>How the size is asked for, in words (Legends: Arceus).</summary>
+public static class SizeNames
+{
+    public const string Help = "크기는 최소, 우두머리, 랜덤 중 하나로 적어 주세요.";
+
+    public static bool Find(string asked, out SizeChoice choice)
+    {
+        switch (asked.Replace(" ", "").ToLowerInvariant())
+        {
+            case "최소" or "가장작게" or "xxxs" or "smallest" or "min": choice = SizeChoice.Smallest; return true;
+            case "우두머리" or "우두" or "alpha": choice = SizeChoice.Alpha; return true;
+            case "랜덤" or "무작위" or "random": choice = SizeChoice.Random; return true;
+            default: choice = SizeChoice.Random; return false;
+        }
+    }
+
+    public static string Said(SizeChoice choice) => choice switch
+    {
+        SizeChoice.Smallest => "가장 작게 (키 0, 무게 0; 우두머리와 고정 조우는 제외)",
+        SizeChoice.Alpha => "우두머리 (우두머리가 있는 종은 전부)",
+        _ => "게임이 뽑은 대로",
+    };
+}

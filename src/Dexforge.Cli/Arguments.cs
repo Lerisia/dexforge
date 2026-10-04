@@ -22,7 +22,8 @@ internal static class Arguments
                         if (g is "sword" or "소드") o.Game = Game.Sword;
                         else if (g is "ultrasun" or "울트라썬") o.Game = Game.UltraSun;
                         else if (g is "eventbox" or "배포박스" or "배포") o.Game = Game.EventBox;
-                        else { why = "--game 은 울트라썬, 소드, 배포박스 중 하나입니다."; return null; }
+                        else if (g is "arceus" or "아르세우스" or "레전드아르세우스" or "pla") o.Game = Game.Arceus;
+                        else { why = "--game 은 울트라썬, 소드, 배포박스, 아르세우스 중 하나입니다."; return null; }
                         break;
                     case "--year": o.Year = int.Parse(Value()); break;
                     case "--name": o.Name = Value(); break;
@@ -36,8 +37,9 @@ internal static class Arguments
                     case "--ivs": if (!IvNames.Find(Value(), out o.Ivs)) { why = IvNames.Help; return null; } break;
                     case "--sex": if (!SexNames.Find(Value(), out o.Sex)) { why = SexNames.Help; return null; } break;
                     case "--level": if (!LevelNames.Find(Value(), out o.Level)) { why = LevelNames.Help; return null; } break;
-                    case "--from": o.From = DateOnly.Parse(Value()); break;
-                    case "--to": o.To = DateOnly.Parse(Value()); break;
+                    case "--from": o.From = DateOnly.Parse(Value()); o.DatesGiven = true; break;
+                    case "--to": o.To = DateOnly.Parse(Value()); o.DatesGiven = true; break;
+                    case "--size": if (!SizeNames.Find(Value(), out o.Size)) { why = SizeNames.Help; return null; } break;
                     case "--seed": o.Seed = int.Parse(Value()); break;
                     case "--out": o.Out = Value(); break;
                     case "--first-days": o.FirstDays = int.Parse(Value()); break;

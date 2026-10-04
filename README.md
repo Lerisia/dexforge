@@ -10,6 +10,8 @@ It also makes an **event box**: every distribution card of generations III to VI
 
 And a **Sword** living dex: every species and form of the three Galar dexes (Galar, Isle of Armor, Crown Tundra), 663 species and 760 Pokémon, as a backup folder that JKSV restores. What can hatch is hatched (following the Sword/Shield egg RNG order as written down by Admiral Fish); fossils are fossils, legendaries come from their static encounters and Dynamax Adventures, mythicals from event cards. See the "소드" (Sword) section of the in-app help.
 
+And a **Legends: Arceus** living dex: every species and form of the Hisui dex, 242 species and 313 Pokémon, as a JKSV backup folder, with every species' research at level 10. Wild catches are drawn from spawner seeds the way the game draws them — a generator seed whose slot draw lands on the species (alpha or not), the fixed seed it gives, and the level — so the PLA bot's own seed check holds as well as PKHeX's. Evolutions are caught as their nearest earlier stage and evolved, legendaries and starters are their static encounters, form changes are made from the form caught. A size option asks for the smallest (height and weight 0, found by solving the RNG's linear equations rather than searching), alphas wherever the game has one, or whatever the game draws. See the "LEGENDS 아르세우스" section of the in-app help.
+
 The program speaks Korean: the window, the help, the messages and the option words. The command line also accepts the English words listed below for most options.
 
 ![The window](docs/screenshots/filled.png)
@@ -41,6 +43,12 @@ For Sword put `--game sword` first. The options that apply are `--name --sid --t
 Dexforge.Cli --game sword --name 우리 --ball 볼맞춤 --color shiny --year 2021
 ```
 
+For Legends: Arceus put `--game arceus` first. The options are `--name --sid --tid --ball --color --size --sex --level --from --to --seed --out`; the ball is one of the Hisuian balls, and the period defaults to the release year 2022.
+
+```
+Dexforge.Cli --game arceus --name 미월 --ball 페더볼 --size alpha --color shiny
+```
+
 For the event box put `--game eventbox` first. The options are `--name --sid --tid --seed --out --first-days --pick --pick-file`; `--list-picks` prints everything that can go into the free slots, with its key.
 
 ```
@@ -49,7 +57,8 @@ Dexforge.Cli --game eventbox --name 미월 --first-days 7 --pick D:2522,E:1215:2
 
 | Option | Values | Default |
 |---|---|---|
-| `--game` | `ultrasun` (울트라썬) / `sword` (소드) / `eventbox` (배포박스) | `ultrasun` |
+| `--game` | `ultrasun` (울트라썬) / `sword` (소드) / `eventbox` (배포박스) / `arceus` (아르세우스) | `ultrasun` |
+| `--size` | (Legends: Arceus) `smallest` (최소), `alpha` (우두머리), `random` (랜덤) | `random` |
 | `--year` | (Sword) the year the Pokémon were obtained, 2019–2099 | 2021 |
 | `--first-days` | (event box) received dates fall within the first n days of each distribution window; 0 means the whole window | 0 |
 | `--pick`, `--pick-file` | (event box) keys of what to put in the free slots, comma-separated / a file with one key per line | none |
@@ -126,6 +135,9 @@ src/
     Data/sword/          the Sword template (the three files main and JKSV share), the ball table (balls.tsv), HOME trackers (trackers.tsv)
     EventBox/            the event box: listing cards (Cards), receiving trainers (Receivers), card to Pokémon (EventMaker), evolution (Evolve7), picking (Custom), writing the save (EventBoxMaking)
     Data/events/         the distribution list (distributions.tsv): 2,630 cards merged into 855 distributions, dated
+    Arceus/              Legends: Arceus: the RNG and the spawn as the game draws it (Xoroshiro8a, Spawn8a), generator seeds from fixed seeds (Generator8a),
+                         the smallest sizes by linear algebra (SizeSeeds8a), the spawner table (Spawners8a), the plan (Plan8a), making (Maker8a, Evolve8a), writing the save (Making8a)
+    Data/arceus/         the Legends: Arceus template (main, backup, main2, the JKSV meta file) and the spawner table (spawners.tsv)
     Wording/             understanding and speaking the options in Korean
   Dexforge.Cli/     the command line
   Dexforge.Gui/     the window (Avalonia)
@@ -136,6 +148,7 @@ tests/
 tools/
   Reference/    a test bench compiled from 3DSRNGTool's original source, and the script that makes the reference vectors
   BallTable/    makes the per-ball "cannot be in this ball" table (Data/BallFits.cs)
+  pla-spawners/ makes the Legends: Arceus spawner table from the game's spawner data (through the PLA bot's seed tools)
 docs/screenshots/   pictures of the window (taken by the tests with DEXGEN_GUI_SHOTS)
 ```
 
@@ -207,6 +220,8 @@ This program is GPLv3 (`LICENSE`). PKHeX.Core is GPLv3, so whoever is given the 
 - [PKHeX.Core](https://github.com/kwsch/PKHeX) — GPLv3. Reading and writing saves, legality analysis.
 - [3DSRNGTool](https://github.com/wwwwwwzx/3DSRNGTool) — MIT. Generation VII generation order and area tables. Not in this repository; fetched only to make the reference vectors.
 - [PokeFinder](https://github.com/Admiral-Fish/PokeFinder) — GPLv3. Generation III–IV reference values.
+- [pla-reverse](https://github.com/Lincoln-LM/pla-reverse) — GPLv3. The order a Legends: Arceus spawn is drawn in and the byte-sliced recovery of a generator seed from a fixed seed, ported to the CPU.
+- [numba-pokemon-prngs](https://github.com/Lincoln-LM/numba-pokemon-prngs) — the game's spawner tables, read when building the spawner table (not at run time).
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia) 11.3 — MIT. The window.
 - [Pretendard JP](https://github.com/orioncactus/pretendard) 1.3.9 — SIL OFL 1.1. The window's font (the edition with Hangul, kana and kanji).
   Full licence text in `src/Dexforge.Gui/Assets/Pretendard-LICENSE.txt`.
