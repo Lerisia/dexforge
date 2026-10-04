@@ -175,7 +175,7 @@ public class WhenEverythingIsAskedFor(AsAsked m) : IClassFixture<AsAsked>
     {
         var shiny = m.All.Where(p => p.IsShiny).ToList();
         Assert.All(shiny, p => Assert.Equal(Came.Card, Tell.Of(p)));
-        Assert.Equal(13, shiny.Count);
+        Assert.Equal(4, shiny.Count);   // Jirachi, Arceus, Genesect, Diancie: mythicals whose cards are shiny; the rest of the template is caught plain since 2026-10-05
     }
 
     [Fact]

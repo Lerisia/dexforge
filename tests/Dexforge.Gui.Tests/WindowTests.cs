@@ -214,7 +214,7 @@ public class TheWindow
         var sav = Assert.IsType<SAV7USUM>(read);
         Assert.Equal("달님", sav.OT); Assert.Equal(567890u, sav.TrainerTID7); Assert.Equal(1234u, sav.TrainerSID7);
         var all = sav.BoxData.Concat(sav.PartyData).Where(p => p.Species != 0).ToList();
-        Assert.Equal(954, all.Count);
+        Assert.Equal(952, all.Count);
         Assert.All(all, p => Assert.True(new LegalityAnalysis(p).Valid, $"{p.Species} is not legal"));
         Assert.Equal(807, all.Select(p => p.Species).Distinct().Count());
         // One ball was asked for: whatever is not on a card is in it, or in a Poke Ball.

@@ -1,6 +1,6 @@
 # Dexforge
 
-Dexforge makes a Pokémon Ultra Sun living-dex save (807 species, 954 Pokémon) in the name and ID of whoever will use it.
+Dexforge makes a Pokémon Ultra Sun living-dex save (807 species, 952 Pokémon) in the name and ID of whoever will use it.
 The program carries a template save inside it and, every time it runs, draws every Pokémon in that save afresh.
 Each Pokémon's values are drawn in the order the game actually draws them, from a state the game's RNG could really be in.
 

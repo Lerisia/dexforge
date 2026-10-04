@@ -25,9 +25,6 @@ public static class Events
         new(6, 81,   493, 0, "movie18-arceus", D(2015, 3, 7),  D(2015, 8, 31)),
         new(6, 1023, 647, 0, "guide-keldeo",   D(2015, 2, 25), D(2016, 1, 31)),
         new(6, 1054, 720, 0, "movie18-hoopa",  D(2015, 12, 15), D(2016, 2, 29)),
-        new(6, 1060, 716, 0, "xyz", D(2016, 3, 22), D(2016, 6, 30)),
-        new(6, 1061, 717, 0, "xyz", D(2016, 4, 22), D(2016, 6, 30)),
-        new(6, 1064, 718, 0, "xyz", D(2016, 4, 20), D(2016, 6, 30)),
         new(6, 1071, 719, 0, "all-star-diancie", D(2016, 8, 13), D(2016, 8, 14)),
         new(6, 1076, 494, 0, "preorder-victini", D(2016, 10, 1), D(2016, 11, 30)),
         new(6, 1078, 721, 0, "movie19-volcanion", D(2016, 12, 22), D(2017, 2, 28)),
@@ -42,14 +39,9 @@ public static class Events
         new(7, 1135, 25, 6,  "movie20", D(2017, 12, 21), D(2018, 2, 28), Album: true),
         new(7, 0,    25, 7,  "movie20", D(2017, 12, 21), D(2018, 2, 28)),
         new(7, 1146, 490, 0, "summer-manaphy", D(2018, 7, 13), D(2018, 7, 22), Album: true),
-        new(7, 1633, 786, 0, "pgl-tapu-lele", D(2018, 12, 18), D(2019, 1, 31), Album: true),
         new(7, 1148, 807, 0, "movie21-zeraora", D(2018, 12, 19), D(2019, 2, 28), Album: true),
-        new(7, 1634, 787, 0, "pgl-tapu-bulu", D(2019, 3, 19), D(2019, 4, 29), Album: true),
-        new(7, 1635, 788, 0, "pgl-tapu-fini", D(2019, 6, 11), D(2019, 7, 30), Album: true),
-        new(7, 1637, 785, 0, "pgl-tapu-koko", D(2019, 10, 18), D(2019, 11, 30), Album: true),
-        new(7, 1158, 792, 0, "eclipse", D(2019, 11, 15), D(2019, 12, 31), Album: true),
-        new(7, 1158, 791, 0, "eclipse", D(2019, 11, 15), D(2019, 12, 31)),
-        new(7, 1159, 800, 0, "eclipse", D(2019, 11, 15), D(2019, 12, 31), Album: true),
+        // The shiny Tapus, Solgaleo, Lunala and Necrozma of 2019 and the XY&Z trio are not in the template any more: a species
+        // that is shiny only by a card is kept as its plain catch (owner, 2026-10-05); the cards live in the event box.
     ];
 
     public static Event? Find(int generation, int card, ushort species, byte form) =>

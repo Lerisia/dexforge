@@ -170,6 +170,13 @@ public sealed class Meeting7
         if (n > models.Remain.Length) { var grown = new int[n]; models.Remain.CopyTo(grown, 0); models.Remain = grown; }
     }
 
+    /// <summary>Some of the people on screen leave: the ones that stay keep their blinking where it was.</summary>
+    private void Rearrange(int[] stay)
+    {
+        models.Number = stay.Length;
+        for (int i = 0; i < stay.Length; i++) models.Remain[i] = models.Remain[stay[i]];
+    }
+
     private void Cry(int at)
     {
         for (int i = 0; i < models.Number; i++)
@@ -223,6 +230,16 @@ public sealed class Meeting7
             case 15: Split(time, 50); break;
             case 16: Split(time, 43); break;
             case 17: Split(time, 40); break;
+            case 9:   // Ultra Sun's Solgaleo at the altar
+                Elapse(time - 77);
+                Cry(8);
+                Elapse(76);
+                break;
+            case 10:  // Ultra Moon's Lunala at the altar
+                Elapse(time - 74);
+                if (models.Number == 9) Rearrange([0, 1, 2, 6, 7, 8]);
+                Split(74, 73);
+                break;
             case 0: Elapse(time); break;
             default: throw new NotSupportedException($"the wait of kind {type} is not written");
         }
