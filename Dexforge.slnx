@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Dexforge.Cli/Dexforge.Cli.csproj" />
+    <Project Path="src/Dexforge.Core/Dexforge.Core.csproj" />
+    <Project Path="src/Dexforge.Gui/Dexforge.Gui.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Dexforge.Cli.Tests/Dexforge.Cli.Tests.csproj" />
+    <Project Path="tests/Dexforge.Core.Tests/Dexforge.Core.Tests.csproj" />
+    <Project Path="tests/Dexforge.Gui.Tests/Dexforge.Gui.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/BallTable/BallTable.csproj" />
+  </Folder>
+</Solution>

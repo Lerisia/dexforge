@@ -1,8 +1,8 @@
-using AlolaDexMaker;
+using Dexforge;
 using PKHeX.Core;
 // For each ball one can ask for, how many of the boxes' Pokemon cannot go in it and go in a Poke Ball instead: a save is made for
 // each ball and counted. Cards are left out (they keep the card's ball whatever is asked), and so is the party.
-// Prints AlolaDexMaker/BallFits.cs.
+// Prints Dexforge/BallFits.cs.
 //   balltable [seed]
 int seed = args.Length > 0 ? int.Parse(args[0]) : 20180101;
 var shelf = new[] { Ball.Poke, Ball.Great, Ball.Ultra, Ball.Master, Ball.Premier, Ball.Heal, Ball.Net, Ball.Nest, Ball.Dive, Ball.Dusk, Ball.Timer, Ball.Quick, Ball.Repeat, Ball.Luxury,
@@ -32,7 +32,7 @@ foreach (var ball in shelf)
 Console.WriteLine($$"""
 using PKHeX.Core;
 
-namespace AlolaDexMaker;
+namespace Dexforge;
 
 /// <summary>
 /// How many of the boxes' Pokemon cannot go in each ball, where one ball is asked for, and go in a Poke Ball instead: counted from a save made

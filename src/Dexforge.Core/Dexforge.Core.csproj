@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The generator: what is drawn, how, and the check of what is made. The template save is carried inside. -->
+  <PropertyGroup>
+    <AssemblyName>Dexforge.Core</AssemblyName>
+    <RootNamespace>Dexforge</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="PKHeX.Core" Version="26.7.7" />
+    <EmbeddedResource Include="Data/template/dex" LogicalName="template.dex" />
+    <EmbeddedResource Include="Data/sword/main" LogicalName="sword.main" />
+    <EmbeddedResource Include="Data/sword/backup" LogicalName="sword.backup" />
+    <EmbeddedResource Include="Data/sword/poke_trade" LogicalName="sword.poke_trade" />
+    <EmbeddedResource Include="Data/sword/nx_save_meta.bin" LogicalName="sword.nx_save_meta" />
+    <EmbeddedResource Include="Data/sword/balls.tsv" LogicalName="sword.balls" />
+    <EmbeddedResource Include="Data/sword/trackers.tsv" LogicalName="sword.trackers" />
+    <EmbeddedResource Include="Data/events/distributions.tsv" LogicalName="events.distributions" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Dexforge.Core.Tests" />
+  </ItemGroup>
+</Project>

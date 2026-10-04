@@ -1,4 +1,4 @@
-# Alola Dex Maker
+# Dexforge
 
 포켓몬스터 울트라썬의 전국도감 세이브(807종, 954마리)를 받는 사람의 이름과 ID로 만든다.
 틀이 되는 세이브를 프로그램이 품고 있고, 실행할 때마다 그 안의 포켓몬을 전부 새로 뽑는다.
@@ -14,35 +14,35 @@
 
 ## 창으로 쓰기
 
-`AlolaDexMaker.exe`를 더블클릭하면 창이 뜬다. 옵션을 칸과 단추로 고르고 **세이브 만들기**를 누른다.
+`Dexforge.exe`를 더블클릭하면 창이 뜬다. 옵션을 칸과 단추로 고르고 **세이브 만들기**를 누른다.
 파일 하나로 되어 있어 설치할 것이 없다.
 
 - 아무것도 건드리지 않고 누르면 아래 표의 "안 주면" 값대로 만든다.
-- 결과는 **저장할 곳** 안에 `AlolaDexMaker-<이름>-<TID>` 폴더로 쓴다. 처음에는 프로그램이 있는 폴더다.
-- 만들지 못하면 까닭이 나온다. 프로그램이 멈추면 프로그램 옆에 `AlolaDexMaker-오류.txt`가 남는다.
-- 오른쪽 위의 **도움말**은 받는 사람이 읽는 설명서다. 글은 `src/AlolaDexMaker.Gui/Assets/help.md`에 있고,
+- 결과는 **저장할 곳** 안에 `Dexforge-<이름>-<TID>` 폴더로 쓴다. 처음에는 프로그램이 있는 폴더다.
+- 만들지 못하면 까닭이 나온다. 프로그램이 멈추면 프로그램 옆에 `Dexforge-오류.txt`가 남는다.
+- 오른쪽 위의 **도움말**은 받는 사람이 읽는 설명서다. 글은 `src/Dexforge.Gui/Assets/help.md`에 있고,
   제목(`#`, `##`, `###`), 목록(`-`), 굵은 글씨(`**`)만 쓴다. 고친 뒤에는 다시 빌드한다.
 
 시드(`--seed`)와 틀 고치기(`--refresh`)는 명령어로만 한다.
 
 ## 명령어로 쓰기
 
-`AlolaDexMaker.Cli`를 인자 없이 실행하면 울트라썬 것을 하나씩 묻는다. 빈 칸으로 두면 괄호 안의 값을 쓴다. 소드는 인자로만 만든다.
+`Dexforge.Cli`를 인자 없이 실행하면 울트라썬 것을 하나씩 묻는다. 빈 칸으로 두면 괄호 안의 값을 쓴다. 소드는 인자로만 만든다.
 
 ```
-AlolaDexMaker.Cli --name 미월 --sid 1234 --tid 567890 --ball 럭셔리볼 --color 이로치 --ivs 5V --sex 랜덤 --level 최저 --from 2018-01-01 --to 2018-12-31
+Dexforge.Cli --name 미월 --sid 1234 --tid 567890 --ball 럭셔리볼 --color 이로치 --ivs 5V --sex 랜덤 --level 최저 --from 2018-01-01 --to 2018-12-31
 ```
 
 소드는 `--game 소드` 를 앞에 붙인다. 그때 쓰는 옵션은 `--name --sid --tid --ball --color --year --seed --out` 이다.
 
 ```
-AlolaDexMaker.Cli --game 소드 --name 우리 --ball 볼맞춤 --color 이로치 --year 2021
+Dexforge.Cli --game 소드 --name 우리 --ball 볼맞춤 --color 이로치 --year 2021
 ```
 
 배포 박스는 `--game 배포박스` 를 앞에 붙인다. 옵션은 `--name --sid --tid --seed --out --first-days --pick --pick-file` 이고, `--list-picks` 는 남는 칸에 골라 담을 수 있는 것을 키와 함께 늘어놓는다.
 
 ```
-AlolaDexMaker.Cli --game 배포박스 --name 미월 --first-days 7 --pick D:2522,E:1215:26-0
+Dexforge.Cli --game 배포박스 --name 미월 --first-days 7 --pick D:2522,E:1215:26-0
 ```
 
 | 옵션 | 고를 수 있는 것 | 안 주면 |
@@ -61,7 +61,7 @@ AlolaDexMaker.Cli --game 배포박스 --name 미월 --first-days 7 --pick D:2522
 | `--level` | `최저`, `100` | 최저 |
 | `--from` `--to` | 포켓몬을 얻은 기간의 첫날과 마지막 날 | 2018-01-01 ~ 2018-12-31 |
 | `--seed` | 추첨의 시드 | 무작위 |
-| `--out` | 결과를 쓸 폴더 | `AlolaDexMaker-<이름>-<TID>` |
+| `--out` | 결과를 쓸 폴더 | `Dexforge-<이름>-<TID>` |
 
 - **볼**: 볼 이름을 주면 전부 그 볼에 넣고, 그 볼이 안 되는 포켓몬은 몬스터볼에 넣는다. `볼맞춤`은 포켓몬마다 골라 둔 볼이다.
   배포 포켓몬은 어느 쪽이든 카드가 정한 볼이다. 숨겨진 특성 때문에만 안 되는 포켓몬은 일반 특성이 된다.
@@ -116,7 +116,7 @@ AlolaDexMaker.Cli --game 배포박스 --name 미월 --first-days 7 --pick D:2522
 
 ```
 src/
-  AlolaDexMaker.Core/    생성기 라이브러리
+  Dexforge.Core/    생성기 라이브러리
     Options/             고를 수 있는 것과 그 규칙 (Options, Trainer, Ids7, ForeignNames, Sexes)
     Rng/                 게임의 난수와 그 난수로 한 번 만나기 (Seven, Egg, Old)
     Data/                3DSRNGTool 의 표, 배포 카드, 볼별 표, 틀 세이브(template/dex)
@@ -126,12 +126,12 @@ src/
     EventBox/            배포 박스: 카드 열거(Cards), 받는 트레이너(Receivers), 카드→개체(EventMaker), 진화(Evolve7), 골라 담기(Custom), 세이브 쓰기(EventBoxMaking)
     Data/events/         배포 목록(distributions.tsv): 카드 2,630장을 855 배포로 합치고 날짜를 맞춘 표
     Wording/             옵션을 한국어로 알아듣고 말하기
-  AlolaDexMaker.Cli/     명령어
-  AlolaDexMaker.Gui/     창 (Avalonia)
+  Dexforge.Cli/     명령어
+  Dexforge.Gui/     창 (Avalonia)
 tests/
-  AlolaDexMaker.Core.Tests/   생성기 테스트와 대조값(vectors)
-  AlolaDexMaker.Cli.Tests/    명령어 테스트 (인자, 하나씩 묻기, 거절, 틀 고치기)
-  AlolaDexMaker.Gui.Tests/    창 테스트 (화면 없이 창을 띄워 칸을 채우고 단추를 누른다)
+  Dexforge.Core.Tests/   생성기 테스트와 대조값(vectors)
+  Dexforge.Cli.Tests/    명령어 테스트 (인자, 하나씩 묻기, 거절, 틀 고치기)
+  Dexforge.Gui.Tests/    창 테스트 (화면 없이 창을 띄워 칸을 채우고 단추를 누른다)
 tools/
   Reference/    3DSRNGTool 의 원래 소스를 컴파일한 시험대와 대조값 생성 스크립트
   BallTable/    볼별 "넣을 수 없는 수" 표(Data/BallFits.cs) 생성
@@ -153,15 +153,15 @@ dotnet test -c Release --collect:"XPlat Code Coverage"    # 라인 커버리지 
 배포용 단일 파일:
 
 ```
-dotnet publish src/AlolaDexMaker.Gui -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true \
+dotnet publish src/Dexforge.Gui -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true \
   -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=none -o publish/win-x64
 ```
 
-명령어판은 `src/AlolaDexMaker.Cli`로 같은 명령을 쓴다. 남에게 줄 때는 exe 하나면 된다.
+명령어판은 `src/Dexforge.Cli`로 같은 명령을 쓴다. 남에게 줄 때는 exe 하나면 된다.
 
 테스트가 보는 것:
 
-- 우리가 뽑은 값이 3DSRNGTool과 PokeFinder의 값과 같은지 (`tests/AlolaDexMaker.Core.Tests/vectors`)
+- 우리가 뽑은 값이 3DSRNGTool과 PokeFinder의 값과 같은지 (`tests/Dexforge.Core.Tests/vectors`)
 - 옵션의 이름을 알아듣는지, 안 되는 값을 거절하는지 (명령어의 인자와 하나씩 묻기까지)
 - 만든 세이브가 온전한지, 고른 옵션대로인지
 - 만든 세이브의 포켓몬을 기록된 난수 자리에서 다시 뽑으면 같은 값이 나오는지
@@ -170,31 +170,31 @@ dotnet publish src/AlolaDexMaker.Gui -c Release -r win-x64 --self-contained true
 
 ## 틀을 바꿨을 때
 
-틀은 `src/AlolaDexMaker.Core/Data/template/dex`이고 빌드할 때 프로그램 안에 들어간다. 틀을 바꾸면 다시 빌드해야 한다.
+틀은 `src/Dexforge.Core/Data/template/dex`이고 빌드할 때 프로그램 안에 들어간다. 틀을 바꾸면 다시 빌드해야 한다.
 
 틀에 포켓몬을 새로 넣었다면 그 값도 게임의 난수대로 뽑아 둔다. 날짜, 볼, 어버이는 그대로 두고 알과 잡은 포켓몬의 값만 다시 뽑는다.
 
 ```
-AlolaDexMaker.Cli --refresh <세이브> <결과 폴더> [--only 590,591]
+Dexforge.Cli --refresh <세이브> <결과 폴더> [--only 590,591]
 ```
 
 틀의 포켓몬이나 볼 규칙이 바뀌면 창이 보여 주는 "그 볼에 넣을 수 없는 수" 표도 다시 만든다. 볼마다 세이브를 만들어 세므로 3분쯤 걸린다.
 
 ```
-dotnet run -c Release --project tools/BallTable > src/AlolaDexMaker.Core/Data/BallFits.cs
+dotnet run -c Release --project tools/BallTable > src/Dexforge.Core/Data/BallFits.cs
 ```
 
 새로운 종류의 포켓몬(새 배포, 새 구세대 포획)이 틀에 들어오면 `Data/Events.cs`나 `Making/Older.cs`에 그 규칙을 먼저 넣어야 한다.
 
 ## 대조값을 다시 만들 때
 
-`tests/AlolaDexMaker.Core.Tests/vectors`의 7세대 파일은 3DSRNGTool의 원래 소스를 고치지 않고 컴파일해 뽑은 값이다.
+`tests/Dexforge.Core.Tests/vectors`의 7세대 파일은 3DSRNGTool의 원래 소스를 고치지 않고 컴파일해 뽑은 값이다.
 
 ```
 cd tools/Reference
 git clone https://github.com/wwwwwwzx/3DSRNGTool
 dotnet build -c Release
-python3 make-vectors.py ../../tests/AlolaDexMaker.Core.Tests/vectors
+python3 make-vectors.py ../../tests/Dexforge.Core.Tests/vectors
 ```
 
 `Data/SevenTable.cs`와 `Data/SevenAreas.cs`도 이 시험대의 `list`·`areas` 모드가 내놓은 그 도구의 표를 옮긴 것이다.
@@ -208,4 +208,4 @@ python3 make-vectors.py ../../tests/AlolaDexMaker.Core.Tests/vectors
 - [PokeFinder](https://github.com/Admiral-Fish/PokeFinder) — GPLv3. 3·4세대의 대조값.
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia) 11.3 — MIT. 창.
 - [Pretendard JP](https://github.com/orioncactus/pretendard) 1.3.9 — SIL OFL 1.1. 창의 글꼴(한글·가나·한자가 다 있는 판).
-  라이선스 전문은 `src/AlolaDexMaker.Gui/Assets/Pretendard-LICENSE.txt`.
+  라이선스 전문은 `src/Dexforge.Gui/Assets/Pretendard-LICENSE.txt`.
