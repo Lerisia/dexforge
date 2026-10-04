@@ -25,6 +25,7 @@
             <StackPanel Orientation="Horizontal">
               <RadioButton x:Name="GameUltraSun" GroupName="game" IsChecked="True" Content="울트라썬" />
               <RadioButton x:Name="GameSword" GroupName="game" Content="소드" />
+              <RadioButton x:Name="GameEventBox" GroupName="game" Content="배포 박스" />
             </StackPanel>
             <TextBlock x:Name="GameHint" Classes="hint" />
           </StackPanel>
@@ -66,7 +67,7 @@
           </StackPanel>
         </Grid>
 
-        <Grid ColumnDefinitions="112,*">
+        <Grid x:Name="BallRow" ColumnDefinitions="112,*">
           <TextBlock Classes="label" Text="볼" />
           <StackPanel Grid.Column="1" Spacing="2">
             <StackPanel Orientation="Horizontal">
@@ -78,7 +79,7 @@
           </StackPanel>
         </Grid>
 
-        <Grid ColumnDefinitions="112,*">
+        <Grid x:Name="ColourRow" ColumnDefinitions="112,*">
           <TextBlock Classes="label" Text="색" />
           <StackPanel Grid.Column="1" Orientation="Horizontal">
             <RadioButton x:Name="Plain" GroupName="colour" Content="일반" />
@@ -129,6 +130,30 @@
               <TextBlock Classes="hint" VerticalAlignment="Center" Text="2019년 11월 이후" />
             </StackPanel>
             <TextBlock Classes="hint" Text="알·포획·배포의 날짜가 이 해 안에서 무작위로 정해집니다. 그 해에 없던 배포 카드는 카드의 날짜를 씁니다." />
+          </StackPanel>
+        </Grid>
+
+        <Grid x:Name="ReceivedRow" ColumnDefinitions="112,*" IsVisible="False">
+          <TextBlock Classes="label" Text="받은 날" />
+          <StackPanel Grid.Column="1" Spacing="6">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <RadioButton x:Name="ReceivedAnyDay" GroupName="received" IsChecked="True" Content="배포 기간 안 아무 날" />
+              <RadioButton x:Name="ReceivedFirstDays" GroupName="received" Content="처음" />
+              <TextBox x:Name="FirstDaysBox" Width="56" MaxLength="3" Text="7" Watermark="7" />
+              <TextBlock Classes="hint" VerticalAlignment="Center" Text="일 안" />
+            </StackPanel>
+            <TextBlock x:Name="ReceivedHint" Classes="hint" Text="배포마다 그 기간 안에서 무작위로 받은 날이 정해집니다. 기간이 긴 배포를 한참 뒤에 받은 것이 어색하면 처음 며칠로 좁히세요." />
+          </StackPanel>
+        </Grid>
+
+        <Grid x:Name="CustomRow" ColumnDefinitions="112,*" IsVisible="False">
+          <TextBlock Classes="label" Text="나만의 배포박스" />
+          <StackPanel Grid.Column="1" Spacing="6">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <Button x:Name="PickButton" Content="고르기…" Click="Pick" />
+              <TextBlock x:Name="PickCount" Classes="hint" VerticalAlignment="Center" Text="고른 것 없음" />
+            </StackPanel>
+            <TextBlock x:Name="CustomHint" Classes="hint" Text="규칙으로 빠진 것(포켓몬센터 일본·뉴욕 선물, 진화시키지 않는 피카츄의 라이츄 등)을 남는 칸에 골라 담습니다." />
           </StackPanel>
         </Grid>
 

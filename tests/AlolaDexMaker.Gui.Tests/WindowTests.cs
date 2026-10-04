@@ -316,3 +316,55 @@ public class TheSwordSide
         finally { Directory.Delete(dir, true); }
     }
 }
+
+public class TheEventBoxSide
+{
+    private static T The<T>(Window w, string name) where T : Control => w.FindControl<T>(name) ?? throw new InvalidOperationException($"no {name} on the form");
+
+    [AvaloniaFact]
+    public void ChoosingTheEventBoxChangesTheForm()
+    {
+        var w = new MainWindow(); w.Show();
+        Assert.False(w.IsEventBox);
+        Assert.False(The<Grid>(w, "ReceivedRow").IsVisible);
+        The<RadioButton>(w, "GameEventBox").IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.IsEventBox);
+        Assert.True(The<Grid>(w, "ReceivedRow").IsVisible);
+        Assert.True(The<Grid>(w, "CustomRow").IsVisible);
+        Assert.False(The<Grid>(w, "BallRow").IsVisible);
+        Assert.False(The<Grid>(w, "ColourRow").IsVisible);
+        Assert.False(The<Grid>(w, "PeriodRow").IsVisible);
+        Assert.True(w.ReadEvents(out var asked, out var why), why);
+        Assert.Equal("미월", asked.Name);
+        Assert.Equal(0, asked.FirstDays);
+        The<RadioButton>(w, "ReceivedFirstDays").IsChecked = true;
+        The<TextBox>(w, "FirstDaysBox").Text = "10";
+        Assert.True(w.ReadEvents(out asked, out why), why);
+        Assert.Equal(10, asked.FirstDays);
+        The<TextBox>(w, "FirstDaysBox").Text = "0";
+        Assert.False(w.ReadEvents(out _, out why));
+        Assert.Contains("1 에서 999", why);
+    }
+
+    [AvaloniaFact]
+    public void ThePickerHandsBackWhatWasTicked()
+    {
+        var picks = new List<string>();
+        var p = new PickWindow(picks); p.Show();
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(p.Shown.Count > 300);
+        p.FindControl<TextBox>("SearchBox")!.Text = "라이츄";
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(p.Shown.Count > 0 && p.Shown.All(r => r.Label.Contains("라이츄")));
+        p.Chosen.Add(p.Shown[0]);
+        p.FindControl<TextBox>("SearchBox")!.Text = "";
+        Dispatcher.UIThread.RunJobs();
+        Assert.Single(p.Chosen);
+        var done = p.GetLogicalDescendants().OfType<Button>().First(b => (b.Content as string) == "담기");
+        done.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        Dispatcher.UIThread.RunJobs();
+        Assert.Single(picks);
+        Assert.StartsWith("E:", picks[0]);
+    }
+}

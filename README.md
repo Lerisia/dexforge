@@ -6,6 +6,8 @@
 
 한국 본체, 울트라썬, 한국어, 여자 주인공의 세이브만 만든다.
 
+**배포 박스**도 만든다: 3~7세대의 모든 배포 카드를 나라만 다른 것은 하나로 쳐(한국 > 일본 > 미국 > 유럽) 751건, 알은 부화시켜, 미진화체는 최종 진화체까지 더해 928마리를 울트라썬 세이브 하나에. 받은 날은 다섯 출처로 맞춘 배포 기간 안의 하루다. 남는 32칸은 규칙으로 빠진 것 중에서 직접 골라 담는다. 자세한 것은 창의 도움말 '배포 박스' 절.
+
 **소드**도 만든다: 가라르·갑옷섬·왕관설원 세 도감의 전 종과 폼, 663종 760마리를 JKSV 로 복원하는 백업 폴더로. 알이 되는 것은 알(Admiral Fish 가 적은 소드실드의 알 난수 순서대로), 화석은 화석, 전설은 고정 조우와 다이맥스 어드벤처, 환상은 배포 카드다. 자세한 것은 창의 도움말 '소드' 절.
 
 ![창](docs/screenshots/filled.png)
@@ -37,10 +39,18 @@ AlolaDexMaker.Cli --name 미월 --sid 1234 --tid 567890 --ball 럭셔리볼 --co
 AlolaDexMaker.Cli --game 소드 --name 우리 --ball 볼맞춤 --color 이로치 --year 2021
 ```
 
+배포 박스는 `--game 배포박스` 를 앞에 붙인다. 옵션은 `--name --sid --tid --seed --out --first-days --pick --pick-file` 이고, `--list-picks` 는 남는 칸에 골라 담을 수 있는 것을 키와 함께 늘어놓는다.
+
+```
+AlolaDexMaker.Cli --game 배포박스 --name 미월 --first-days 7 --pick D:2522,E:1215:26-0
+```
+
 | 옵션 | 고를 수 있는 것 | 안 주면 |
 |---|---|---|
 | `--game` | 울트라썬 / 소드 | 울트라썬 |
 | `--year` | (소드) 얻은 해, 2019~2099 | 2021 |
+| `--first-days` | (배포 박스) 받은 날을 배포 기간의 처음 n일 안에서; 0이면 기간 전체 | 0 |
+| `--pick`, `--pick-file` | (배포 박스) 남는 칸에 담을 것의 키, 쉼표로 / 한 줄에 하나인 파일 | 없음 |
 | `--name` | 어버이 이름, 6글자까지 | 미월 |
 | `--english` `--japanese` `--chinese` | 외국어판 게임의 어버이 이름, 7·5·6글자까지 | Selene, ミヅキ, 美月 |
 | `--sid` `--tid` | SID 네 자리(0000~4294), TID 여섯 자리(게임에 보이는 ID). PKHeX 의 [SID]TID | 무작위 |
@@ -113,6 +123,8 @@ src/
     Making/              세이브 만들기와 검사 (Generator, Caught7, Older, Check, Making)
     Sword/               소드: 알 난수(Xoroshiro8, Egg8), 종·폼·출처(Plan8), 볼(Balls8), 만들기(Maker8, Evolve8), 세이브 쓰기(Making8)
     Data/sword/          소드의 틀 세이브(main 과 JKSV 가 함께 쓰는 세 파일), 볼 표(balls.tsv), HOME 트래커(trackers.tsv)
+    EventBox/            배포 박스: 카드 열거(Cards), 받는 트레이너(Receivers), 카드→개체(EventMaker), 진화(Evolve7), 골라 담기(Custom), 세이브 쓰기(EventBoxMaking)
+    Data/events/         배포 목록(distributions.tsv): 카드 2,630장을 855 배포로 합치고 날짜를 맞춘 표
     Wording/             옵션을 한국어로 알아듣고 말하기
   AlolaDexMaker.Cli/     명령어
   AlolaDexMaker.Gui/     창 (Avalonia)

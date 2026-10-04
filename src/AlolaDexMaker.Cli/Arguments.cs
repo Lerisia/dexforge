@@ -21,7 +21,8 @@ internal static class Arguments
                         var g = Value();
                         if (g is "sword" or "소드") o.Game = Game.Sword;
                         else if (g is "ultrasun" or "울트라썬") o.Game = Game.UltraSun;
-                        else { why = "--game 은 울트라썬 또는 소드입니다."; return null; }
+                        else if (g is "eventbox" or "배포박스" or "배포") o.Game = Game.EventBox;
+                        else { why = "--game 은 울트라썬, 소드, 배포박스 중 하나입니다."; return null; }
                         break;
                     case "--year": o.Year = int.Parse(Value()); break;
                     case "--name": o.Name = Value(); break;
@@ -39,6 +40,10 @@ internal static class Arguments
                     case "--to": o.To = DateOnly.Parse(Value()); break;
                     case "--seed": o.Seed = int.Parse(Value()); break;
                     case "--out": o.Out = Value(); break;
+                    case "--first-days": o.FirstDays = int.Parse(Value()); break;
+                    case "--pick": o.Picks.AddRange(Value().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)); break;
+                    case "--pick-file": o.Picks.AddRange(File.ReadAllLines(Value()).Select(l => l.Split('\t')[0].Trim()).Where(l => l.Length > 0 && !l.StartsWith('#'))); break;
+                    case "--list-picks": o.ListPicks = true; break;
                     default: why = $"모르는 옵션: {args[i]}"; return null;
                 }
             }

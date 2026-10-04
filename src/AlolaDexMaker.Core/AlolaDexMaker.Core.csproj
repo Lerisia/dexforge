@@ -13,6 +13,7 @@
     <EmbeddedResource Include="Data/sword/nx_save_meta.bin" LogicalName="sword.nx_save_meta" />
     <EmbeddedResource Include="Data/sword/balls.tsv" LogicalName="sword.balls" />
     <EmbeddedResource Include="Data/sword/trackers.tsv" LogicalName="sword.trackers" />
+    <EmbeddedResource Include="Data/events/distributions.tsv" LogicalName="events.distributions" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="AlolaDexMaker.Core.Tests" />

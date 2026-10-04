@@ -42,6 +42,8 @@ public sealed class Generator
     public Dictionary<Kind, int> Left { get; } = new() { [Kind.Plain] = 0, [Kind.Card] = 0, [Kind.Older] = 0 };
     /// <summary>Told, as the boxes are gone through, how many are done and of how many.</summary>
     public Action<int, int>? Step { get; init; }
+    /// <summary>The day the adventure began, where whoever asks fixes it instead of leaving it to the days asked for.</summary>
+    public DateOnly? BeganOn { get; init; }
 
     private static readonly DateOnly Released = new(2017, 11, 17);
     /// <summary>The days the console's clock and the save hold.</summary>
@@ -78,7 +80,32 @@ public sealed class Generator
 
     private bool IsHis(PKM pk, Trainer t) => pk.ID32 == t.Id32 && pk.OriginalTrainerName == t.Name && pk.Version == t.Version;
 
+    /// <summary>The national dex: the template's boxes, each Pokemon drawn again for the trainer asked for.</summary>
     public byte[] Run()
+    {
+        var boxes = Prologue();
+        FillDex(boxes);
+        Album();
+        // The Pokedex has seen whatever sex each one now is.
+        if (opt.Sex != SexChoice.Female)
+            for (int b = 0; b < sav.BoxCount; b++) foreach (var p in sav.GetBoxData(b)) if (p.Species != 0) sav.Zukan.SetDex(p);
+        return Finish();
+    }
+
+    /// <summary>
+    /// Something else in the template's boxes: the same trainer, adventure and party as the national dex gets, and then whatever
+    /// <paramref name="fill"/> puts in the boxes (and the album) in place of the dex. The Pokedex is marked for what is there.
+    /// </summary>
+    public byte[] RunWith(Action<SAV7, Trainer, DateOnly> fill)
+    {
+        Prologue();
+        fill(sav, Me, Began);
+        for (int b = 0; b < sav.BoxCount; b++) foreach (var p in sav.GetBoxData(b)) if (p.Species != 0) sav.Zukan.SetDex(p);
+        return Finish();
+    }
+
+    /// <summary>The trainer asked for, the day the adventure began, the party drawn again for that trainer; the template's boxes as they are, for whoever fills them.</summary>
+    private List<(int box, int slot, PK7 pk, LegalityAnalysis la)> Prologue()
     {
         if (ForeignNames.Refused(opt) is { } refused) throw new ArgumentException(refused);
         // The console's clock can be set to any day, so any period will do that the clock and the save can hold.
@@ -108,7 +135,7 @@ public sealed class Generator
         var first = opt.From.AddDays(-45);
         if (first > latest) first = Released < latest ? Released : latest.AddDays(-24);
         if (first < Earliest) first = Earliest;
-        Began = draw.Day(first, latest);
+        Began = BeganOn ?? draw.Day(first, latest);
 
         // The save's own trainer.
         sav.OT = Me.Name; sav.TID16 = Me.Tid; sav.SID16 = Me.Sid;
@@ -155,6 +182,11 @@ public sealed class Generator
         var platinumDay = draw.Day(opt.From, opt.To);
         older = new Older(draw, sav, Me, was, ko, opt, lettersDay, platinumDay);
 
+        return boxes;
+    }
+
+    private void FillDex(List<(int box, int slot, PK7 pk, LegalityAnalysis la)> boxes)
+    {
         // Shaymin before Manaphy: whoever hatches the egg is the trainer Shaymin was caught by.
         int gone = 0;
         foreach (var (box, slot, pk, la) in boxes.OrderBy(x => KindOf(x.pk, x.la) == Kind.Older && x.pk.Species == 490 ? 1 : 0))
@@ -191,10 +223,10 @@ public sealed class Generator
             if (made is null) Problems.Add("피오네: 다시 뽑지 못함"); else sav.SetBoxSlotAtIndex(Raise(Dress(made)), box, slot, EntityImportSettings.None);
         }
 
-        Album();
-        // The Pokedex has seen whatever sex each one now is.
-        if (opt.Sex != SexChoice.Female)
-            for (int b = 0; b < sav.BoxCount; b++) foreach (var p in sav.GetBoxData(b)) if (p.Species != 0) sav.Zukan.SetDex(p);
+    }
+
+    private byte[] Finish()
+    {
         var written = sav.Write().ToArray();
         if (!SaveUtil.TryGetSaveFile(written.ToArray(), out var again) || again is not SAV7 s2) throw new InvalidOperationException("what was written does not read back");
         var block = s2.AllBlocks.Single(b => b.ID == 3);
@@ -422,7 +454,7 @@ public sealed class Generator
         var diff = new List<string>();
         void C(string n, object x, object y) { if (!Equals(x, y)) diff.Add($"{n} {x}→{y}"); }
         C("species", a.Species, b.Species); C("form", a.Form, b.Form); C("level", a.CurrentLevel, b.CurrentLevel); C("met level", a.MetLevel, b.MetLevel);
-        if (ball) C("ball", a.Ball, b.Ball);
+        if (ball) C("ball", SexBalls.Expected(a, b.Gender), (int)b.Ball);
         if (sex) C("gender", a.Gender, b.Gender);
         C("language", a.Language, b.Language); C("version", a.Version, b.Version);
         C("move1", a.Move1, b.Move1); C("move2", a.Move2, b.Move2); C("move3", a.Move3, b.Move3); C("move4", a.Move4, b.Move4);
@@ -520,7 +552,7 @@ public sealed class Generator
                     if (pk.HandlingTrainerName == was.Name) { pk.HandlingTrainerName = Me.Name; pk.HandlingTrainerGender = Me.Gender; }
                     Nursery7.Put(pk, egg);
                     if (shed) pk.Gender = old.Gender;
-                    pk.Ball = (byte)ball;
+                    pk.Ball = (byte)(opt.Ball is null ? SexBalls.Expected(old, pk.Gender) : ball);
                     pk.MetDate = day;
                     if (old.EggMetDate is not null) pk.EggMetDate = day;
                     pk.RefreshChecksum();

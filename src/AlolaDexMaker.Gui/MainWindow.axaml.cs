@@ -42,7 +42,9 @@ public partial class MainWindow : Window
 
         foreach (var box in new[] { SidBox, TidBox }) box.PropertyChanged += (_, e) => { if (e.Property == TextBox.TextProperty) Ids(); };
         foreach (var r in new[] { OneBall, PickedBalls, Plain, Shiny, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred }) r.IsCheckedChanged += (_, _) => Hints();
-        foreach (var r in new[] { GameUltraSun, GameSword }) r.IsCheckedChanged += (_, _) => { GameChanged(); Hints(); };
+        foreach (var r in new[] { GameUltraSun, GameSword, GameEventBox }) r.IsCheckedChanged += (_, _) => { GameChanged(); Hints(); };
+        foreach (var r in new[] { ReceivedAnyDay, ReceivedFirstDays }) r.IsCheckedChanged += (_, _) => Hints();
+        FirstDaysBox.GotFocus += (_, _) => ReceivedFirstDays.IsChecked = true;
         BallBox.SelectionChanged += (_, _) => { OneBall.IsChecked = true; Hints(); };
         Ids(); GameChanged(); Hints(); Rest();
     }
@@ -95,26 +97,70 @@ public partial class MainWindow : Window
     /// <summary>Before anything is made: how long it is going to take.</summary>
     private void Rest()
     {
-        Say("만드는 데 몇 초 걸립니다.", "Muted");
+        Say(IsEventBox ? "만드는 데 1분쯤 걸립니다." : IsSword ? "만드는 데 몇 분 걸립니다." : "만드는 데 몇 초 걸립니다.", "Muted");
     }
 
     /// <summary>Sword or Ultra Sun: which rows there are to fill.</summary>
     public bool IsSword => GameSword.IsChecked == true;
+    /// <summary>The event box: an Ultra Sun save of every distribution.</summary>
+    public bool IsEventBox => GameEventBox.IsChecked == true;
+
+    /// <summary>What was picked for the event box's spare room, by key.</summary>
+    public List<string> Picks { get; } = [];
 
     private void GameChanged()
     {
-        bool sword = IsSword;
-        foreach (var row in new Control[] { ForeignRow, IvRow, SexRow, LevelRow, PeriodRow }) row.IsVisible = !sword;
+        bool sword = IsSword, events = IsEventBox;
+        foreach (var row in new Control[] { ForeignRow, IvRow, SexRow, LevelRow, PeriodRow }) row.IsVisible = !sword && !events;
+        foreach (var row in new Control[] { BallRow, ColourRow }) row.IsVisible = !events;
         YearRow.IsVisible = sword;
-        Subtitle.Text = sword
-            ? "소드 전국도감 세이브 만들기 · 663종 755마리 (폼까지) · 한국어"
+        ReceivedRow.IsVisible = events; CustomRow.IsVisible = events;
+        Subtitle.Text = events
+            ? "배포 박스 세이브 만들기 · 3~7세대 배포 751건 + 최종 진화체 · 울트라썬, 한국어"
+            : sword
+            ? "소드 전국도감 세이브 만들기 · 663종 760마리 (폼까지) · 한국어"
             : "울트라썬 전국도감 세이브 만들기 · 807종 · 한국 본체, 한국어, 여자 주인공";
-        GameHint.Text = sword
+        GameHint.Text = events
+            ? "3세대부터 7세대까지의 모든 배포 카드(한국 > 일본 > 미국 > 유럽 순으로 하나씩), 알은 부화시켜, 미진화체는 최종 진화체도. 전부 배포 기간 안의 날짜로 받아 7세대까지 올린 것으로 만듭니다."
+            : sword
             ? "가라르·갑옷섬·왕관설원 도감의 전 종과 폼. 알이 되는 것은 알, 화석은 화석, 전설은 고정 조우와 다이맥스 어드벤처, 환상은 배포 카드. JKSV 로 복원하는 폴더가 나옵니다."
             : "전국도감 807종. 알이 되는 것은 알, 나머지는 이 게임에서 잡거나 받은 것, 배포, 이전 게임에서 온 것.";
-        WhereHint.Text = sword
+        WhereHint.Text = events
+            ? "이 안에 'AlolaDexMaker-EventBox-이름-TID' 폴더를 만들어 세이브(main)와 기록을 씁니다."
+            : sword
             ? "이 안에 'AlolaDexMaker-Sword-이름-TID' 폴더를 만들어 JKSV 백업(main 등 네 파일)과 기록을 씁니다."
             : "이 안에 'AlolaDexMaker-이름-TID' 폴더를 만들어 세이브(main)와 기록을 씁니다.";
+    }
+
+    /// <summary>What the form asks for the event box; or what on it cannot be read.</summary>
+    public bool ReadEvents(out EventBox.EventOptions asked, out string why)
+    {
+        asked = null!; why = "";
+        var name = (NameBox.Text ?? "").Trim();
+        if (name.Length == 0) name = DefaultName;
+        if (name.Length > 6) { why = "어버이 이름은 6글자까지입니다."; NameBox.Focus(); return false; }
+        if (IdsRefused() is { } badId) { why = badId; (Id(SidBox.Text, 4, out _) ? TidBox : SidBox).Focus(); return false; }
+        Id(SidBox.Text, 4, out var sid); Id(TidBox.Text, 6, out var tid);
+        int firstDays = 0;
+        if (ReceivedFirstDays.IsChecked == true && (!int.TryParse((FirstDaysBox.Text ?? "").Trim(), out firstDays) || firstDays < 1 || firstDays > 999))
+        { why = "처음 며칠인지 1 에서 999 사이의 수로 적어 주세요."; FirstDaysBox.Focus(); return false; }
+        asked = new EventBox.EventOptions(name, tid, sid, Random.Shared.Next(), firstDays, Picks.ToList());
+        return true;
+    }
+
+    private PickWindow? picker;
+
+    /// <summary>The spare room's list, beside the form.</summary>
+    private async void Pick(object? sender, RoutedEventArgs e)
+    {
+        if (picker is not null) { picker.Activate(); return; }
+        picker = new PickWindow(Picks);
+        picker.Closed += (_, _) =>
+        {
+            picker = null;
+            PickCount.Text = Picks.Count == 0 ? "고른 것 없음" : $"{Picks.Count}개 고름 (빈 칸 {EventBox.EventBoxMaking.Room}개)";
+        };
+        await picker.ShowDialog(this);
     }
 
     public bool Read8(out Options8 asked, out string why)
@@ -161,6 +207,12 @@ public partial class MainWindow : Window
     private void Make(object? sender, RoutedEventArgs e)
     {
         if (busy) return;
+        if (IsEventBox)
+        {
+            if (!ReadEvents(out var askedE, out var whyE)) { Refuse([whyE]); return; }
+            Working = Work(into => EventBox.EventBoxMaking.Run(askedE, null, into, (done, of) => Dispatcher.UIThread.Post(() => Going(done, of))));
+            return;
+        }
         if (IsSword)
         {
             if (!Read8(out var asked8, out var why8)) { Refuse([why8]); return; }
@@ -213,7 +265,7 @@ public partial class MainWindow : Window
         var lines = new List<string>();
         if (made.Me is { } me) lines.Add($"{me.Name} · SID {me.Sid7:0000} · TID {me.Shown:000000}");
         if (made.Checked is { } c) lines.Add($"포켓몬 {c.Count}마리 · {c.Species}종 · 이로치 {c.Shiny}마리 · 합법 {c.Legal} / {c.Count}");
-        else lines.AddRange(made.Lines.Where(l => l.StartsWith("포켓몬") || l.StartsWith("합법") || l.StartsWith("이로치") || l.StartsWith("도감")).Select(l => string.Join(' ', l.Split(' ', StringSplitOptions.RemoveEmptyEntries))));
+        else lines.AddRange(made.Lines.Where(l => l.StartsWith("포켓몬") || l.StartsWith("박스") || l.StartsWith("합법") || l.StartsWith("이로치") || l.StartsWith("도감") || l.StartsWith("앨범")).Select(l => string.Join(' ', l.Split(' ', StringSplitOptions.RemoveEmptyEntries))));
         lines.Add(made.Folder!);
         Detail.Text = string.Join("\n", lines); Detail.IsVisible = true;
         OpenButton.IsVisible = true;
@@ -231,7 +283,7 @@ public partial class MainWindow : Window
     {
         busy = now;
         MakeButton.IsEnabled = !now;
-        foreach (var c in new Control[] { GameUltraSun, GameSword, NameBox, EnglishBox, JapaneseBox, ChineseBox, SidBox, TidBox, OneBall, BallBox, PickedBalls, Plain, Shiny, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred, YearBox, FromBox, ToBox, ChooseButton }) c.IsEnabled = !now;
+        foreach (var c in new Control[] { GameUltraSun, GameSword, GameEventBox, NameBox, EnglishBox, JapaneseBox, ChineseBox, SidBox, TidBox, OneBall, BallBox, PickedBalls, Plain, Shiny, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred, YearBox, FromBox, ToBox, ChooseButton, ReceivedAnyDay, ReceivedFirstDays, FirstDaysBox, PickButton }) c.IsEnabled = !now;
     }
 
     private HelpWindow? help;
