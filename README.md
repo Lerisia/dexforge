@@ -157,6 +157,9 @@ tools/
   Reference/    a test bench compiled from 3DSRNGTool's original source, and the script that makes the reference vectors
   BallTable/    makes the per-ball "cannot be in this ball" table (Data/BallFits.cs)
   pla-spawners/ makes the Legends: Arceus spawner table from the game's spawner data (through the PLA bot's seed tools)
+  effort/       classifies every species by its Smogon sets for the Effort Ribbon's EV spread (Data/*/effort.tsv)
+  event-dates/  dates the Sword and Scarlet distributions from Serebii and Bulbapedia (Data/*/events.tsv)
+  scarlet/      the Scarlet plan and the ball-picker page the owner chose the balls on
 docs/screenshots/   pictures of the window (taken by the tests with DEXGEN_GUI_SHOTS)
 ```
 

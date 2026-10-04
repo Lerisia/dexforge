@@ -77,7 +77,7 @@ def parse_block(num, block, region, year):
 
 def main():
     out = ['\t'.join(['번호', '지역단', '연도단', '이름', '이로치', '레벨', 'OT', 'ID', '특성', '도구', '성격', '기술', '설명', '종류', '장소', '시작', '끝', '게임'])]
-    files = sorted(HERE.glob('[0-9][0-9][0-9].html'))
+    files = sorted(HERE.glob('[0-9][0-9][0-9].html')) + sorted(HERE.glob('[0-9][0-9][0-9][0-9].html'))
     n = 0
     for p in files:
         for e in parse_page(p):

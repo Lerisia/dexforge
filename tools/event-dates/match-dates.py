@@ -31,6 +31,7 @@ SEREBII_GAME_GEN = [
     (6, r'\bX\b|\bY\b|Omega ?Ruby|Alpha ?Sapphire'),
     (7, r'\bSun\b|\bMoon\b|Ultra'),
     (8, r'Sword|Shield|HOME'),
+    (9, r'Scarlet|Violet'),
 ]
 # the eighth generation's cards are one card for every language; a Korean save receives any of them in Korean, so the date is
 # the Korean window where there was one, then Japan's, then the rest
@@ -151,7 +152,7 @@ def score(card, e):
     why = []; s = 0
     tid7 = (int(sid or 0) * 65536 + int(tid or 0)) % 1000000 if tid.isdigit() else -1  # what gen 7 and 8 show and the sites list
     ids = {int(x) for x in e.ids.split() if x.isdigit()}
-    if tid.isdigit() and ids and (int(tid) in ids or (gen in ('7', '8') and tid7 in ids)): s += 3; why.append('ID')
+    if tid.isdigit() and ids and (int(tid) in ids or (gen in ('7', '8', '9') and tid7 in ids)): s += 3; why.append('ID')
     spellings = {norm(x) for x in [ot] + list(card[22:24]) if x}   # the eighth generation's cards name the trainer in every language
     anonymous = not ot or egg or tid in ('0', '65535')  # eggs and in-game gifts carry the receiver's name
     pc = 'PCJP' in kind or 'PCNY' in kind  # Pokémon Center gifts: PKHeX fixes no OT (PCNYa…d, or the Japanese shop names)
@@ -170,6 +171,8 @@ def score(card, e):
     elif e.gens: s -= 2
     if e.region in REGION_OK.get(region, set()): s += 1; why.append('지역')
     if title and e.extra.get('titles') and norm(title) in {norm(t) for t in e.extra['titles'].split(' | ')}: s += 2; why.append('카드제목')
+    cardno = card[24] if len(card) > 24 else ''
+    if cardno and e.extra.get('titles') and re.search(r'Wonder Card ' + re.escape(cardno) + r'\b', e.extra['titles']): s += 3; why.append('카드번호')
     if e.shiny == (shiny == 'Always'): s += 0.5
     if not e.start: s -= 1  # a record without a date is of no use here
     return s, why
@@ -178,7 +181,7 @@ def accepted(why):
     # a receiver-named egg or Pokémon Center gift is only told apart from its foreign twin by region
     has_ot = 'OT' in why or 'OT≈' in why or (('OT=받는이' in why or 'OT=센터' in why) and '지역' in why)
     moves_ok = '기술' in why or ('기술3/4' in why and '지역' in why) or ('OT=센터' in why and '지역' in why)  # PCJP templates carry no moves
-    return ('세대' in why and ('ID' in why or (has_ot and moves_ok and 'Lv' in why))) or ('ID' in why and 'OT' in why) or ('카드제목' in why and (has_ot or 'ID' in why))
+    return ('세대' in why and ('ID' in why or (has_ot and moves_ok and 'Lv' in why))) or ('ID' in why and 'OT' in why) or ('카드제목' in why and (has_ot or 'ID' in why)) or ('카드번호' in why and (has_ot or 'ID' in why or 'Lv' in why))
 
 def manual():
     """날짜-수동.tsv: dates I looked up by hand where no source record matched; keyed by generation, species, OT and TID."""
@@ -244,7 +247,7 @@ def id_date(gen, tid, sid):
     """Many Korean and Japanese cards carry the start date in the ID: gen 7 as YYMMDD (170919), gen 4–5 as MMDDY (12160 = Dec 16 2010).
     Returns (yy, mm, dd) with yy None for the one-digit year, or None."""
     if not tid.isdigit(): return None
-    if gen in ('7', '8'):
+    if gen in ('7', '8', '9'):
         t7 = (int(sid or 0) * 65536 + int(tid)) % 1000000
         yy, mm, dd = t7 // 10000, t7 // 100 % 100, t7 % 100
         if 1 <= mm <= 12 and 1 <= dd <= 31 and 13 <= yy <= 26: return (2000 + yy, mm, dd)
@@ -300,8 +303,8 @@ def main():
         for src in ('Serebii', 'Bulbapedia', '나무위키', 'ポケモンWiki', 'PokéWiki'):
             pool = [e for e in events if e.source == src]
             m = None
-            if gen == '8':
-                pool = [e for e in pool if 8 in e.gens or not e.gens]   # Serebii's pages carry every generation's events
+            if gen in ('8', '9'):
+                pool = [e for e in pool if int(gen) in e.gens or not e.gens]   # Serebii's pages carry every generation's events
                 # a card with a trainer id is only ever the records that carry it, when the source has any
                 tid6 = (int(sid or 0) * 65536 + int(tid or 0)) % 1000000 if tid.isdigit() else 0
                 if tid6:
@@ -334,7 +337,7 @@ def main():
             others = [v for k, v in per_source.items() if k != src_best]
             # a window is only checked against the same country's record: another country's dates are a different window
             # (Bulbapedia's Sword and Shield list often names no country at all — such a record may belong to any)
-            if gen == '8': others = [o for o in others if o['event'].region == primary['event'].region or (o['event'].source == 'Bulbapedia' and o['event'].region == 'Global')]
+            if gen in ('8', '9'): others = [o for o in others if o['event'].region == primary['event'].region or (o['event'].source == 'Bulbapedia' and o['event'].region == 'Global')]
         else:
             primary = None
         if primary:
