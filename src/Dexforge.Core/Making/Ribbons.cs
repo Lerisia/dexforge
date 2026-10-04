@@ -24,7 +24,7 @@ public static class Ribbons
     public static readonly IReadOnlyList<Ribbon> All =
     [
         new("RibbonChampionAlola", "알로라챔피언리본", "알로라 챔피언", "알로라 포켓몬리그 전당등록"),
-        new("RibbonEffort", "노력리본", "한때는 노력했던", "기초 포인트 510 — 붙이면 HP·방어·특수방어에 170씩 채웁니다"),
+        new("RibbonEffort", "노력리본", "한때는 노력했던", "기초 포인트 510 — 종마다 탱커·저속·고속 어태커로 252/252/6 을 채웁니다"),
         new("RibbonBestFriends", "절친리본", "절친", "절친도와 친밀도를 최대로 둡니다"),
         new("RibbonFootprint", "발자국리본", "발자국이 훌륭한", "만난 레벨보다 30 이상 올라야 합니다 — 레벨 100 이면 전부, 최저 레벨이면 되는 포켓몬만"),
         new("RibbonBattleTreeGreat", "그레이트트리리본", "트리 위너", "배틀트리 20연승"),
@@ -91,8 +91,8 @@ public static class Ribbons
         switch (key)
         {
             case "RibbonEffort":
-                // 510 effort points, spread where they change the least about how it fights: HP, Defense, Sp. Defense
-                if (pk.EVTotal < 510) { pk.EV_HP = 170; pk.EV_DEF = 170; pk.EV_SPD = 170; pk.EV_ATK = pk.EV_SPA = pk.EV_SPE = 0; }
+                // 510 effort points, spent the way the species is trained (see Effort)
+                if (pk.EVTotal < 510) Effort.Apply(pk);
                 break;
             case "RibbonBestFriends":
                 pk.CurrentFriendship = 255;

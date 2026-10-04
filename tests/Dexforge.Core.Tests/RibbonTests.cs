@@ -33,6 +33,7 @@ public class RibbonTests
         Assert.Equal(3, put);   // the Sinnoh one needs a game this Pokémon never saw
         Assert.True(pk.RibbonChampionAlola && pk.RibbonBestFriends && pk.RibbonEffort && !pk.RibbonChampionSinnoh);
         Assert.Equal(510, pk.EVTotal);
+        Assert.Equal(Effort.Spread(Effort.Of(25, 0, pk.Gender)!.Value), new[] { pk.EV_HP, pk.EV_ATK, pk.EV_DEF, pk.EV_SPE, pk.EV_SPA, pk.EV_SPD });
         Assert.Equal(255, pk.OriginalTrainerAffection);
         Assert.True(new LegalityAnalysis(pk).Valid);
 
@@ -45,5 +46,23 @@ public class RibbonTests
         var pkc = (PK7)card.Clone();
         Assert.Equal(0, Ribbons.Put(pkc, ["RibbonChampionAlola"]));
         Assert.False(pkc.RibbonChampionAlola);
+    }
+
+    [Fact]
+    public void Every_Pokemon_of_the_dex_has_an_effort_class_and_the_known_ones_are_right()
+    {
+        var sav = Template.Read(Template.Bytes);
+        foreach (var p in Template.Pokemon(sav, party: false))
+            if (!p.FatefulEncounter && new LegalityAnalysis(p).EncounterMatch is not MysteryGift)
+                Assert.True(Effort.Of(p.Species, p.Form, p.Gender).HasValue, $"{p.Species}-{p.Form}");
+        Assert.Equal(EffortClass.Tank, Effort.Of(143, 0, 0));            // Snorlax
+        Assert.Equal(EffortClass.FastPhysical, Effort.Of(445, 0, 0));    // Garchomp
+        Assert.Equal(EffortClass.FastSpecial, Effort.Of(65, 0, 0));      // Alakazam
+        Assert.Equal(EffortClass.SlowSpecial, Effort.Of(133, 0, 0));     // Eevee, after Sylveon as the owner chose
+        Assert.Equal(EffortClass.FastSpecial, Effort.Of(789, 0, 2));     // Cosmog, after Lunala
+        Assert.Equal(EffortClass.Tank, Effort.Of(412, 1, 1));            // Burmy (Sandy), after Wormadam
+        Assert.Null(Effort.Of(25, 7, 0));                                // a cap Pikachu is from a card and has no line
+        Assert.Equal([252, 0, 252, 0, 0, 6], Effort.Spread(EffortClass.Tank));
+        Assert.Equal([6, 0, 0, 252, 252, 0], Effort.Spread(EffortClass.FastSpecial));
     }
 }

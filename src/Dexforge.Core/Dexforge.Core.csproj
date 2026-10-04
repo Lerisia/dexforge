@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="PKHeX.Core" Version="26.8.26" />
     <EmbeddedResource Include="Data/template/dex" LogicalName="template.dex" />
+    <EmbeddedResource Include="Data/template/effort.tsv" LogicalName="template.effort" />
     <EmbeddedResource Include="Data/sword/main" LogicalName="sword.main" />
     <EmbeddedResource Include="Data/sword/backup" LogicalName="sword.backup" />
     <EmbeddedResource Include="Data/sword/poke_trade" LogicalName="sword.poke_trade" />
