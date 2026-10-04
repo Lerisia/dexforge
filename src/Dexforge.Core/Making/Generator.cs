@@ -210,7 +210,7 @@ public sealed class Generator
             if (pk.Species != 489 && made.IsShiny != Shines(opt, pk, la.EncounterMatch)) { Problems.Add($"{Name(pk)}: 색이 요청과 다름"); continue; }
             if (pk.Species != 489 && sex is { } s && made.Gender != s) { Problems.Add($"{Name(pk)}: 성별이 요청과 다름"); continue; }
             // Phione waits for its day and is drawn, and put in its ball, further down.
-            sav.SetBoxSlotAtIndex(pk.Species == 489 ? made : Raise(Dress(made)), box, slot, EntityImportSettings.None);
+            sav.SetBoxSlotAtIndex(pk.Species == 489 ? made : Decorate(Raise(Dress(made))), box, slot, EntityImportSettings.None);
             Done[kind]++;
         }
 
@@ -220,7 +220,7 @@ public sealed class Generator
             var manaphy = (PK7)sav.GetBoxData(boxes.Single(x => x.pk.Species == 490).box)[boxes.Single(x => x.pk.Species == 490).slot];
             var from = manaphy.MetDate!.Value > opt.From ? manaphy.MetDate!.Value : opt.From;
             var made = Again(pk, la, draw.Day(from, opt.To));
-            if (made is null) Problems.Add("피오네: 다시 뽑지 못함"); else sav.SetBoxSlotAtIndex(Raise(Dress(made)), box, slot, EntityImportSettings.None);
+            if (made is null) Problems.Add("피오네: 다시 뽑지 못함"); else sav.SetBoxSlotAtIndex(Decorate(Raise(Dress(made))), box, slot, EntityImportSettings.None);
         }
 
     }
@@ -249,6 +249,18 @@ public sealed class Generator
     public int AbilityGivenUp { get; private set; }
 
     /// <summary>To level 100 where that is asked for, by Rare Candies: the moves stay as they are.</summary>
+    /// <summary>How many Pokémon took each ribbon asked for.</summary>
+    public readonly Dictionary<string, int> RibbonsPut = new();
+
+    /// <summary>The ribbons asked for, each where PKHeX allows it; what came on a card keeps its own.</summary>
+    private PK7 Decorate(PK7 made)
+    {
+        if (opt.Ribbons.Count == 0) return made;
+        foreach (var key in opt.Ribbons)
+            if (Ribbons.Put(made, [key]) > 0) RibbonsPut[key] = RibbonsPut.GetValueOrDefault(key) + 1;
+        return made;
+    }
+
     private PK7 Raise(PK7 made)
     {
         if (opt.Level != LevelChoice.Hundred) return made;

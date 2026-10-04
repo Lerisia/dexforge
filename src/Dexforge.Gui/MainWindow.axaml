@@ -135,6 +135,17 @@
           </StackPanel>
         </Grid>
 
+        <Grid x:Name="RibbonRow" ColumnDefinitions="112,*">
+          <TextBlock Classes="label" Text="리본" />
+          <StackPanel Grid.Column="1" Spacing="2">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Button x:Name="RibbonButton" Content="고르기…" Click="PickRibbons" />
+              <TextBlock x:Name="RibbonCount" Classes="hint" VerticalAlignment="Center" Text="고른 리본 없음" />
+            </StackPanel>
+            <TextBlock x:Name="RibbonHint" Classes="hint" Text="고른 리본을 받을 수 있는 포켓몬 전부에 붙입니다 (배포 포켓몬은 제외)." />
+          </StackPanel>
+        </Grid>
+
         <Grid x:Name="YearRow" ColumnDefinitions="112,*" IsVisible="False">
           <TextBlock Classes="label" Text="얻은 해" />
           <StackPanel Grid.Column="1" Spacing="6">

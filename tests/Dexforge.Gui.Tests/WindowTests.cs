@@ -406,3 +406,35 @@ public class TheArceusSide
         Assert.Equal(MainWindow.DefaultFrom, The<DayBox>(w, "FromBox").Day);
     }
 }
+
+public class TheRibbonPicker
+{
+    [AvaloniaFact]
+    public void TickingRibbonsHandsBackTheirKeys()
+    {
+        var keys = new List<string> { "RibbonBestFriends" };
+        var w = new RibbonWindow(keys); w.Show();
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(Ribbons.All.Count, w.Rows.Count);
+        Assert.Single(w.Rows, r => r.Checked);
+        Assert.All(w.Rows, r => Assert.NotNull(r.Picture));
+        w.Rows.First(r => r.Ribbon.Key == "RibbonChampionAlola").Checked = true;
+        var done = w.GetLogicalDescendants().OfType<Button>().First(b => (b.Content as string) == "담기");
+        done.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(["RibbonChampionAlola", "RibbonBestFriends"], keys);
+    }
+
+    [AvaloniaFact]
+    public void TheMainWindowPassesThemOn()
+    {
+        var w = new MainWindow(); w.Show();
+        Assert.True(w.FindControl<Grid>("RibbonRow")!.IsVisible);
+        w.RibbonKeys.Add("RibbonEffort");
+        Assert.True(w.Read(out var asked, out var why), why);
+        Assert.Equal(["RibbonEffort"], asked.Ribbons);
+        w.FindControl<RadioButton>("GameSword")!.IsChecked = true;
+        Dispatcher.UIThread.RunJobs();
+        Assert.False(w.FindControl<Grid>("RibbonRow")!.IsVisible);
+    }
+}

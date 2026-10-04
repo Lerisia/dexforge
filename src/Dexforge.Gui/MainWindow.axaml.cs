@@ -120,11 +120,26 @@ public partial class MainWindow : Window
 
     /// <summary>What was picked for the event box's spare room, by key.</summary>
     public List<string> Picks { get; } = [];
+    /// <summary>The ribbons picked for the national dex, by PKHeX's keys.</summary>
+    public List<string> RibbonKeys { get; } = [];
+    private RibbonWindow? ribbonPicker;
+
+    private async void PickRibbons(object? sender, RoutedEventArgs e)
+    {
+        if (ribbonPicker is not null) { ribbonPicker.Activate(); return; }
+        ribbonPicker = new RibbonWindow(RibbonKeys);
+        ribbonPicker.Closed += (_, _) =>
+        {
+            ribbonPicker = null;
+            RibbonCount.Text = RibbonKeys.Count == 0 ? "고른 리본 없음" : string.Join(", ", RibbonKeys.Select(k => Ribbons.Find(k)?.Name ?? k));
+        };
+        await ribbonPicker.ShowDialog(this);
+    }
 
     private void GameChanged()
     {
         bool sword = IsSword, events = IsEventBox, arceus = IsArceus;
-        foreach (var row in new Control[] { ForeignRow, IvRow }) row.IsVisible = !sword && !events && !arceus;
+        foreach (var row in new Control[] { ForeignRow, IvRow, RibbonRow }) row.IsVisible = !sword && !events && !arceus;
         foreach (var row in new Control[] { SexRow, LevelRow, PeriodRow }) row.IsVisible = !sword && !events;
         foreach (var row in new Control[] { BallRow, ColourRow }) row.IsVisible = !events;
         YearRow.IsVisible = sword;
@@ -244,7 +259,7 @@ public partial class MainWindow : Window
         var ivs = IvFive.IsChecked == true ? IvChoice.FiveFromEggs : IvChoice.Random;
         var sex = SexMale.IsChecked == true ? SexChoice.Male : SexFemale.IsChecked == true ? SexChoice.Female : SexChoice.Random;
         var level = LevelHundred.IsChecked == true ? LevelChoice.Hundred : LevelChoice.Lowest;
-        asked = new Options(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, ivs, Shiny.IsChecked == true, level, sex, english, japanese, chinese);
+        asked = new Options(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, ivs, Shiny.IsChecked == true, level, sex, english, japanese, chinese) { Ribbons = RibbonKeys.ToList() };
         if (ForeignNames.Refused(asked) is { } refused) { why = refused; return false; }
         return true;
     }

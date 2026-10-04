@@ -40,6 +40,8 @@ internal static class Arguments
                     case "--from": o.From = DateOnly.Parse(Value()); o.DatesGiven = true; break;
                     case "--to": o.To = DateOnly.Parse(Value()); o.DatesGiven = true; break;
                     case "--size": if (!SizeNames.Find(Value(), out o.Size)) { why = SizeNames.Help; return null; } break;
+                    case "--ribbons": o.Ribbons.AddRange(Value().Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)); break;
+                    case "--list-ribbons": o.ListRibbons = true; break;
                     case "--seed": o.Seed = int.Parse(Value()); break;
                     case "--out": o.Out = Value(); break;
                     case "--first-days": o.FirstDays = int.Parse(Value()); break;

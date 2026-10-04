@@ -198,4 +198,16 @@ public class CommandLineTests
         Assert.Null(Arguments.Parse(["--game", "arceus", "--ball", "마스터볼"], out _)?.ToOptions8a(out why));
         Assert.Contains("히스이 볼", why);
     }
+
+    [Fact]
+    public void RibbonsAreNamedInKoreanOrByKey()
+    {
+        var o = Arguments.Parse(["--ribbons", "알로라챔피언,절친리본,RibbonEffort"], out var why);
+        Assert.NotNull(o); Assert.Equal("", why);
+        var asked = o!.ToOptions(out why);
+        Assert.NotNull(asked); Assert.Equal("", why);
+        Assert.Equal(["RibbonChampionAlola", "RibbonBestFriends", "RibbonEffort"], asked!.Ribbons);
+        Assert.Null(Arguments.Parse(["--ribbons", "클래식"], out _)!.ToOptions(out why));
+        Assert.Contains("없거나 붙일 수 없습니다", why);
+    }
 }

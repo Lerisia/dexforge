@@ -20,12 +20,15 @@ internal sealed class Order
     /// <summary>Whether a period was typed; Legends: Arceus otherwise takes its own release year.</summary>
     public bool DatesGiven;
     public SizeChoice Size = SizeChoice.Random;
+    /// <summary>The ribbons to put on every Pokémon of the national dex that can take them, by name or PKHeX key.</summary>
+    public List<string> Ribbons = [];
     public int Seed = Random.Shared.Next();
     public string? Out;
     /// <summary>Event box: received within the first so many days of each distribution (0: anywhere in its window), and what was picked for the spare room.</summary>
     public int FirstDays = 0;
     public List<string> Picks = [];
     public bool ListPicks;
+    public bool ListRibbons;
 
     /// <summary>The options asked for; or why they cannot be. The rest is refused by the generator itself, with its reason.</summary>
     public Options? ToOptions(out string why)
@@ -34,7 +37,13 @@ internal sealed class Order
         if (Name.Length is < 1 or > 6) { why = "어버이 이름은 1글자에서 6글자 사이여야 합니다."; return null; }
         int? ball = (int)PKHeX.Core.Ball.Poke;
         if (Ball is not null && !BallNames.Find(Ball, out ball, out why)) return null;
-        return new Options(Name, Tid, Sid, From, To, Seed, ball, Ivs, Shiny, Level, Sex, English, Japanese, Chinese);
+        var ribbons = new List<string>();
+        foreach (var r in Ribbons)
+        {
+            if (Dexforge.Ribbons.Find(r) is not { } found) { why = $"'{r}' 라는 리본은 없거나 붙일 수 없습니다. 고를 수 있는 리본: {string.Join(", ", Dexforge.Ribbons.All.Select(x => x.Name))}"; return null; }
+            if (!ribbons.Contains(found.Key)) ribbons.Add(found.Key);
+        }
+        return new Options(Name, Tid, Sid, From, To, Seed, ball, Ivs, Shiny, Level, Sex, English, Japanese, Chinese) { Ribbons = ribbons };
     }
 
     /// <summary>The Sword options asked for; or why they cannot be.</summary>

@@ -62,6 +62,7 @@ public static class Making
             $"모험 시작     {gen.Began:yyyy-MM-dd}",
             $"상대 버전     울트라문의 {gen.Moon.Name} {gen.Moon.Tid:00000}/{gen.Moon.Sid:00000} (화면 {gen.Moon.Shown:000000})",
             $"시드          {opt.Seed}",
+            $"리본          {(opt.Ribbons.Count == 0 ? "없음" : string.Join(", ", opt.Ribbons.Select(k => Ribbons.Find(k)?.Name ?? k)))}",
             "",
         };
         if (gen.Problems.Count != 0)
@@ -81,6 +82,8 @@ public static class Making
             lines.Add($"볼            {string.Join(", ", gen.Balls.OrderByDescending(x => x.Value).Select(x => $"{balls[x.Key]} {x.Value}"))}");
             if (gen.AbilityGivenUp != 0) lines.Add($"              그 볼에 넣으려고 숨겨진 특성을 일반 특성으로 바꾼 것 {gen.AbilityGivenUp}마리");
         }
+        if (opt.Ribbons.Count != 0)
+            lines.Add($"리본 붙은 수  {string.Join(", ", opt.Ribbons.Select(k => $"{Ribbons.Find(k)?.Name ?? k} {gen.RibbonsPut.GetValueOrDefault(k)}"))} (배포 포켓몬과 PKHeX 가 거절한 것은 제외)");
         lines.Add($"새로 뽑은 것  {result.Redrawn}마리");
         lines.Add($"카드가 값을 정해 둔 것 (누가 받아도 같음): {(result.Fixed.Count == 0 ? "없음" : string.Join(", ", result.Fixed))}");
         lines.Add("");

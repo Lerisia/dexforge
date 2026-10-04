@@ -21,6 +21,12 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
             foreach (var c in Dexforge.EventBox.Custom.Candidates(Dexforge.EventBox.Rows.Distributions(), numbers)) output.WriteLine($"{c.Key}\t{c.Label}");
             return 0;
         }
+        if (order.ListRibbons)
+        {
+            // the ribbons the national dex can be asked for: the word to type, the name, the title, what it takes
+            foreach (var r in Ribbons.All) output.WriteLine($"{r.Name}\t{r.Title}\t{r.Note}{(r.OnlyOlder ? " (4세대 출신만)" : "")}");
+            return 0;
+        }
         if (asking) new Questions(input, output).Fill(order);
         return Finish(asking, Make(order));
     }

@@ -71,6 +71,7 @@ Dexforge.Cli --game eventbox --name 미월 --first-days 7 --pick D:2522,E:1215:2
 | `--sex` | `male` (수컷), `female` (암컷), `random` (랜덤) | `random` |
 | `--level` | `lowest` (최저), `100` | `lowest` |
 | `--from` `--to` | first and last day of the period the Pokémon were obtained in | 2018-01-01 – 2018-12-31 |
+| `--ribbons` | (Ultra Sun) ribbons to put on every Pokémon that can take them, by Korean name, comma-separated (`--list-ribbons` prints them with their titles) | none |
 | `--seed` | the seed of the draw | random |
 | `--out` | the folder to write into | `Dexforge-<name>-<TID>` |
 
@@ -84,6 +85,7 @@ Dexforge.Cli --game eventbox --name 미월 --first-days 7 --pick D:2522,E:1215:2
   Random follows the species' gender ratio, by the RNG. The rules are in `Options/Sexes.cs`.
 - **Level**: `100` sets every boxed Pokémon to level 100. Moves are unchanged.
 - The three **party** Pokémon follow only the ball, not the other options. The party cannot go to Pokémon Bank, so it is of no use.
+- **Ribbons**: each chosen ribbon goes on every Pokémon PKHeX still accepts with it; Pokémon from cards keep only what their card gave. Only ribbons a player can earn are offered (no event-only ribbons); 16 of them are earned in games a seventh-generation Pokémon cannot visit and go only on what came up from the fourth generation. The Effort Ribbon fills 510 effort points (HP, Defense, Sp. Defense), the Best Friends Ribbon maxes affection, the Footprint Ribbon needs 30 levels over the met level. The titles shown are the ones the eighth generation attaches, as players have transcribed them.
 - **Period**: giving the same first and last day puts everything on that one day. A 3DS clock can be set freely, so any period within 2000-01-02 – 2099-12-31 works.
   Events are dated within their distribution window. The adventure start is set at least three weeks before the first day.
 
@@ -220,6 +222,7 @@ This program is GPLv3 (`LICENSE`). PKHeX.Core is GPLv3, so whoever is given the 
 - [PKHeX.Core](https://github.com/kwsch/PKHeX) — GPLv3. Reading and writing saves, legality analysis.
 - [3DSRNGTool](https://github.com/wwwwwwzx/3DSRNGTool) — MIT. Generation VII generation order and area tables. Not in this repository; fetched only to make the reference vectors.
 - [PokeFinder](https://github.com/Admiral-Fish/PokeFinder) — GPLv3. Generation III–IV reference values.
+- [PKHeX](https://github.com/kwsch/PKHeX) — GPLv3. The ribbon pictures in `src/Dexforge.Gui/Assets/ribbons/` are PKHeX's.
 - [pla-reverse](https://github.com/Lincoln-LM/pla-reverse) — GPLv3. The order a Legends: Arceus spawn is drawn in and the byte-sliced recovery of a generator seed from a fixed seed, ported to the CPU.
 - [numba-pokemon-prngs](https://github.com/Lincoln-LM/numba-pokemon-prngs) — the game's spawner tables, read when building the spawner table (not at run time).
 - [Avalonia](https://github.com/AvaloniaUI/Avalonia) 11.3 — MIT. The window.

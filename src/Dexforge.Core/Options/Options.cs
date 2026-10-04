@@ -13,9 +13,13 @@ namespace Dexforge;
 /// <param name="Chinese">The name of whoever plays the game in Chinese: 美月.</param>
 /// <param name="Tid">The six-digit TID the game shows (seventh generation), or none to draw one.</param>
 /// <param name="Sid">The four-digit SID that goes with it, or none to draw one.</param>
+/// <param name="Ribbons">PKHeX's names of the ribbons to put on every Pokémon that can take them (none by default); see <see cref="Dexforge.Ribbons"/>.</param>
 public sealed record Options(string Name, uint? Tid, uint? Sid, DateOnly From, DateOnly To, int Seed, int? Ball = null, IvChoice Ivs = IvChoice.Random, bool Shiny = true,
                              LevelChoice Level = LevelChoice.Lowest, SexChoice Sex = SexChoice.Random,
-                             string English = ForeignNames.English, string Japanese = ForeignNames.Japanese, string Chinese = ForeignNames.Chinese);
+                             string English = ForeignNames.English, string Japanese = ForeignNames.Japanese, string Chinese = ForeignNames.Chinese)
+{
+    public IReadOnlyList<string> Ribbons { get; init; } = [];
+}
 
 /// <summary>
 /// How the individual values are drawn, for what was hatched or met in this generation.

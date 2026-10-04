@@ -16,6 +16,7 @@
     <AvaloniaResource Include="Assets/*.otf" />
     <AvaloniaResource Include="Assets/*.ico" />
     <AvaloniaResource Include="Assets/help.md" />
+    <AvaloniaResource Include="Assets/ribbons/*.png" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Dexforge.Gui.Tests" />
