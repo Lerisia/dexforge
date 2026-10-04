@@ -138,9 +138,10 @@ public static class EventBoxMaking
         }
         catch (Exception ex) { return new Made(2, null, record, [ex.Message]); }
 
-        // Read back and check every slot in the save's own context.
+        // Read back and check every slot. Nothing of the program's global state is touched: a maker leaves no trace for the
+        // next one made in the same window (PKHeX's "active trainer" setting is program-wide, so it is not used here).
+        // Whose each Pokémon is and who handles it was set by the maker itself; the checksums and the save are what is read back.
         if (!SaveUtil.TryGetSaveFile(data.ToArray(), out var again) || again is not SAV7USUM check) return new Made(1, null, record, ["쓴 세이브가 다시 읽히지 않습니다."]);
-        ParseSettings.InitFromSaveFileData(check);
         int count = 0, legal = 0, shiny = 0;
         for (int b = 0; b < check.BoxCount; b++)
             foreach (var p in check.GetBoxData(b))

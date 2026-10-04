@@ -76,4 +76,19 @@ public class EventBoxTests
         }
         finally { Directory.Delete(dir, true); }
     }
+
+    [Fact]
+    public void A_make_leaves_nothing_behind_for_the_next_one_in_the_same_process()
+    {
+        // an event box, then a national dex in another trainer's name: the second is judged on its own, not by the first's trainer
+        var into = Path.Combine(Path.GetTempPath(), "dexforge-twice-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var box = EventBoxMaking.Run(new EventOptions("미월", 567890, 1234, 1, 0, []), Path.Combine(into, "box"), into, null);
+            Assert.Equal(0, box.Code);
+            var dex = Making.Run(new Options("재연", 333333, 2222, new DateOnly(2018, 1, 1), new DateOnly(2018, 12, 31), 7), Path.Combine(into, "dex"), into);
+            Assert.True(dex.Code == 0, string.Join(" / ", dex.Refused.Take(3)));
+        }
+        finally { if (Directory.Exists(into)) Directory.Delete(into, true); }
+    }
 }
