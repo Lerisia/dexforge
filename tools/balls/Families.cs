@@ -5,7 +5,10 @@ using PKHeX.Core;
 // The families of every dex for the two-colour ball picker: one per first stage the table knows, its members in dex order, each
 // member's current first ball for a shiny and for a plain one (and whether that colour was picked for itself), the games it is in.
 var ko = GameInfo.GetStrings("ko"); var en = GameInfo.GetStrings("en");
-var tree = EvolutionTree.GetEvolutionTree(EntityContext.Gen9);
+// no one game's tree knows every line (Scarlet's has no Yamask, no Alolan Raichu): the trees of every game are read together
+var trees = new[] { EntityContext.Gen7, EntityContext.Gen8, EntityContext.Gen8a, EntityContext.Gen8b, EntityContext.Gen9, EntityContext.Gen9a }.Select(EvolutionTree.GetEvolutionTree).ToList();
+IEnumerable<(ushort Species, byte Form)> Pre(ushort sp, byte f) => trees.SelectMany(t => t.Reverse.GetPreEvolutions(sp, f).Select(x => (x.Species, x.Form))).Distinct();
+IEnumerable<(ushort Species, byte Form)> Fwd(ushort sp, byte f) => trees.SelectMany(t => t.Forward.GetEvolutions(sp, f).Select(x => (x.Species, x.Form))).Distinct();
 var pt = PersonalTable.SV;
 // every species and form any dex holds
 var keys = new HashSet<(ushort, byte)>();
@@ -30,11 +33,33 @@ string Slug(ushort sp, byte f)
 }
 (ushort, byte) Base((ushort, byte) k)
 {
-    foreach (var c in tree.Reverse.GetPreEvolutions(k.Item1, k.Item2).Select(x => (x.Species, x.Form))) if (keys.Contains(c)) return c;
-    return k;
+    // the earliest stage the table knows, walking back one step at a time
+    var (sp, f) = k;
+    for (int guard = 0; guard < 4; guard++)
+    {
+        var pre = Pre(sp, f).Where(keys.Contains).OrderBy(x => x.Species).FirstOrDefault();
+        if (pre == default) break;
+        (sp, f) = pre;
+    }
+    return (sp, f);
+}
+// one family per line of species: the forms of a first stage go together unless a form's line runs into other species
+// (the Galarian Meowth's, Yamask's, Corsola's…), which is a line of its own (owner, 2026-10-05: 진화 계통은 하나로, 분기하는 경우 제외)
+string Reach((ushort, byte) b)
+{
+    var seen = new HashSet<ushort>(); var stack = new Stack<(ushort, byte)>(); stack.Push(b);
+    while (stack.Count > 0) { var (sp, f) = stack.Pop(); foreach (var e in Fwd(sp, f)) if (seen.Add(e.Species)) stack.Push((e.Species, e.Form)); }
+    return string.Join(",", seen.OrderBy(x => x));
+}
+var baseOf = keys.ToDictionary(k => k, Base);
+var lineOf = new Dictionary<(ushort, byte), (ushort, byte)>();   // base node → the base node its family is named after
+foreach (var b in baseOf.Values.Distinct())
+{
+    var same = baseOf.Values.Distinct().Where(o => o.Item1 == b.Item1 && Reach(o) == Reach(b)).OrderBy(o => o.Item2).First();
+    lineOf[b] = same;
 }
 var balls = Balls.Shared;
-var groups = keys.GroupBy(Base).OrderBy(g => g.Key.Item1).ThenBy(g => g.Key.Item2).ToList();
+var groups = keys.GroupBy(k => lineOf[baseOf[k]]).OrderBy(g => g.Key.Item1).ThenBy(g => g.Key.Item2).ToList();
 var fams = new List<object>();
 foreach (var g in groups)
 {
@@ -51,7 +76,7 @@ foreach (var g in groups)
             plain = ko.balllist[(int)balls.Prefer(sp, f, sex, false)[0]], plainList = string.Join(" > ", balls.Prefer(sp, f, sex, false).Select(b => ko.balllist[(int)b])), plainOwn = balls.PickedFor(sp, f, sex, false),
         };
         ms.Add(new { id = $"{sp}-{f}", label = Label(sp, f), slug = Slug(sp, f), games = games[(sp, f)].OrderBy(x => x).ToList(), picked = balls.Has(sp, f),
-                     final = !tree.Forward.GetEvolutions(sp, f).Any(x => keys.Contains((x.Species, x.Form))),
+                     final = !Fwd(sp, f).Any(x => keys.Contains((x.Species, x.Form))),
                      sexes = bySex ? new[] { One(0), One(1) } : new[] { One(null) } });
     }
     fams.Add(new { id = $"{bsp}-{bf}", name = Label(bsp, bf), icon = Slug(bsp, bf), members = ms, games = members.SelectMany(k => games[k]).Distinct().OrderBy(x => x).ToList() });
