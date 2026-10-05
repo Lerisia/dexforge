@@ -31,35 +31,24 @@ string Slug(ushort sp, byte f)
     var fn = f > 0 && f < forms.Length ? forms[f].ToLowerInvariant().Replace(" ", "").Replace("-", "").Replace("%", "") : "";
     return fn.Length > 0 ? name + "-" + fn : name;
 }
+// a family is one line of one form: a stage joins the stage before it unless it is a form branch of that stage — a form the
+// stage also reaches in its own form (Pikachu gives a Raichu and an Alolan Raichu; the Alolan one is a line of its own), since
+// a different form looks different and gets balls of its own (owner, 2026-10-05: 폼이 다른 건 아예 다르게 생겨서 볼맞춤도 달라요)
+bool FormBranch((ushort Species, byte Form) n, (ushort Species, byte Form) pre) => n.Form != pre.Form && Fwd(pre.Species, pre.Form).Any(x => x.Species == n.Species && x.Form == pre.Form);
 (ushort, byte) Base((ushort, byte) k)
 {
-    // the earliest stage the table knows, walking back one step at a time
     var (sp, f) = k;
     for (int guard = 0; guard < 4; guard++)
     {
-        var pre = Pre(sp, f).Where(keys.Contains).OrderBy(x => x.Species).FirstOrDefault();
+        var pre = Pre(sp, f).Where(keys.Contains).Where(x => !FormBranch((sp, f), x)).OrderBy(x => x.Species).FirstOrDefault();
         if (pre == default) break;
         (sp, f) = pre;
     }
     return (sp, f);
 }
-// one family per line of species: the forms of a first stage go together unless a form's line runs into other species
-// (the Galarian Meowth's, Yamask's, Corsola's…), which is a line of its own (owner, 2026-10-05: 진화 계통은 하나로, 분기하는 경우 제외)
-string Reach((ushort, byte) b)
-{
-    var seen = new HashSet<ushort>(); var stack = new Stack<(ushort, byte)>(); stack.Push(b);
-    while (stack.Count > 0) { var (sp, f) = stack.Pop(); foreach (var e in Fwd(sp, f)) if (seen.Add(e.Species)) stack.Push((e.Species, e.Form)); }
-    return string.Join(",", seen.OrderBy(x => x));
-}
 var baseOf = keys.ToDictionary(k => k, Base);
-var lineOf = new Dictionary<(ushort, byte), (ushort, byte)>();   // base node → the base node its family is named after
-foreach (var b in baseOf.Values.Distinct())
-{
-    var same = baseOf.Values.Distinct().Where(o => o.Item1 == b.Item1 && Reach(o) == Reach(b)).OrderBy(o => o.Item2).First();
-    lineOf[b] = same;
-}
 var balls = Balls.Shared;
-var groups = keys.GroupBy(k => lineOf[baseOf[k]]).OrderBy(g => g.Key.Item1).ThenBy(g => g.Key.Item2).ToList();
+var groups = keys.GroupBy(k => baseOf[k]).OrderBy(g => g.Key.Item1).ThenBy(g => g.Key.Item2).ToList();
 var fams = new List<object>();
 foreach (var g in groups)
 {
@@ -75,7 +64,9 @@ foreach (var g in groups)
             shiny = ko.balllist[(int)balls.Prefer(sp, f, sex, true)[0]], shinyList = string.Join(" > ", balls.Prefer(sp, f, sex, true).Select(b => ko.balllist[(int)b])), shinyOwn = balls.PickedFor(sp, f, sex, true) || !balls.PickedFor(sp, f, sex, false),
             plain = ko.balllist[(int)balls.Prefer(sp, f, sex, false)[0]], plainList = string.Join(" > ", balls.Prefer(sp, f, sex, false).Select(b => ko.balllist[(int)b])), plainOwn = balls.PickedFor(sp, f, sex, false),
         };
+        var pi = pt.GetFormEntry(sp, f);
         ms.Add(new { id = $"{sp}-{f}", label = Label(sp, f), slug = Slug(sp, f), games = games[(sp, f)].OrderBy(x => x).ToList(), picked = balls.Has(sp, f),
+                     sexed = !(pi.Genderless || pi.OnlyMale || pi.OnlyFemale),
                      final = !Fwd(sp, f).Any(x => keys.Contains((x.Species, x.Form))),
                      sexes = bySex ? new[] { One(0), One(1) } : new[] { One(null) } });
     }
