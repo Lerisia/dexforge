@@ -120,12 +120,12 @@ public static class Plan9a
     private static Entry9a? Decide(ushort sp, byte f)
     {
         if (Slot(sp, f, false, null) is { } own) return new Entry9a(sp, f, Source9a.Hyperspace, sp, f, own, false, "이차원");
-        // the nearest earlier stage hyperspace has
-        foreach (var pre in Tree.Reverse.GetPreEvolutions(sp, f))
+        // the nearest earlier stage hyperspace has (PKHeX lists the earliest first)
+        foreach (var pre in Tree.Reverse.GetPreEvolutions(sp, f).Reverse())
             if (Slot(pre.Species, pre.Form, false, null) is { } earlier)
                 return new Entry9a(sp, f, Source9a.Hyperspace, pre.Species, pre.Form, earlier, false, $"{Label(pre.Species, pre.Form)}(이차원)에서 진화");
         if (Direct(sp, f) is { } direct) return direct;
-        foreach (var pre in Tree.Reverse.GetPreEvolutions(sp, f))
+        foreach (var pre in Tree.Reverse.GetPreEvolutions(sp, f).Reverse())
             if (Direct(pre.Species, pre.Form) is { } d)
                 return d with { Species = sp, Form = f, Note = $"{Label(pre.Species, pre.Form)}({d.Note})에서 진화" };
         return null;
