@@ -47,8 +47,19 @@ bool FormBranch((ushort Species, byte Form) n, (ushort Species, byte Form) pre) 
     return (sp, f);
 }
 var baseOf = keys.ToDictionary(k => k, Base);
+// the generation a species and form belongs to: the species' by number, a regional form's by the region's game (Alola 7, Galar and Hisui 8, Paldea and the Bloodmoon 9)
+int Gen(ushort sp, byte f)
+{
+    int g = sp <= 151 ? 1 : sp <= 251 ? 2 : sp <= 386 ? 3 : sp <= 493 ? 4 : sp <= 649 ? 5 : sp <= 721 ? 6 : sp <= 809 ? 7 : sp <= 905 ? 8 : 9;
+    var name = FormConverter.GetFormList(sp, ko.types, ko.forms, GameInfo.GenderSymbolUnicode, EntityContext.Gen9).ElementAtOrDefault(f) ?? "";
+    if (f > 0 && name.Contains("알로라")) g = Math.Max(g, 7);
+    if (f > 0 && (name.Contains("가라르") || name.Contains("히스이"))) g = Math.Max(g, 8);
+    if (f > 0 && (name.Contains("팔데아") || name.Contains("붉은 달"))) g = Math.Max(g, 9);
+    return g;
+}
 var balls = Balls.Shared;
-var groups = keys.GroupBy(k => baseOf[k]).OrderBy(g => g.Key.Item1).ThenBy(g => g.Key.Item2).ToList();
+// in dex order of the lowest-numbered member (a baby comes after what it hatches into: Pichu sits with Pikachu at 25), named after the first stage
+var groups = keys.GroupBy(k => baseOf[k]).OrderBy(g => g.Min(k => k.Item1)).ThenBy(g => g.Min(k => k.Item2)).ToList();
 var fams = new List<object>();
 foreach (var g in groups)
 {
@@ -65,12 +76,16 @@ foreach (var g in groups)
             plain = ko.balllist[(int)balls.Prefer(sp, f, sex, false)[0]], plainList = string.Join(" > ", balls.Prefer(sp, f, sex, false).Select(b => ko.balllist[(int)b])), plainOwn = balls.PickedFor(sp, f, sex, false),
         };
         var pi = pt.GetFormEntry(sp, f);
-        ms.Add(new { id = $"{sp}-{f}", label = Label(sp, f), slug = Slug(sp, f), games = games[(sp, f)].OrderBy(x => x).ToList(), picked = balls.Has(sp, f),
+        ms.Add(new { id = $"{sp}-{f}", label = Label(sp, f), slug = Slug(sp, f), games = games[(sp, f)].OrderBy(x => x).ToList(), picked = balls.Has(sp, f), gen = Gen(sp, f),
                      sexed = !(pi.Genderless || pi.OnlyMale || pi.OnlyFemale),
                      final = !Fwd(sp, f).Any(x => keys.Contains((x.Species, x.Form))),
                      sexes = bySex ? new[] { One(0), One(1) } : new[] { One(null) } });
     }
-    fams.Add(new { id = $"{bsp}-{bf}", name = Label(bsp, bf), icon = Slug(bsp, bf), members = ms, games = members.SelectMany(k => games[k]).Distinct().OrderBy(x => x).ToList() });
+    // the family sits in the generation of its latest final stage (owner, 2026-10-05: 최종진화체의 세대 기준으로 정렬)
+    var finals = members.Where(k => !Fwd(k.Item1, k.Item2).Any(x => keys.Contains((x.Species, x.Form)))).ToList();
+    int gen = (finals.Count > 0 ? finals : members).Max(k => Gen(k.Item1, k.Item2));
+    fams.Add(new { id = $"{bsp}-{bf}", name = Label(bsp, bf), icon = Slug(bsp, bf), members = ms, games = members.SelectMany(k => games[k]).Distinct().OrderBy(x => x).ToList(), gen, order = members.Min(k => k.Item1) * 100 + members.Min(k => k.Item2) });
 }
+fams = fams.OrderBy(f => (int)f.GetType().GetProperty("gen")!.GetValue(f)!).ThenBy(f => (int)f.GetType().GetProperty("order")!.GetValue(f)!).ToList();
 File.WriteAllText("/tmp/claude-1000/-home-elyss-storage-pla-permute-bot/fead6049-833e-4015-b469-e41e183a7056/scratchpad/allballs-page/families.json", JsonSerializer.Serialize(new { families = fams }, new JsonSerializerOptions { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }), new UTF8Encoding(false));
 Console.WriteLine($"{fams.Count} families, {keys.Count} species/forms");

@@ -65,6 +65,7 @@
   .ball .rank { position: absolute; right: -3px; top: -5px; min-width: 14px; height: 14px; border-radius: 7px; font-size: 10px; line-height: 14px; font-weight: 700; color: #fff; background: var(--accent); text-align: center; }
   .col.plain .ball .rank, .per .plain-strip .ball .rank { background: var(--plain); }
   .sentinel { height: 1px; }
+  .genhead { font-size: 13px; font-weight: 700; color: var(--muted); letter-spacing: 0.04em; padding-block: 18px 4px; border-bottom: 2px solid var(--line); }
   .sexlabel { font-size: 11px; color: var(--muted); margin-top: 4px; }
   .bysex { font-size: 12.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
   .bysex input { margin: 0; }
@@ -112,7 +113,7 @@
     </div>
   </header>
   <main id="list"></main>
-  <p class="sub" id="foot" style="margin-top:16px">가족마다 왼쪽은 이로치, 오른쪽은 일반입니다. 그림은 최종 진화체의 이로치와 일반 색입니다. '지금'은 네 게임이 같이 쓰는 우선순위 표의 순위이고(넣을 수 없는 게임에서는 그다음 순위로, 셋 다 안 되면 몬스터볼), 보라색 '일반 쪽을 따름'은 이로치 쪽이 따로 정해진 적이 없어 일반 쪽 볼을 쓰고 있다는 뜻입니다. 볼을 차례로 누르면 1·2·3순위가 되고(최대 셋, 다시 누르면 뺍니다). 그 게임에서 1순위가 안 되면 2순위, 2순위도 안 되면 3순위, 셋 다 안 되면 몬스터볼입니다 — 여기서 정한 순위가 지금의 순위를 통째로 대신합니다. 구성원마다 다르게 하려면 '구성원별'을 누르세요. '성별별 다름'을 켜면 수컷과 암컷 줄이 따로 나옵니다(가족에서도, 구성원별에서도). 선물·화석·배포처럼 볼이 정해진 것은 여기 없습니다.</p>
+  <p class="sub" id="foot" style="margin-top:16px">가족은 최종 진화체의 세대(갈래가 여럿이면 가장 뒤 세대)로 묶여 도감 번호순입니다. 가족마다 왼쪽은 이로치, 오른쪽은 일반입니다. 그림은 최종 진화체의 이로치와 일반 색입니다. '지금'은 네 게임이 같이 쓰는 우선순위 표의 순위이고(넣을 수 없는 게임에서는 그다음 순위로, 셋 다 안 되면 몬스터볼), 보라색 '일반 쪽을 따름'은 이로치 쪽이 따로 정해진 적이 없어 일반 쪽 볼을 쓰고 있다는 뜻입니다. 볼을 차례로 누르면 1·2·3순위가 되고(최대 셋, 다시 누르면 뺍니다). 그 게임에서 1순위가 안 되면 2순위, 2순위도 안 되면 3순위, 셋 다 안 되면 몬스터볼입니다 — 여기서 정한 순위가 지금의 순위를 통째로 대신합니다. 구성원마다 다르게 하려면 '구성원별'을 누르세요. '성별별 다름'을 켜면 수컷과 암컷 줄이 따로 나옵니다(가족에서도, 구성원별에서도). 선물·화석·배포처럼 볼이 정해진 것은 여기 없습니다.</p>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -292,7 +293,11 @@
   function more() {
     const frag = document.createDocumentFragment();
     const end = Math.min(shownList.length, shownUpTo + PAGE);
-    for (let i = shownUpTo; i < end; i++) frag.appendChild(renderFamily(shownList[i]));
+    for (let i = shownUpTo; i < end; i++) {
+      // a heading where the generation of the latest final stage changes
+      if (i === 0 || shownList[i].gen !== shownList[i - 1].gen) { const h = document.createElement('div'); h.className = 'genhead'; h.textContent = `${shownList[i].gen}세대 (최종 진화체 기준)`; frag.appendChild(h); }
+      frag.appendChild(renderFamily(shownList[i]));
+    }
     shownUpTo = end;
     list.insertBefore(frag, sentinel);
     if (shownUpTo >= shownList.length && watcher) watcher.disconnect();
