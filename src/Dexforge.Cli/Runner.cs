@@ -51,7 +51,7 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
         else if (order.Game == Game.Scarlet)
         {
             if (order.ToOptions9(out var why9) is not { } asked9) { error.WriteLine(why9); return 2; }
-            output.WriteLine("만드는 중입니다. 몇 초 걸립니다 (839마리의 시드를 하나씩 찾습니다)...");
+            output.WriteLine("만드는 중입니다. 몇 초 걸립니다 (846마리의 시드를 하나씩 찾습니다)...");
             int shown9 = 0;
             made = Dexforge.Scarlet.Making9.Run(asked9, order.Out, here, (done, of) => { if (done * 10 / of > shown9) { shown9 = done * 10 / of; output.WriteLine($"  {done} / {of}"); } });
         }

@@ -124,8 +124,13 @@ public static class Plan9
             case "야생": return Wild(sp, f, sp, f, r);
             case "고정": return Static(sp, f, r);
             case "알":
-                // the Alolan Persian: an egg of the Meowth got by trade
-                return new Entry9(sp, f, Source9.Egg, 52, 1, new EncounterEgg9(52, 1, GameVersion.SL), r.Violet, false, "알 — " + r.Why);
+            {
+                // an egg of the earliest stage of this form that can be bred: the Alolan Persian's is the Meowth got by trade, a Hisuian
+                // form's is a parent brought through HOME holding an Everstone (PKHeX allows what the game can hold)
+                var stages = Tree.Reverse.GetPreEvolutions(sp, f).Select(x => (x.Species, x.Form)).Reverse().Append((sp, f));
+                var (es, ef) = stages.First(x => Breeding.CanHatchAsEgg(x.Item1, x.Item2, EntityContext.Gen9));
+                return new Entry9(sp, f, Source9.Egg, es, ef, new EncounterEgg9(es, ef, GameVersion.SL), r.Violet, false, r.Why.StartsWith("알") ? r.Why : "알 — " + r.Why);
+            }
             case "교환":
                 var trade = Trades.FirstOrDefault(t => t.Species == sp && t.Form == f) ?? throw new InvalidOperationException($"plan: no trade for {Label(sp, f)}");
                 return new Entry9(sp, f, Source9.Trade, sp, f, trade, false, true, "게임 안 교환");

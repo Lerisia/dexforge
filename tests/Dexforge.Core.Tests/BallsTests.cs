@@ -48,7 +48,8 @@ public class BallsTests
         // a pick for every entry of every dex (a male's where the entry does not say), shiny or plain, with a Poké Ball only where that was the pick
         // nothing was ever picked for the Hisuian Growlithe line and the Fancy Vivillon line: a Poké Ball, as before
         var unpicked = Scarlet.Plan9.All.Where(e => !Balls.Shared.Has(e.Species, e.Form)).Select(e => (e.Species, e.Form)).Distinct().ToList();
-        Assert.Equal([(58, 1), (59, 1), (664, 18), (665, 18), (666, 18)], unpicked.Select(x => ((int)x.Species, (int)x.Form)).ToArray());
+        // and nothing yet for the Hisuian lines and Phione that hatch from parents brought through HOME (new on 2026-10-05, to be picked on the page)
+        Assert.Equal([(58, 1), (59, 1), (100, 1), (101, 1), (215, 1), (570, 1), (571, 1), (664, 18), (665, 18), (666, 18), (903, 0)], unpicked.Select(x => ((int)x.Species, (int)x.Form)).ToArray());
         Assert.All(ZA.Plan9a.All.Where(e => e.Template.FixedBall == Ball.None), e => Assert.True(Balls.Shared.Has(e.Species, e.Form), ZA.Plan9a.Label(e.Species, e.Form)));   // Magearna is a gift in its own ball
         Assert.All(Sword.Plan8.All().Where(e => e.Source != Sword.Source.None && e.Template?.FixedBall is null or Ball.None), e => Assert.True(Balls.Shared.Has(e.Species, e.Form), $"{e.Species}-{e.Form}"));
     }

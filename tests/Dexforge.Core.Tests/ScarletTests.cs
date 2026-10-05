@@ -77,7 +77,7 @@ public class ScarletTests
         Assert.All(all, e => Assert.NotNull(e.Template));
         var by = all.GroupBy(e => e.Source).ToDictionary(g => g.Key, g => g.Count());
         Assert.True(by[Source9.Wild] > 700, by[Source9.Wild].ToString());
-        Assert.Equal(9 + 1, by[Source9.Egg]);          // the three starter lines and the Alolan Persian
+        Assert.Equal(9 + 1 + 7, by[Source9.Egg]);      // the three starter lines, the Alolan Persian, and what only an egg of a parent brought through HOME gives (the Hisuian Voltorb, Sneasel and Zorua lines, Phione)
         Assert.Equal(1, by[Source9.Trade]);
         Assert.Contains(all, e => e.Species == 1008 && e.Violet && e.Source == Source9.Static);   // Miraidon from Violet
         Assert.Contains(all, e => e.Species == 1006 && e.Violet && e.Source == Source9.Wild);     // Iron Valiant from Violet

@@ -183,7 +183,7 @@ public partial class MainWindow : Window
         Subtitle.Text = za
             ? "LEGENDS Z-A 미르도감 세이브 만들기 · 364종 436마리 (폼까지) · 한국어"
             : scarlet
-            ? "스칼렛 도감 세이브 만들기 · 695종 839마리 (폼까지) + 배포 100마리 · 한국어"
+            ? "스칼렛 도감 세이브 만들기 · 697종 846마리 (폼까지) + 배포 100마리 · 한국어"
             : arceus
             ? "LEGENDS 아르세우스 히스이도감 세이브 만들기 · 242종 313마리 (폼까지) · 한국어"
             : events
