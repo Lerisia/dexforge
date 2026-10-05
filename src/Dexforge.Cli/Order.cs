@@ -89,8 +89,9 @@ internal sealed class Order
         why = "";
         int? ball = null;
         if (Ball is not null && !BallNames.Find(Ball, out ball, out why)) return null;
-        var from = DatesGiven ? From : new DateOnly(2026, 1, 1);
-        var to = DatesGiven ? To : new DateOnly(2026, 12, 31);
+        var (defaultFrom, defaultTo) = Dexforge.ZA.Making9a.DefaultPeriod();
+        var from = DatesGiven ? From : defaultFrom;
+        var to = DatesGiven ? To : defaultTo;
         return new Dexforge.ZA.Options9a(Name, Tid, Sid, from, to, Seed, ball, Shiny, Size, Level, Sex);
     }
 

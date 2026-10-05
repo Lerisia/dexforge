@@ -102,7 +102,7 @@ public static class Making9
         foreach (var m in made.Concat(events))
         {
             var pk = m.Pk;
-            lines.Add($"  {Plan9.Label(pk.Species, pk.Form)}{(pk.IsShiny ? " ★" : "")} Lv{pk.CurrentLevel} {ko.natures[(int)pk.Nature]} {ko.abilitylist[pk.Ability]} {pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE} 스케일{pk.Scale} {((int)pk.TeraTypeOriginal < ko.types.Length ? ko.types[(int)pk.TeraTypeOriginal] : "스텔라")} {ko.balllist[pk.Ball]} — {m.How}{(m.Entry.Evolves ? $" → {m.Entry.Note}" : "")}{(m.Seed is { } s ? $" · 시드 {s:X16}" : "")}");
+            lines.Add($"  {Plan9.Label(pk.Species, pk.Form)}{(m.Entry.Gender is { } g9 ? (g9 == 0 ? " ♂" : " ♀") : "")}{(pk.IsShiny ? " ★" : "")} Lv{pk.CurrentLevel} {ko.natures[(int)pk.Nature]} {ko.abilitylist[pk.Ability]} {pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE} 스케일{pk.Scale} {((int)pk.TeraTypeOriginal < ko.types.Length ? ko.types[(int)pk.TeraTypeOriginal] : "스텔라")} {ko.balllist[pk.Ball]} — {m.How}{(m.Entry.Evolves ? $" → {m.Entry.Note}" : "")}{(m.Seed is { } s ? $" · 시드 {s:X16}" : "")}");
         }
 
         outDir ??= FolderFor(under, me);

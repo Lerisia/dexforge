@@ -9,6 +9,14 @@ public static class Making9a
     public const string RecordName = "만든기록.txt";
     public static readonly DateOnly Released = new(2025, 10, 16);
 
+    /// <summary>The period offered first: 2026 (Mega Dimension's year), up to today while the year is still running (owner, 2026-10-05).</summary>
+    public static (DateOnly From, DateOnly To) DefaultPeriod()
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var end = new DateOnly(2026, 12, 31);
+        return (new DateOnly(2026, 1, 1), today < end ? (today < new DateOnly(2026, 1, 1) ? end : today) : end);
+    }
+
     /// <summary>The files JKSV wants in a backup folder besides the save itself, carried inside with the template.</summary>
     private static readonly (string Resource, string File)[] Sidecars = [("za.backup", "backup"), ("za.nx_save_meta", ".nx_save_meta.bin")];
 
@@ -92,7 +100,7 @@ public static class Making9a
         foreach (var m in made)
         {
             var pk = m.Pk;
-            lines.Add($"  {Plan9a.Label(pk.Species, pk.Form)}{(pk.IsShiny ? " ★" : "")}{(pk.IsAlpha ? " 우두머리" : "")} Lv{pk.CurrentLevel} {ko.natures[(int)pk.Nature]} {pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE} 크기{pk.Scale} {ko.balllist[pk.Ball]} — {m.How}{(m.Entry.Evolves || m.Entry.ChangesForm ? $" → {m.Entry.Note}" : "")}{(m.Seed is { } s ? $" · 시드 {s:X16}" : "")}");
+            lines.Add($"  {Plan9a.Label(pk.Species, pk.Form)}{(m.Entry.Gender is { } g9 ? (g9 == 0 ? " ♂" : " ♀") : "")}{(pk.IsShiny ? " ★" : "")}{(pk.IsAlpha ? " 우두머리" : "")} Lv{pk.CurrentLevel} {ko.natures[(int)pk.Nature]} {pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE} 크기{pk.Scale} {ko.balllist[pk.Ball]} — {m.How}{(m.Entry.Evolves || m.Entry.ChangesForm ? $" → {m.Entry.Note}" : "")}{(m.Seed is { } s ? $" · 시드 {s:X16}" : "")}");
         }
 
         outDir ??= FolderFor(under, me);

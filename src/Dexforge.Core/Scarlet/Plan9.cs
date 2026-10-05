@@ -24,7 +24,8 @@ public enum Source9
 /// One box entry of the Scarlet dex: a species and form, where it comes from, and what it is caught or hatched as before
 /// evolving. <paramref name="Violet"/> marks what only Violet has: caught in the trainer's own Violet and traded over.
 /// </summary>
-public sealed record Entry9(ushort Species, byte Form, Source9 Source, ushort FromSpecies, byte FromForm, IEncounterTemplate Template, bool Violet, bool ShinyLocked, string Note)
+/// <param name="Gender">A sex to insist on, for the species boxed in both.</param>
+public sealed record Entry9(ushort Species, byte Form, Source9 Source, ushort FromSpecies, byte FromForm, IEncounterTemplate Template, bool Violet, bool ShinyLocked, string Note, byte? Gender = null)
 {
     /// <summary>When an event raid ran (Korean dates); empty for anything but a raid.</summary>
     public IReadOnlyList<(DateOnly From, DateOnly To)> RaidWindows { get; init; } = [];
@@ -85,6 +86,9 @@ public static class Plan9
         return Ko.Species[species] + (form > 0 && form < names.Length ? $"({names[form]})" : "");
     }
 
+    /// <summary>The species the national dex boxes in both sexes because they look different, as far as Paldea has them: Hippopotas, Hippowdon, Pyroar (owner, 2026-10-05).</summary>
+    public static readonly ushort[] BothSexes = [449, 450, 668];
+
     /// <summary>The Paldean starters hatch (owner: a starter is bred, raids give no shiny); the Alolan Persian hatches from the traded Meowth.</summary>
     private static readonly HashSet<ushort> HatchedStarters = [906, 907, 908, 909, 910, 911, 912, 913, 914];
 
@@ -96,7 +100,13 @@ public static class Plan9
         {
             if (r.Source == "없음") continue;
             var e = Decide(r, byKey);
-            if (e is not null) list.Add(e);
+            if (e is null) continue;
+            if (BothSexes.Contains(e.Species) && !Table.GetFormEntry(e.Species, e.Form).Genderless)
+            {
+                list.Add(e with { Gender = 0, Note = e.Note + " 수컷" });
+                list.Add(e with { Gender = 1, Note = e.Note + " 암컷" });
+            }
+            else list.Add(e);
         }
         return list;
     }

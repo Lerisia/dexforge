@@ -36,8 +36,8 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Balls9 balls, Random rando
     {
         var catcher = e.Violet ? Violet : trainer;
         PK9 pk; string how; ulong? seed = null;
-        // the sex the evolution needs, else the one asked for
-        byte? gender = Evolve9.NeededGender(e.FromSpecies, e.FromForm, e.Species, e.Form) ?? WantedGender(e.FromSpecies, e.FromForm);
+        // the sex the entry or the evolution insists on, else the one asked for
+        byte? gender = e.Gender ?? Evolve9.NeededGender(e.FromSpecies, e.FromForm, e.Species, e.Form) ?? WantedGender(e.FromSpecies, e.FromForm);
         var criteria = EncounterCriteria.Unrestricted with { Gender = gender is { } g ? (g == 0 ? Gender.Male : Gender.Female) : Gender.Random };
         bool wantShiny = opt.Shiny && !e.ShinyLocked && e.Template.Shiny != Shiny.Never;
         switch (e.Source)
@@ -124,7 +124,7 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Balls9 balls, Random rando
         var receiver = ev.Violet ? Violet : trainer;
         var pk = (PK9)wc.ConvertToPKM(receiver, EncounterCriteria.Unrestricted);
         if (ev.Violet) pk.UpdateHandler(trainer);
-        if (!eventDays.TryGetValue(ev.Group, out var day)) eventDays[ev.Group] = day = ev.Day(random);
+        if (!eventDays.TryGetValue(ev.Group, out var day)) eventDays[ev.Group] = day = GroupDay(ev);
         // PKHeX knows when each card was really handed out (with a day's tolerance); the sources' window is kept to that
         if (wc.GetDistributionWindow(out var known) && !wc.IsWithinDistributionWindow(day))
         {
@@ -163,6 +163,31 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Balls9 balls, Random rando
             made.Add(new Made9(e2, pk2, made[0].How + " → " + Plan9.Label(sp, f), null, la2.Valid, la2.Valid ? "" : la2.Report()));
         }
         return made;
+    }
+
+    /// <summary>
+    /// A day for what one code handed over together: inside every member's window (the sources' and PKHeX's own), so the
+    /// day holds for each of them; a card alone gets a day of its own window.
+    /// </summary>
+    private DateOnly GroupDay(Event9 ev)
+    {
+        var members = Events9.All.Where(e => e.Group == ev.Group).ToList();
+        if (members.Count == 1) return ev.Day(random);
+        var lo = members.Max(e => e.Start);
+        var hi = members.Min(e => e.End ?? e.Start.AddYears(1));
+        foreach (var m in members)
+        {
+            if (!m.Card.GetDistributionWindow(out var w)) continue;
+            if (w.Start > lo) lo = w.Start;
+            if (w.End is { } end && end.AddDays(-1) < hi) hi = end.AddDays(-1);
+        }
+        if (lo > hi) return ev.Day(random);
+        for (int i = 0; i < 200; i++)
+        {
+            var day = lo.AddDays(random.Next(hi.DayNumber - lo.DayNumber + 1));
+            if (members.All(m => !m.Card.GetDistributionWindow(out _) || m.Card.IsWithinDistributionWindow(day))) return day;
+        }
+        return lo;
     }
 
     /// <summary>Maushold and Dudunsparce take the form their encryption constant decides (one in a hundred is the rare one): the catch must already have the right one.</summary>

@@ -71,7 +71,9 @@ public class ScarletTests
     {
         var all = Plan9.All;
         var kept = Plan9.Rows.Count(r => r.Source != "없음");
-        Assert.Equal(kept, all.Count);
+        Assert.Equal(kept + 3, all.Count);   // Hippopotas, Hippowdon and Pyroar twice, a sex each, as the national dex keeps them
+        Assert.Equal(2, all.Count(e => e.Species == 668));
+        Assert.Equal([0, 1], all.Where(e => e.Species == 449).Select(e => e.Gender!.Value).Order().ToArray());
         Assert.All(all, e => Assert.NotNull(e.Template));
         var by = all.GroupBy(e => e.Source).ToDictionary(g => g.Key, g => g.Count());
         Assert.True(by[Source9.Wild] > 700, by[Source9.Wild].ToString());

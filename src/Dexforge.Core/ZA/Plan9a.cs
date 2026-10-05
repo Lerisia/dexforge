@@ -51,8 +51,8 @@ public static class Plan9a
     public static readonly EncounterGift9a[] Gifts;
     public static readonly EncounterTrade9a[] Trades;
 
-    /// <summary>The species the owner boxes in both sexes: none picked yet (Pyroar's mane is the one real difference; the owner decides).</summary>
-    public static readonly ushort[] BothSexes = [];
+    /// <summary>The species the national dex boxes in both sexes because they look different, as far as Lumiose has them: Hippopotas, Hippowdon, Pyroar (owner, 2026-10-05).</summary>
+    public static readonly ushort[] BothSexes = [449, 450, 668];
 
     static Plan9a()
     {

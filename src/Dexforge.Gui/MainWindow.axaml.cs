@@ -177,13 +177,13 @@ public partial class MainWindow : Window
         switching = true;
         if (arceus && !datesTouched) { FromBox.Day = Arceus.Making8a.Released; ToBox.Day = new DateOnly(2022, 12, 31); }
         else if (scarlet && !datesTouched) { FromBox.Day = new DateOnly(2024, 1, 1); ToBox.Day = new DateOnly(2024, 12, 31); }
-        else if (za && !datesTouched) { FromBox.Day = new DateOnly(2026, 1, 1); ToBox.Day = new DateOnly(2026, 12, 31); }
+        else if (za && !datesTouched) { var (f, t) = ZA.Making9a.DefaultPeriod(); FromBox.Day = f; ToBox.Day = t; }
         else if (!arceus && !scarlet && !za && !datesTouched) { FromBox.Day = DefaultFrom; ToBox.Day = DefaultTo; }
         switching = false;
         Subtitle.Text = za
-            ? "LEGENDS Z-A 미르도감 세이브 만들기 · 364종 433마리 (폼까지) · 한국어"
+            ? "LEGENDS Z-A 미르도감 세이브 만들기 · 364종 436마리 (폼까지) · 한국어"
             : scarlet
-            ? "스칼렛 도감 세이브 만들기 · 695종 836마리 (폼까지) + 배포 100마리 · 한국어"
+            ? "스칼렛 도감 세이브 만들기 · 695종 839마리 (폼까지) + 배포 100마리 · 한국어"
             : arceus
             ? "LEGENDS 아르세우스 히스이도감 세이브 만들기 · 242종 313마리 (폼까지) · 한국어"
             : events

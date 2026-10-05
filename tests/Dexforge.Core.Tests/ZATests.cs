@@ -73,10 +73,10 @@ public class ZATests
     public void The_plan_covers_the_Lumiose_dex()
     {
         var all = Plan9a.All;
-        Assert.Equal(433, all.Count);
+        Assert.Equal(436, all.Count);   // 433 species and forms, Hippopotas, Hippowdon and Pyroar twice
         Assert.Equal(364, all.Select(e => e.Species).Distinct().Count());
         Assert.DoesNotContain(all, e => FormInfo.IsBattleOnlyForm(e.Species, e.Form, 9));
-        Assert.Equal(389, all.Count(e => e.Source == Source9a.Hyperspace));
+        Assert.Equal(392, all.Count(e => e.Source == Source9a.Hyperspace));
         Assert.Contains(all, e => e.Species == 350 && e.FromSpecies == 349 && e.Source == Source9a.Hyperspace);   // Milotic from a hyperspace Feebas
         Assert.Contains(all, e => e.Species == 711 && e.Form == 1 && e.FromSpecies == 710 && e.Source == Source9a.Wild);   // a small Gourgeist from the wild Pumpkaboo
         Assert.Contains(all, e => e.Species == 666 && e.Form == 8 && e.FromSpecies == 665 && e.Source == Source9a.Gift);   // the marine Vivillon from the gift Spewpa
@@ -106,7 +106,7 @@ public class ZATests
             Assert.Equal(Plan9a.All.Count, boxed.Count);
             Assert.All(boxed, p => Assert.True(new LegalityAnalysis(p, sav.Personal).Valid, Plan9a.Label(p.Species, p.Form)));
             Assert.True(boxed.Count(p => p.IsShiny) > 390);
-            Assert.Equal(389, boxed.Count(p => p.IsAlpha));
+            Assert.Equal(392, boxed.Count(p => p.IsAlpha));
             Assert.All(boxed.Where(p => p.IsAlpha), p => Assert.Equal(255, p.Scale));
             Assert.All(boxed, p => Assert.InRange(p.MetDate!.Value, new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)));
             for (ushort s = 1; s <= sav.MaxSpeciesID; s++) if (Plan9a.All.Any(e => e.Species == s)) Assert.True(sav.GetCaught(s), s.ToString());

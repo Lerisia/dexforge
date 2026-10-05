@@ -207,8 +207,9 @@ public class CommandLineTests
         Assert.NotNull(asked); Assert.Equal("", why);
         Assert.Equal(SizeChoice.Alpha, asked!.Size);
         Assert.Equal((int)PKHeX.Core.Ball.Moon, asked.Ball);
-        Assert.Equal(new DateOnly(2026, 1, 1), asked.From);   // no period typed: 2026
-        Assert.Equal(new DateOnly(2026, 12, 31), asked.To);
+        Assert.Equal(new DateOnly(2026, 1, 1), asked.From);   // no period typed: 2026, up to today while the year runs
+        Assert.Equal(Dexforge.ZA.Making9a.DefaultPeriod().To, asked.To);
+        Assert.True(asked.To <= DateOnly.FromDateTime(DateTime.Now) || asked.To == new DateOnly(2026, 12, 31));
         Assert.Null(Arguments.Parse(["--game", "lumiose"], out var refused));
         Assert.Contains("za", refused);
     }
