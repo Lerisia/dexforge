@@ -60,6 +60,8 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Random random, Options9 op
             {
                 var egg = (EncounterEgg9)e.Template;
                 pk = egg.ConvertToPKM(trainer, criteria with { Shiny = wantShiny ? Shiny.Always : Shiny.Never });
+                // a hatchling's size is the egg's draw, which nothing checks yet: the smallest or the largest as asked, without a mark (marks come from the wild)
+                if (Scale != Scale9.Random) pk.HeightScalar = pk.WeightScalar = pk.Scale = Spawn9.ScaleOf(Scale);
                 how = "알";
                 break;
             }

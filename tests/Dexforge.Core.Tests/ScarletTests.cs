@@ -126,6 +126,21 @@ public class ScarletTests
     }
 
     [Fact]
+    public void A_hatchling_takes_the_size_asked_without_a_mark()
+    {
+        var trainer = new SimpleTrainerInfo(GameVersion.SL) { OT = "재연", Gender = 1, Language = (int)LanguageID.Korean, ID32 = 123456789 };
+        var egg = Plan9.All.First(e => e.Source == Source9.Egg);
+        foreach (var size in new[] { SizeChoice.Smallest, SizeChoice.Largest })
+        {
+            var made = new Maker9(trainer, new Random(2), new Options9("재연", 123456, 1234, new DateOnly(2024, 1, 1), new DateOnly(2024, 12, 31), 2, Size: size)).Make(egg);
+            Assert.True(made.Legal, made.Report);
+            Assert.Equal(size == SizeChoice.Smallest ? 0 : 255, made.Pk.Scale);
+            Assert.Equal(made.Pk.Scale, made.Pk.HeightScalar);
+            Assert.False(made.Pk.RibbonMarkMini || made.Pk.RibbonMarkJumbo);
+        }
+    }
+
+    [Fact]
     public void Every_distribution_scarlet_received_is_listed()
     {
         var all = Events9.All;
