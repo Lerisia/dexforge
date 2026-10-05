@@ -1,25 +1,6 @@
 namespace Dexforge;
 
 /// <summary>How the colour is asked for, in words.</summary>
-public static class ColourNames
-{
-    public const string Help = "색은 일반, 이로치 중 하나로 적어 주세요.";
-
-    public static bool Find(string asked, out bool shiny)
-    {
-        switch (asked.Replace(" ", "").ToLowerInvariant())
-        {
-            case "일반" or "일반색" or "normal": shiny = false; return true;
-            case "이로치" or "색이다른" or "shiny": shiny = true; return true;
-            default: shiny = true; return false;
-        }
-    }
-
-    public static string Said(bool shiny) => shiny
-        ? "이로치 (이로치가 막힌 포켓몬은 일반 색)"
-        : "일반 색 (카드가 이로치로 정한 배포는 이로치)";
-}
-
 /// <summary>How the individual values are asked for, in words.</summary>
 public static class IvNames
 {

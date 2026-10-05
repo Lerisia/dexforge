@@ -46,10 +46,6 @@ public class TheWindow
         Assert.Equal(SexChoice.Random, asked.Sex);
         Assert.Equal(LevelChoice.Lowest, asked.Level);
         Assert.Equal(("Selene", "ミヅキ", "美月"), (asked.English, asked.Japanese, asked.Chinese));
-        // Plain before shiny, as the colours were ordered.
-        var plain = The<RadioButton>(w, "Plain"); var shiny = The<RadioButton>(w, "Shiny");
-        var row = (Panel)plain.Parent!;
-        Assert.True(row.Children.IndexOf(plain) < row.Children.IndexOf(shiny));
         Picture(w, "1-opened");
         w.Close();
     }
@@ -74,7 +70,6 @@ public class TheWindow
         The<TextBox>(w, "TidBox").Text = "567890";
         The<TextBox>(w, "SidBox").Text = "1234";
         The<RadioButton>(w, "PickedBalls").IsChecked = true;
-        The<RadioButton>(w, "Plain").IsChecked = true;
         The<RadioButton>(w, "IvFive").IsChecked = true;
         The<RadioButton>(w, "SexMale").IsChecked = true;
         The<RadioButton>(w, "LevelHundred").IsChecked = true;
@@ -87,7 +82,7 @@ public class TheWindow
         Assert.Equal("달님", asked.Name);
         Assert.Equal(567890u, asked.Tid); Assert.Equal(1234u, asked.Sid);
         Assert.Null(asked.Ball);
-        Assert.False(asked.Shiny);
+        Assert.True(asked.Shiny);   // always: a shiny wherever one can be
         Assert.Equal(IvChoice.FiveFromEggs, asked.Ivs);
         Assert.Equal(SexChoice.Male, asked.Sex);
         Assert.Equal(LevelChoice.Hundred, asked.Level);
@@ -333,7 +328,6 @@ public class TheEventBoxSide
         Assert.True(The<Grid>(w, "ReceivedRow").IsVisible);
         Assert.True(The<Grid>(w, "CustomRow").IsVisible);
         Assert.False(The<Grid>(w, "BallRow").IsVisible);
-        Assert.False(The<Grid>(w, "ColourRow").IsVisible);
         Assert.False(The<Grid>(w, "PeriodRow").IsVisible);
         Assert.True(w.ReadEvents(out var asked, out var why), why);
         Assert.Equal("미월", asked.Name);

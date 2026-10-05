@@ -38,23 +38,23 @@ The seed (`--seed`) and template refresh (`--refresh`) are command-line only.
 Run `Dexforge.Cli` with no arguments and it asks for the Ultra Sun options one by one; leave an answer blank to take the value in brackets. Sword and the event box are made with arguments only.
 
 ```
-Dexforge.Cli --name 미월 --sid 1234 --tid 567890 --ball 럭셔리볼 --color shiny --ivs 5V --sex random --level lowest --from 2018-01-01 --to 2018-12-31
+Dexforge.Cli --name 미월 --sid 1234 --tid 567890 --ball 럭셔리볼 --ivs 5V --sex random --level lowest --from 2018-01-01 --to 2018-12-31
 ```
 
-For Sword put `--game sword` first. The options that apply are `--name --sid --tid --ball --color --year --seed --out`.
+For Sword put `--game sword` first. The options that apply are `--name --sid --tid --ball --year --seed --out`.
 
 ```
-Dexforge.Cli --game sword --name 우리 --ball 볼맞춤 --color shiny --year 2021
+Dexforge.Cli --game sword --name 우리 --ball 볼맞춤 --year 2021
 ```
 
 For Scarlet put `--game scarlet` first; the options are the same as Legends: Arceus's but the ball is any of the 25 (or `볼맞춤` for the ones picked) and `--size` takes `smallest` or `largest`; the period defaults to 2024.
 
 For Legends: Z-A put `--game za` first; the options are Scarlet's, `--size` takes `smallest`, `alpha` or `largest`, and the period defaults to 2026 up to today.
 
-For Legends: Arceus put `--game arceus` first. The options are `--name --sid --tid --ball --color --size --sex --level --from --to --seed --out`; the ball is one of the Hisuian balls, and the period defaults to the release year 2022.
+For Legends: Arceus put `--game arceus` first. The options are `--name --sid --tid --ball --size --sex --level --from --to --seed --out`; the ball is one of the Hisuian balls, and the period defaults to the release year 2022.
 
 ```
-Dexforge.Cli --game arceus --name 미월 --ball 페더볼 --size alpha --color shiny
+Dexforge.Cli --game arceus --name 미월 --ball 페더볼 --size alpha
 ```
 
 For the event box put `--game eventbox` first. The options are `--name --sid --tid --seed --out --first-days --pick --pick-file`; `--list-picks` prints everything that can go into the free slots, with its key.
@@ -74,7 +74,6 @@ Dexforge.Cli --game eventbox --name 미월 --first-days 7 --pick D:2522,E:1215:2
 | `--english` `--japanese` `--chinese` | the trainer's name in foreign-language games, up to 7 / 5 / 6 characters | Selene, ミヅキ, 美月 |
 | `--sid` `--tid` | SID, four digits (0000–4294); TID, six digits (the ID the game shows). PKHeX's [SID]TID | random |
 | `--ball` | a ball name in Korean, or `볼맞춤` (a ball chosen per Pokémon) | 몬스터볼 (Poké Ball) |
-| `--color` | `normal` (일반), `shiny` (이로치) | `shiny` |
 | `--ivs` | `random` (랜덤), `5V` | `random` |
 | `--sex` | `male` (수컷), `female` (암컷), `random` (랜덤) | `random` |
 | `--level` | `lowest` (최저), `100` | `lowest` |

@@ -82,15 +82,6 @@
           </StackPanel>
         </Grid>
 
-        <Grid x:Name="ColourRow" ColumnDefinitions="112,*">
-          <TextBlock Classes="label" Text="색" />
-          <StackPanel Grid.Column="1" Orientation="Horizontal">
-            <RadioButton x:Name="Plain" GroupName="colour" Content="일반" />
-            <RadioButton x:Name="Shiny" GroupName="colour" IsChecked="True" Content="이로치" />
-            <TextBlock x:Name="ColourHint" Classes="hint" VerticalAlignment="Center" />
-          </StackPanel>
-        </Grid>
-
         <Grid x:Name="IvRow" ColumnDefinitions="112,*">
           <TextBlock Classes="label" Text="개체값" />
           <StackPanel Grid.Column="1" Spacing="2">

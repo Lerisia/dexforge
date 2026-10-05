@@ -45,7 +45,7 @@ public partial class MainWindow : Window
         foreach (var box in new[] { FromBox, ToBox }) box.Changed += (_, _) => { if (!switching) datesTouched = true; };
 
         foreach (var box in new[] { SidBox, TidBox }) box.PropertyChanged += (_, e) => { if (e.Property == TextBox.TextProperty) Ids(); };
-        foreach (var r in new[] { OneBall, PickedBalls, Plain, Shiny, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred }) r.IsCheckedChanged += (_, _) => Hints();
+        foreach (var r in new[] { OneBall, PickedBalls, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred }) r.IsCheckedChanged += (_, _) => Hints();
         foreach (var r in new[] { GameUltraSun, GameSword, GameEventBox, GameArceus, GameScarlet, GameZA }) r.IsCheckedChanged += (_, _) => { GameChanged(); Hints(); };
         foreach (var r in new[] { SizeSmallest, SizeAlpha, SizeLargest, SizeRandom }) r.IsCheckedChanged += (_, _) => Hints();
         foreach (var r in new[] { ReceivedAnyDay, ReceivedFirstDays }) r.IsCheckedChanged += (_, _) => Hints();
@@ -93,9 +93,6 @@ public partial class MainWindow : Window
             : BallFits.CannotGoIn[chosen] is var cannot and > 0
                 ? $"{BallFits.Boxed}마리 중 {cannot}마리는 {balls[(int)chosen]}에 넣을 수 없어 몬스터볼에 넣습니다. 배포 포켓몬은 카드가 정한 볼에 넣습니다."
                 : "배포 포켓몬은 카드가 정한 볼에 넣습니다.";
-        ColourHint.Text = Shiny.IsChecked == true
-            ? (IsArceus ? "전설·스타팅 같은 고정 조우는 이로치가 막혀 일반 색입니다." : IsScarlet ? "고정 심볼·레이드·게임 안 교환은 이로치가 막혀 일반 색입니다." : IsZA ? "이로치가 막힌 고정·선물·교환은 일반 색입니다. 이차원의 라티아스·라티오스·삼총사는 이로치입니다." : IsSword ? "막힌 것과 마휘핑 크림 9폼은 일반 색입니다." : "이로치가 막힌 포켓몬은 일반 색입니다.")
-            : IsArceus ? "의뢰의 포니타는 늘 이로치입니다." : IsScarlet || IsZA ? "전부 일반 색입니다." : "카드가 이로치로 정한 배포는 이로치입니다.";
         SizeHint.Text = IsZA
             ? (SizeSmallest.IsChecked == true ? "이차원·야생 포켓몬은 크기 0. 고정·선물은 게임이 정한 크기입니다."
                : SizeLargest.IsChecked == true ? "이차원·야생 포켓몬은 크기 255. 고정·선물은 게임이 정한 크기입니다."
@@ -164,7 +161,7 @@ public partial class MainWindow : Window
         RibbonRow.IsVisible = !events && !arceus && !scarlet && !za;
         ShowRibbons();
         foreach (var row in new Control[] { SexRow, LevelRow, PeriodRow }) row.IsVisible = !sword && !events;
-        foreach (var row in new Control[] { BallRow, ColourRow }) row.IsVisible = !events;
+        BallRow.IsVisible = !events;
         YearRow.IsVisible = sword;
         SizeRow.IsVisible = arceus || scarlet || za;
         SizeAlpha.IsVisible = arceus || za; SizeLargest.IsVisible = scarlet || za;
@@ -258,7 +255,7 @@ public partial class MainWindow : Window
         var size = SizeSmallest.IsChecked == true ? SizeChoice.Smallest : SizeAlpha.IsChecked == true ? SizeChoice.Alpha : SizeChoice.Random;
         var sex = SexMale.IsChecked == true ? SexChoice.Male : SexFemale.IsChecked == true ? SexChoice.Female : SexChoice.Random;
         var level = LevelHundred.IsChecked == true ? LevelChoice.Hundred : LevelChoice.Lowest;
-        asked = new Options8a(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, Shiny.IsChecked == true, size, level, sex);
+        asked = new Options8a(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, true, size, level, sex);
         return true;
     }
 
@@ -275,7 +272,7 @@ public partial class MainWindow : Window
         var size = SizeSmallest.IsChecked == true ? SizeChoice.Smallest : SizeLargest.IsChecked == true ? SizeChoice.Largest : SizeChoice.Random;
         var sex = SexMale.IsChecked == true ? SexChoice.Male : SexFemale.IsChecked == true ? SexChoice.Female : SexChoice.Random;
         var level = LevelHundred.IsChecked == true ? LevelChoice.Hundred : LevelChoice.Lowest;
-        asked = new Scarlet.Options9(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, Shiny.IsChecked == true, size, level, sex);
+        asked = new Scarlet.Options9(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, true, size, level, sex);
         return true;
     }
 
@@ -292,7 +289,7 @@ public partial class MainWindow : Window
         var size = SizeSmallest.IsChecked == true ? SizeChoice.Smallest : SizeAlpha.IsChecked == true ? SizeChoice.Alpha : SizeLargest.IsChecked == true ? SizeChoice.Largest : SizeChoice.Random;
         var sex = SexMale.IsChecked == true ? SexChoice.Male : SexFemale.IsChecked == true ? SexChoice.Female : SexChoice.Random;
         var level = LevelHundred.IsChecked == true ? LevelChoice.Hundred : LevelChoice.Lowest;
-        asked = new ZA.Options9a(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, Shiny.IsChecked == true, size, level, sex);
+        asked = new ZA.Options9a(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, true, size, level, sex);
         return true;
     }
 
@@ -306,7 +303,7 @@ public partial class MainWindow : Window
         Id(SidBox.Text, 4, out var sid); Id(TidBox.Text, 6, out var tid);
         if (!int.TryParse((YearBox.Text ?? "").Trim(), out var year) || year is < 2019 or > 2099) { why = "해는 2019 부터 2099 까지입니다."; YearBox.Focus(); return false; }
         int? ball = PickedBalls.IsChecked == true ? null : (int)Shelf[Math.Max(BallBox.SelectedIndex, 0)];
-        asked = new Options8(name, tid, sid, year, Random.Shared.Next(), ball, Shiny.IsChecked == true) { Ribbons = SwordRibbonKeys.ToList() };
+        asked = new Options8(name, tid, sid, year, Random.Shared.Next(), ball, true) { Ribbons = SwordRibbonKeys.ToList() };
         return true;
     }
 
@@ -332,7 +329,7 @@ public partial class MainWindow : Window
         var ivs = IvFive.IsChecked == true ? IvChoice.FiveFromEggs : IvChoice.Random;
         var sex = SexMale.IsChecked == true ? SexChoice.Male : SexFemale.IsChecked == true ? SexChoice.Female : SexChoice.Random;
         var level = LevelHundred.IsChecked == true ? LevelChoice.Hundred : LevelChoice.Lowest;
-        asked = new Options(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, ivs, Shiny.IsChecked == true, level, sex, english, japanese, chinese) { Ribbons = RibbonKeys.ToList() };
+        asked = new Options(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, ivs, true, level, sex, english, japanese, chinese) { Ribbons = RibbonKeys.ToList() };
         if (ForeignNames.Refused(asked) is { } refused) { why = refused; return false; }
         return true;
     }
@@ -434,7 +431,7 @@ public partial class MainWindow : Window
     {
         busy = now;
         MakeButton.IsEnabled = !now;
-        foreach (var c in new Control[] { GameUltraSun, GameSword, GameEventBox, NameBox, EnglishBox, JapaneseBox, ChineseBox, SidBox, TidBox, OneBall, BallBox, PickedBalls, Plain, Shiny, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred, YearBox, FromBox, ToBox, ChooseButton, ReceivedAnyDay, ReceivedFirstDays, FirstDaysBox, PickButton }) c.IsEnabled = !now;
+        foreach (var c in new Control[] { GameUltraSun, GameSword, GameEventBox, NameBox, EnglishBox, JapaneseBox, ChineseBox, SidBox, TidBox, OneBall, BallBox, PickedBalls, IvRandom, IvFive, SexMale, SexFemale, SexRandom, LevelLowest, LevelHundred, YearBox, FromBox, ToBox, ChooseButton, ReceivedAnyDay, ReceivedFirstDays, FirstDaysBox, PickButton }) c.IsEnabled = !now;
     }
 
     private HelpWindow? help;

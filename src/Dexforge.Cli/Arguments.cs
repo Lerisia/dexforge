@@ -35,7 +35,6 @@ internal static class Arguments
                     case "--tid": o.Tid = uint.Parse(Value()); break;
                     case "--sid": o.Sid = uint.Parse(Value()); break;
                     case "--ball": o.Ball = Value(); break;
-                    case "--color": if (!ColourNames.Find(Value(), out o.Shiny)) { why = ColourNames.Help; return null; } break;
                     case "--ivs": if (!IvNames.Find(Value(), out o.Ivs)) { why = IvNames.Help; return null; } break;
                     case "--sex": if (!SexNames.Find(Value(), out o.Sex)) { why = SexNames.Help; return null; } break;
                     case "--level": if (!LevelNames.Find(Value(), out o.Level)) { why = LevelNames.Help; return null; } break;

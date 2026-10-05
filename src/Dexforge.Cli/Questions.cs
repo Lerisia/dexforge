@@ -60,12 +60,6 @@ internal sealed class Questions(TextReader input, TextWriter output)
             o.Ball = s;
             return null;
         });
-        Until("색: 일반 / 이로치 (이로치)", s =>
-        {
-            if (!ColourNames.Find(s, out var v)) return ColourNames.Help;
-            o.Shiny = v;
-            return null;
-        });
         Until("개체값: 랜덤 / 5V (알에서 나온 포켓몬은 5V) (랜덤)", s =>
         {
             if (!IvNames.Find(s, out var v)) return IvNames.Help;

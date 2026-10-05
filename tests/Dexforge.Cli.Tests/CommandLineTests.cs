@@ -24,13 +24,13 @@ public class CommandLineTests
     public void ReadsEveryOption()
     {
         var o = Arguments.Parse(["--name", "달님", "--english", "Luna", "--japanese", "ルナ", "--chinese", "月", "--sid", "1234", "--tid", "567890",
-                                 "--ball", "럭셔리", "--color", "일반", "--ivs", "5V", "--sex", "수컷", "--level", "100",
+                                 "--ball", "럭셔리", "--ivs", "5V", "--sex", "수컷", "--level", "100",
                                  "--from", "2019-02-03", "--to", "2019-04-05", "--seed", "7", "--out", "somewhere"], out var why);
         Assert.NotNull(o); Assert.Equal("", why);
         Assert.Equal(("달님", "Luna", "ルナ", "月"), (o!.Name, o.English, o.Japanese, o.Chinese));
         Assert.Equal((1234u, 567890u), (o.Sid, o.Tid));
         Assert.Equal("럭셔리", o.Ball);
-        Assert.False(o.Shiny);
+        Assert.True(o.Shiny);   // always: there is no colour to choose
         Assert.Equal((IvChoice.FiveFromEggs, SexChoice.Male, LevelChoice.Hundred), (o.Ivs, o.Sex, o.Level));
         Assert.Equal((new DateOnly(2019, 2, 3), new DateOnly(2019, 4, 5)), (o.From, o.To));
         Assert.Equal((7, "somewhere"), (o.Seed, o.Out));
@@ -56,7 +56,6 @@ public class CommandLineTests
     [InlineData(new[] { "--tid", "abc" }, "TID 는 여섯 자리")]
     [InlineData(new[] { "--from", "어제" }, "2018-01-01 같은 모양")]
     [InlineData(new[] { "--name" }, "--name 뒤에 값이 없습니다")]
-    [InlineData(new[] { "--color", "무지개" }, "일반, 이로치")]
     [InlineData(new[] { "--ivs", "6V" }, "6V 는 지금 고를 수 없습니다")]
     [InlineData(new[] { "--sex", "무성" }, "수컷, 암컷, 랜덤")]
     [InlineData(new[] { "--level", "50" }, "최저, 100")]
@@ -99,7 +98,6 @@ public class CommandLineTests
             "4295", "1234",
             "1000000", "567890",
             "무지개볼", "럭셔리볼",
-            "무지개", "일반",
             "7V", "5V",
             "무성", "암컷",
             "50", "100",
@@ -112,11 +110,11 @@ public class CommandLineTests
         Assert.Equal(("달님", "Luna", "ルナ", "美月"), (order.Name, order.English, order.Japanese, order.Chinese));
         Assert.Equal((1234u, 567890u), (order.Sid, order.Tid));
         Assert.Equal("럭셔리볼", order.Ball);
-        Assert.False(order.Shiny);
+        Assert.True(order.Shiny);
         Assert.Equal((IvChoice.FiveFromEggs, SexChoice.Female, LevelChoice.Hundred), (order.Ivs, order.Sex, order.Level));
         Assert.Equal((new DateOnly(2019, 5, 1), new DateOnly(2020, 4, 30)), (order.From, order.To));
         var said = output.ToString();
-        foreach (var why in new[] { "6글자까지", "7글자까지", "5글자까지", "0000에서 4294", "000000에서 999999", "'무지개볼' 라는 볼은 없습니다", "일반, 이로치", "랜덤, 5V", "수컷, 암컷, 랜덤", "최저, 100", "2018-01-01 같은 모양" })
+        foreach (var why in new[] { "6글자까지", "7글자까지", "5글자까지", "0000에서 4294", "000000에서 999999", "'무지개볼' 라는 볼은 없습니다", "랜덤, 5V", "수컷, 암컷, 랜덤", "최저, 100", "2018-01-01 같은 모양" })
             Assert.Contains(why, said);
     }
 

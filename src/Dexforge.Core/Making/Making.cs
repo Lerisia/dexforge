@@ -54,7 +54,7 @@ public static class Making
             $"외국어 게임   영어·프랑스어·독일어·이탈리아어·스페인어 {opt.English}, 일본어 {opt.Japanese}, 중국어 {opt.Chinese}",
             $"SID / TID     {gen.Me.Sid7:0000} / {gen.Me.Shown:000000}   (3DSRNGTool 에 넣는 16비트 값: TID {gen.Me.Tid:00000}, SID {gen.Me.Sid:00000})",
             $"볼            {(opt.Ball is { } b ? $"{balls[b]}로 통일 (안 되는 포켓몬은 몬스터볼, 배포는 카드가 정한 볼)" : $"{BallNames.Matched} (포켓몬마다 골라 둔 볼)")}",
-            $"색            {ColourNames.Said(opt.Shiny)}",
+            $"색            {(opt.Shiny ? "이로치 (막힌 것만 일반)" : "일반")}",
             $"개체값        {IvNames.Said(opt.Ivs)}",
             $"성별          {SexNames.Said(opt.Sex)}",
             $"레벨          {LevelNames.Said(opt.Level)}",

@@ -100,19 +100,6 @@ public class OptionTests
     [Fact]
     public void BySexAndLevelNothingIsAsked() => Assert.Equal((SexChoice.Random, LevelChoice.Lowest), (new Options("미월", null, null, default, default, 0).Sex, new Options("미월", null, null, default, default, 0).Level));
 
-    [Theory]
-    [InlineData("일반", false)]
-    [InlineData("일반색", false)]
-    [InlineData("일반 색", false)]
-    [InlineData("이로치", true)]
-    public void Colour(string asked, bool shiny)
-    {
-        Assert.True(ColourNames.Find(asked, out var got));
-        Assert.Equal(shiny, got);
-    }
-
-    [Fact]
-    public void ColourOtherwiseIsTurnedDown() => Assert.False(ColourNames.Find("무지개", out _));
 
     private static Options Window(DateOnly from, DateOnly to) => new("미월", null, null, from, to, 1);
 
