@@ -113,7 +113,7 @@
     </div>
   </header>
   <main id="list"></main>
-  <p class="sub" id="foot" style="margin-top:16px">가족은 최종 진화체의 세대(갈래가 여럿이면 가장 뒤 세대)로 묶여 도감 번호순입니다. 가족마다 왼쪽은 이로치, 오른쪽은 일반입니다. 그림은 최종 진화체의 이로치와 일반 색입니다. '지금'은 네 게임이 같이 쓰는 우선순위 표의 순위이고(넣을 수 없는 게임에서는 그다음 순위로, 셋 다 안 되면 몬스터볼), 보라색 '일반 쪽을 따름'은 이로치 쪽이 따로 정해진 적이 없어 일반 쪽 볼을 쓰고 있다는 뜻입니다. 볼을 차례로 누르면 1·2·3순위가 되고(최대 셋, 다시 누르면 뺍니다). 그 게임에서 1순위가 안 되면 2순위, 2순위도 안 되면 3순위, 셋 다 안 되면 몬스터볼입니다 — 여기서 정한 순위가 지금의 순위를 통째로 대신합니다. 구성원마다 다르게 하려면 '구성원별'을 누르세요. '성별별 다름'을 켜면 수컷과 암컷 줄이 따로 나옵니다(가족에서도, 구성원별에서도). 선물·화석·배포처럼 볼이 정해진 것은 여기 없습니다.</p>
+  <p class="sub" id="foot" style="margin-top:16px">가족은 최종 진화체의 세대(갈래가 여럿이면 가장 뒤 세대)로 묶여 도감 번호순입니다. 가족마다 왼쪽은 이로치, 오른쪽은 일반입니다. 그림은 최종 진화체의 이로치와 일반 색입니다. '지금'은 네 게임이 같이 쓰는 우선순위 표의 순위이고(넣을 수 없는 게임에서는 그다음 순위로, 셋 다 안 되면 몬스터볼), 보라색 '일반 쪽을 따름'은 이로치 쪽이 따로 정해진 적이 없어 일반 쪽 볼을 쓰고 있다는 뜻입니다. 볼을 차례로 누르면 1·2·3순위가 되고(최대 셋, 다시 누르면 뺍니다). 그 게임에서 1순위가 안 되면 2순위, 2순위도 안 되면 3순위, 셋 다 안 되면 몬스터볼입니다 — 여기서 정한 순위가 지금의 순위를 통째로 대신합니다. 구성원마다 다르게 하려면 '구성원별'을 누르세요. '성별별 다름'을 켜면 수컷과 암컷 줄이 따로 나옵니다(가족에서도, 구성원별에서도). 선물·화석·배포처럼 볼이 정해진 것은 여기 없습니다. LEGENDS 아르세우스 도감의 종은 계통을 잇고 세대를 정하는 데만 쓰이고(거기선 히스이 볼 하나로 통일), 그 도감에만 있는 종은 고를 것이 없어 표시만 합니다.</p>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -121,7 +121,8 @@
 <script>
 (function () {
   const balls = DATA.balls, icons = DATA.icons, cols = DATA.sheet.cols, W = DATA.sheet.w, H = DATA.sheet.h;
-  const fams = DATA.sheet.families;
+  const arceusOnly = m => m.games.length === 1 && m.games[0] === '아르세우스';
+  const fams = DATA.sheet.families.filter(f => !f.members.every(arceusOnly));
   const SC = DATA.sheet.sprite.cols, SW = DATA.sheet.sprite.w, SH = DATA.sheet.sprite.h;
   const saved = new Map();   // family id -> {shiny: [..up to 3], plain: [..], members: {memberKey: {shiny: [..], plain: [..]}}, note}
   let db = null, filter = 'all', game = '', query = '';
@@ -244,7 +245,8 @@
       f.members.forEach(m => (s.bySex && m.sexed && m.sexes.length === 1 ? [{ ...m.sexes[0], sex: '수' }, { ...m.sexes[0], sex: '암' }] : m.sexes).forEach(sx => {
         const key = memberKey(m, sx);
         const r = document.createElement('div'); r.className = 'row';
-        const label = document.createElement('div'); label.className = 'label'; label.textContent = key + (m.games.length < f.games.length ? ' (' + m.games.join('·') + ')' : ''); r.appendChild(label);
+        const label = document.createElement('div'); label.className = 'label'; label.textContent = key + (arceusOnly(m) ? ' (LEGENDS 아르세우스에서만 — 볼은 히스이 볼로 통일, 고를 것 없음)' : m.games.length < f.games.length ? ' (' + m.games.join('·') + ')' : ''); r.appendChild(label);
+        if (arceusOnly(m)) { perBox.appendChild(r); return; }
         const twoM = document.createElement('div'); twoM.className = 'two';
         [['shiny', sx.shinyList, sx.shinyOwn], ['plain', sx.plainList, sx.plainOwn]].forEach(([colour, listText, own]) => {
           const box = document.createElement('div');

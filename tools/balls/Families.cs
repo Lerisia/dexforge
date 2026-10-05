@@ -19,6 +19,8 @@ foreach (var p in usum.BoxData.Where(p => p.Species != 0)) if (new LegalityAnaly
 foreach (var e in Dexforge.Sword.Plan8.All()) if (e.Source != Dexforge.Sword.Source.None && e.Source != Dexforge.Sword.Source.Card && (e.Template?.FixedBall is null or Ball.None)) Mark((e.Species, e.Form), "소드");
 foreach (var e in Dexforge.Scarlet.Plan9.All) if (e.Template.FixedBall == Ball.None) Mark((e.Species, e.Form), "스칼렛");
 foreach (var e in Dexforge.ZA.Plan9a.All) if (e.Template.FixedBall == Ball.None) Mark((e.Species, e.Form), "Z-A");
+// Legends: Arceus picks no balls (one Hisuian ball for all), but its species belong to their lines (the Ursaluna an Ursaring becomes there)
+foreach (var e in Dexforge.Arceus.Plan8a.All) Mark((e.Species, e.Form), "아르세우스");
 string Label(ushort sp, byte f)
 {
     var names = FormConverter.GetFormList(sp, ko.types, ko.forms, GameInfo.GenderSymbolUnicode, EntityContext.Gen9);
