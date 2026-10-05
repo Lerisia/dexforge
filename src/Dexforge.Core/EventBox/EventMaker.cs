@@ -43,6 +43,22 @@ public sealed class EventMaker(Random rnd, Receivers receivers, List<object> car
 
     public DateOnly Day(DateOnly from, DateOnly to) => from.AddDays(rnd.Next(0, Math.Max(0, to.DayNumber - from.DayNumber) + 1));
 
+    /// <summary>
+    /// What was handed out together is received on one day (owner, 2026-10-05): the distributions of one generation given out
+    /// over one window by one trainer in one region are a set, and the first of a set made fixes the day of the rest. Only a
+    /// small set of different species counts (a trio of legendaries, a pair of starters): a set that repeats a species handed
+    /// its variants out one at a time (the sixteen Arceus of the 2015 film, one per viewing; Ash's caps, one a week; a birthday
+    /// Eevee a year), and a long list of species was a stall visited more than once, so those keep a day each.
+    /// </summary>
+    public static Dictionary<Dist, string> Groups(IEnumerable<Dist> dists)
+    {
+        var sets = dists.GroupBy(d => $"{d.Generation}|{d.Start}|{d.End}|{d["대표 어버이"]}|{d.Region}")
+                        .Where(g => g.Count() is > 1 and <= 3 && g.Select(d => (d.Species, d["폼"])).Distinct().Count() == g.Count());
+        return sets.SelectMany(g => g.Select(d => (d, g.Key))).ToDictionary(x => x.d, x => x.Key);
+    }
+    public Dictionary<Dist, string> Sets { get; init; } = new();
+    private readonly Dictionary<string, DateOnly> setDays = new();
+
     private static DateOnly ParseDay(string s)
     {
         // 'YYYY-MM-DD'; a month-only or year-only date is taken as its first day (start) — callers pass which end they want
@@ -122,7 +138,9 @@ public sealed class EventMaker(Random rnd, Receivers receivers, List<object> car
         var card = cards[d.CardRow];
         var language = LanguageOf(d, card);
         var (from, to, open) = Window(d);
-        var received = Day(from, to);
+        Sets.TryGetValue(d, out var set);
+        var received = set is not null && setDays.TryGetValue(set, out var setDay) ? setDay : Day(from, to);
+        if (set is not null) setDays[set] = received;
         Exception? last = null;
         // a card that leaves the colour to chance is made shiny (owner's rule); if no version manages that, plain, with a note
         bool wantShiny = d["이로치"] == "Random";
@@ -135,6 +153,7 @@ public sealed class EventMaker(Random rnd, Receivers receivers, List<object> car
                 // this save received it itself: not before its adventure had got going
                 if (to < NotBefore) { last = new InvalidOperationException($"이 세이브가 받기엔 배포가 모험 시작 전에 끝남 ({from}~{to})"); continue; }
                 received = Day(NotBefore, to);
+                if (set is not null) setDays[set] = received;
             }
             for (int attempt = 0; attempt < 20; attempt++)
             {

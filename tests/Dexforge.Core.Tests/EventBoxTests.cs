@@ -73,8 +73,27 @@ public class EventBoxTests
             Assert.Equal("재연", s7.OT);
             int count = 0; for (int b = 0; b < s7.BoxCount; b++) foreach (var p in s7.GetBoxData(b)) if (p.Species != 0) count++;
             Assert.Equal(930, count);
+            // what was handed out together came on one day: the Bank's Regi trio of 2016 and the Korean Eclipse trio of 2019
+            var all = s7.BoxData.Where(p => p.Species != 0).ToList();
+            Assert.Single(all.Where(p => p.Species is 377 or 378 or 379 && p.MetDate!.Value.Year == 2016 && p.OriginalTrainerName == "재연").Select(p => p.MetDate).Distinct());
+            Assert.Single(all.Where(p => p.Species is 791 or 792 or 800 && p.IsShiny && p.OriginalTrainerName == "이클립스").Select(p => p.MetDate).Distinct());
+            // the sixteen Arceus of the 2015 film came one per viewing: not on one day
+            Assert.True(all.Where(p => p.Species == 493 && p.OriginalTrainerName == "デセルシティ").Select(p => p.MetDate).Distinct().Count() > 3);
         }
         finally { Directory.Delete(dir, true); }
+    }
+
+    [Fact]
+    public void Sets_handed_out_together_are_small_and_of_different_species()
+    {
+        var rows = Rows.Distributions();
+        var sets = EventMaker.Groups(rows.All.Select(r => new Dist(rows, r)));
+        Assert.Equal(62, sets.Values.Distinct().Count());   // 61 among the distributions kept, one among the Pokémon Center ones left out
+        Assert.Equal(151, sets.Count);
+        Assert.All(sets.GroupBy(x => x.Value), g => Assert.InRange(g.Count(), 2, 3));
+        Assert.DoesNotContain(sets.Keys, d => d.Species == "아르세우스");   // one per viewing of the film
+        Assert.DoesNotContain(sets.Keys, d => d["대표 어버이"] == "지우" && d.Generation == 7);   // Ash's caps, one a week
+        Assert.Contains(sets.Keys, d => d["대표 어버이"] == "이클립스");
     }
 
     [Fact]

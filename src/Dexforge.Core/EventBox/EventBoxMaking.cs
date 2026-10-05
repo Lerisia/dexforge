@@ -85,8 +85,8 @@ public static class EventBoxMaking
                 var rnd = new Random(opt.Seed ^ 0x5A5A5A5A);
                 var receivers = new Receivers(rnd, me.Name, me.Gender);
                 receivers.SetSave(me.Info);
-                var maker = new EventMaker(rnd, receivers, cards, OpenEndCap) { NotBefore = began.AddDays(1), FirstDays = opt.FirstDays };
                 var kept = dists.Where(d => !Dropped(d)).ToList();
+                var maker = new EventMaker(rnd, receivers, cards, OpenEndCap) { NotBefore = began.AddDays(1), FirstDays = opt.FirstDays, Sets = EventMaker.Groups(kept) };
                 var made = new List<Made7>(); var evolved = new List<Made7>(); var extra = new List<Made7>();
                 int done = 0, of = kept.Count;
                 foreach (var d in kept)
@@ -160,7 +160,7 @@ public static class EventBoxMaking
             $"어버이        {me.Name} ({(me.Gender == 0 ? "남" : "여")})",
             $"SID / TID     {me.Sid7:0000} / {me.Shown:000000}   (16비트: TID {me.Tid:00000}, SID {me.Sid:00000})",
             $"모험 시작     {gen.Began:yyyy-MM-dd}",
-            $"받은 날       {(opt.FirstDays > 0 ? $"배포 기간의 처음 {opt.FirstDays}일 안" : "배포 기간 안 아무 날")}",
+            $"받은 날       {(opt.FirstDays > 0 ? $"배포 기간의 처음 {opt.FirstDays}일 안" : "배포 기간 안 아무 날")} (같은 기간·어버이·지역의 서로 다른 종 둘·셋은 같은 날)",
             $"박스          원본 {originals} + 최종 진화체 {evolutions} + 직접 고른 것 {picked} = {count}마리, 빈 칸 {check.BoxCount * check.BoxSlotCount - count}",
             $"합법          {legal} / {count} (PKHeX, 세이브 문맥)",
             $"이로치        {shiny} (색이 랜덤인 카드 {shinyMade}건을 이로치로; {shinyLeft}건은 PKHeX 가 이로치를 허용하지 않아 일반 색)",
