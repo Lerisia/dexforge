@@ -62,7 +62,9 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Random random, Options9 op
                 pk = egg.ConvertToPKM(trainer, criteria with { Shiny = wantShiny ? Shiny.Always : Shiny.Never });
                 // a hatchling's size is the egg's draw, which nothing checks yet: the smallest or the largest as asked, without a mark (marks come from the wild)
                 if (Scale != Scale9.Random) pk.HeightScalar = pk.WeightScalar = pk.Scale = Spawn9.ScaleOf(Scale);
-                how = "알";
+                // hatched where everyone hatches eggs in Paldea: riding around Mesagoza (owner, 2026-10-05)
+                pk.MetLocation = Mesagoza;
+                how = "알 (누룩스시티에서 부화)";
                 break;
             }
             default:
@@ -106,6 +108,9 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Random random, Options9 op
         var la = new LegalityAnalysis(pk);
         return new Made9(e, pk, how, seed, la.Valid, la.Valid ? "" : la.Report());
     }
+
+    /// <summary>Where eggs hatch: the natural spot in Paldea, as in Alola's Paniola Ranch and Galar's Route 5 (owner).</summary>
+    public const ushort Mesagoza = 78;
 
     private readonly Dictionary<string, DateOnly> eventDays = new();
 

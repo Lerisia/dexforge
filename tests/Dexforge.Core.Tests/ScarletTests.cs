@@ -137,6 +137,7 @@ public class ScarletTests
             Assert.Equal(size == SizeChoice.Smallest ? 0 : 255, made.Pk.Scale);
             Assert.Equal(made.Pk.Scale, made.Pk.HeightScalar);
             Assert.False(made.Pk.RibbonMarkMini || made.Pk.RibbonMarkJumbo);
+            Assert.Equal(Maker9.Mesagoza, made.Pk.MetLocation);   // hatched riding around Mesagoza
         }
     }
 
