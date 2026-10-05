@@ -28,6 +28,8 @@ public class BallsTests
         var caterpie = Balls.Shared.Prefer(10, 0, null, true);                          // the Butterfree line: a Dream Ball, else the Love Ball the national dex had
         Assert.Equal([Ball.Dream, Ball.Love, Ball.Poke], caterpie);
         Assert.Equal([Ball.Poke], Balls.Shared.Prefer(9999, 0, null, true));          // nothing picked: a Poké Ball
+        Assert.Equal([Ball.Dream, Ball.Love, Ball.Heal, Ball.Poke], Balls.Shared.Prefer(669, 0, null, true));   // Flabébé: three ranks at most, then a Poké Ball
+        Assert.All(Enumerable.Range(1, 1025).SelectMany(sp => new[] { true, false }.Select(sh => Balls.Shared.Prefer((ushort)sp, 0, null, sh))), l => Assert.InRange(l.Count, 1, Balls.Ranks + 1));
         Assert.Equal([Ball.Master, Ball.Poke], Balls.Shared.Wanted((int)Ball.Master, 10, 0, null, true));   // one ball asked for
         Assert.Equal([Ball.Poke], Balls.Shared.Wanted((int)Ball.Poke, 10, 0, null, true));
         // a Dream Ball is not to be had on a Caterpie of Ultra Sun, so the template's falls to the Love Ball; the Z-A pick stays for the Z-A dex

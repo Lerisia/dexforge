@@ -61,6 +61,11 @@
   .col.shiny .ball[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
   .col.plain .ball[aria-pressed="true"] { border-color: var(--plain); background: var(--plain-soft); }
   .ball.hint:not([aria-pressed="true"]) { border-color: var(--line); border-style: dashed; }
+  .ball { position: relative; }
+  .ball .rank { position: absolute; right: -3px; top: -5px; min-width: 14px; height: 14px; border-radius: 7px; font-size: 10px; line-height: 14px; font-weight: 700; color: #fff; background: var(--accent); text-align: center; }
+  .col.plain .ball .rank, .per .plain-strip .ball .rank { background: var(--plain); }
+  .sentinel { height: 1px; }
+  .loadmore { display: block; margin: 16px auto; }
   .chosen { font-size: 13px; margin-top: 2px; min-height: 1.2em; }
   .col.shiny .chosen b { color: var(--accent); } .col.plain .chosen b { color: var(--plain); }
   .more { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -104,7 +109,7 @@
     </div>
   </header>
   <main id="list"></main>
-  <p class="sub" id="foot" style="margin-top:16px">가족마다 왼쪽은 이로치, 오른쪽은 일반입니다. 그림은 최종 진화체의 이로치와 일반 색입니다. '지금'은 네 게임이 같이 쓰는 우선순위 표의 맨 앞 볼이고(넣을 수 없는 게임에서는 그다음 볼로 넘어갑니다), 보라색 '일반 쪽을 따름'은 이로치 쪽이 따로 정해진 적이 없어 일반 쪽 볼을 쓰고 있다는 뜻입니다. 볼 하나를 누르면 그 색의 맨 앞 볼로 저장되고, 나머지 순위는 그 뒤에 그대로 남습니다. 구성원이나 성별마다 다르게 하려면 '구성원별'을 누르세요. 선물·화석·배포처럼 볼이 정해진 것은 여기 없습니다.</p>
+  <p class="sub" id="foot" style="margin-top:16px">가족마다 왼쪽은 이로치, 오른쪽은 일반입니다. 그림은 최종 진화체의 이로치와 일반 색입니다. '지금'은 네 게임이 같이 쓰는 우선순위 표의 순위이고(넣을 수 없는 게임에서는 그다음 순위로, 셋 다 안 되면 몬스터볼), 보라색 '일반 쪽을 따름'은 이로치 쪽이 따로 정해진 적이 없어 일반 쪽 볼을 쓰고 있다는 뜻입니다. 볼을 차례로 누르면 1·2·3순위가 되고(최대 셋, 다시 누르면 뺍니다). 그 게임에서 1순위가 안 되면 2순위, 2순위도 안 되면 3순위, 셋 다 안 되면 몬스터볼입니다 — 여기서 정한 순위가 지금의 순위를 통째로 대신합니다. 구성원이나 성별마다 다르게 하려면 '구성원별'을 누르세요. 선물·화석·배포처럼 볼이 정해진 것은 여기 없습니다.</p>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -114,44 +119,49 @@
   const balls = DATA.balls, icons = DATA.icons, cols = DATA.sheet.cols, W = DATA.sheet.w, H = DATA.sheet.h;
   const fams = DATA.sheet.families;
   const SC = DATA.sheet.sprite.cols, SW = DATA.sheet.sprite.w, SH = DATA.sheet.sprite.h;
-  const saved = new Map();   // family id -> {shiny, plain, members: {memberKey: {shiny, plain}}, note}
+  const saved = new Map();   // family id -> {shiny: [..up to 3], plain: [..], members: {memberKey: {shiny: [..], plain: [..]}}, note}
   let db = null, filter = 'all', game = '', query = '';
   const list = document.getElementById('list'), count = document.getElementById('count'), toast = document.getElementById('toast');
   const open = new Set();
+  const PAGE = 24;
+  let shownList = [], shownUpTo = 0;
   let toastTimer = 0;
   function say(text) { toast.textContent = text; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove('show'), 1400); }
 
-  // the family's current first ball for a colour: the members' when they agree, else 'mixed'
-  function nowOf(f, colour) {
-    const firsts = new Set();
-    f.members.forEach(m => m.sexes.forEach(s => firsts.add(colour === 'shiny' ? s.shiny : s.plain)));
-    return firsts.size === 1 ? [...firsts][0] : null;
+  // the family's current list for a colour: the members' when they all agree, else none (per member then)
+  function listOf(f, colour) {
+    const lists = new Set();
+    f.members.forEach(m => m.sexes.forEach(s => lists.add(colour === 'shiny' ? s.shinyList : s.plainList)));
+    return lists.size === 1 ? [...lists][0] : null;
   }
   function ownOf(f, colour) { return f.members.every(m => m.sexes.every(s => colour === 'shiny' ? s.shinyOwn : s.plainOwn)); }
   function memberKey(m, s) { return m.label + (s.sex ? '/' + s.sex : ''); }
+  function ranksOf(x) { return Array.isArray(x) ? x : x ? [x] : []; }
   function stateOf(f) {
     const s = saved.get(f.id);
-    const members = s && s.members ? Object.keys(s.members).length : 0;
-    if (!s || (!s.shiny && !s.plain && !members)) return 'todo';
-    return 'changed';
+    if (!s) return 'todo';
+    const members = s.members ? Object.keys(s.members).length : 0;
+    return ranksOf(s.shiny).length || ranksOf(s.plain).length || members ? 'changed' : 'todo';
   }
   function matches(f) {
     if (query && !(f.name + ' ' + f.members.map(m => m.label).join(' ')).includes(query)) return false;
     if (game && !f.games.includes(game)) return false;
     const s = saved.get(f.id) || {};
-    if (filter === 'todo-shiny') return !s.shiny && !ownOf(f, 'shiny');
-    if (filter === 'todo-plain') return !s.plain && !ownOf(f, 'plain');
+    if (filter === 'todo-shiny') return !ranksOf(s.shiny).length && !ownOf(f, 'shiny');
+    if (filter === 'todo-plain') return !ranksOf(s.plain).length && !ownOf(f, 'plain');
     if (filter === 'plain-only') return !ownOf(f, 'shiny') && ownOf(f, 'plain');
     if (filter === 'changed') return stateOf(f) === 'changed';
     return true;
   }
 
-  function strip(f, member, colour, current, hint) {
-    const div = document.createElement('div'); div.className = 'balls';
+  function strip(f, member, colour, ranks, hint) {
+    const div = document.createElement('div'); div.className = 'balls ' + colour + '-strip';
     balls.forEach(b => {
+      const at = ranks.indexOf(b);
       const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ball' + (hint === b ? ' hint' : '');
-      btn.title = b; btn.setAttribute('aria-label', b); btn.setAttribute('aria-pressed', current === b ? 'true' : 'false');
+      btn.title = b; btn.setAttribute('aria-label', b); btn.setAttribute('aria-pressed', at >= 0 ? 'true' : 'false');
       const img = document.createElement('img'); img.src = icons[b]; img.alt = ''; btn.appendChild(img);
+      if (at >= 0) { const r = document.createElement('span'); r.className = 'rank'; r.textContent = at + 1; btn.appendChild(r); }
       btn.addEventListener('click', () => choose(f, member, colour, b));
       div.appendChild(btn);
     });
@@ -160,7 +170,7 @@
   function sprite(sheet, pos, label) {
     const el = document.createElement('div'); el.className = 'final';
     const sp = document.createElement('div'); sp.className = 'sp';
-    const img = document.createElement('img'); img.src = sheet; img.alt = label; img.style.left = `-${(pos % SC) * SW}px`; img.style.top = `-${Math.floor(pos / SC) * SH}px`;
+    const img = document.createElement('img'); img.src = sheet; img.alt = label; img.loading = 'lazy'; img.style.left = `-${(pos % SC) * SW}px`; img.style.top = `-${Math.floor(pos / SC) * SH}px`;
     sp.appendChild(img); el.appendChild(sp);
     const cap = document.createElement('span'); cap.textContent = label; el.appendChild(cap);
     return el;
@@ -172,103 +182,136 @@
     f.members.filter(m => m.final && m.sprite >= 0).forEach(m => fin.appendChild(sprite(colour === 'shiny' ? DATA.shinySheet : DATA.plainSheet, m.sprite, m.label)));
     col.appendChild(fin);
     const now = document.createElement('div'); now.className = 'now';
-    const n = nowOf(f, colour), own = ownOf(f, colour);
-    now.innerHTML = n ? `지금 <b>${n}</b>` + (colour === 'shiny' && !own ? ' <span class="borrowed">(일반 쪽을 따름)</span>' : '') : '지금 <b>구성원마다 다름</b> (구성원별에서)';
+    const l = listOf(f, colour), own = ownOf(f, colour);
+    now.innerHTML = l ? `지금 <b>${l}</b>` + (colour === 'shiny' && !own ? ' <span class="borrowed">(일반 쪽을 따름)</span>' : '') : '지금 <b>구성원마다 다름</b> (구성원별에서)';
     col.appendChild(now);
-    const chosenBall = s[colour] || '';
-    col.appendChild(strip(f, null, colour, chosenBall, n || ''));
+    const ranks = ranksOf(s[colour]);
+    col.appendChild(strip(f, null, colour, ranks, l ? l.split(' > ')[0] : ''));
     const chosen = document.createElement('div'); chosen.className = 'chosen';
-    chosen.innerHTML = chosenBall ? `여기서 고른 볼 <b>${chosenBall}</b>` : '';
+    chosen.innerHTML = ranks.length ? `여기서 정한 순위 <b>${ranks.join(' > ')}</b>` : '';
     col.appendChild(chosen);
     return col;
   }
 
-  function render() {
-    list.textContent = '';
-    let shown = 0;
-    fams.forEach(f => {
-      if (!matches(f)) return;
-      shown++;
-      const s = saved.get(f.id) || {};
-      const row = document.createElement('article'); row.className = 'fam'; row.id = 'f-' + f.id;
-      const icon = document.createElement('div'); icon.className = 'icon';
-      const ii = document.createElement('img'); ii.src = DATA.iconSheet; ii.alt = ''; ii.style.left = `-${(f.pos % cols) * W}px`; ii.style.top = `-${Math.floor(f.pos / cols) * H}px`;
-      icon.appendChild(ii); row.appendChild(icon);
-      const body = document.createElement('div');
-      const name = document.createElement('div'); name.className = 'name';
-      const st = stateOf(f);
-      name.innerHTML = `<span>${f.name}</span><span class="state ${st === 'changed' ? 'done' : ''}">${st === 'changed' ? '여기서 정함' : ownOf(f, 'shiny') ? '표대로' : '이로치 쪽은 일반을 따름'}</span><span class="games">${f.games.join(' · ')}</span>`;
-      body.appendChild(name);
-      const mem = document.createElement('div'); mem.className = 'members'; mem.textContent = f.members.map(m => m.label).join(' · '); body.appendChild(mem);
-      const two = document.createElement('div'); two.className = 'cols';
-      two.appendChild(column(f, 'shiny', s)); two.appendChild(column(f, 'plain', s));
-      body.appendChild(two);
-      const more = document.createElement('div'); more.className = 'more';
-      const per = document.createElement('button'); per.type = 'button'; per.className = 'btn'; per.textContent = '구성원별'; per.setAttribute('aria-pressed', open.has(f.id) ? 'true' : 'false');
-      per.addEventListener('click', () => { if (open.has(f.id)) open.delete(f.id); else open.add(f.id); render(); });
-      more.appendChild(per);
-      if (st === 'changed') { const clear = document.createElement('button'); clear.type = 'button'; clear.className = 'btn'; clear.textContent = '지우기'; clear.addEventListener('click', () => clearFamily(f)); more.appendChild(clear); }
-      body.appendChild(more);
-      if (open.has(f.id)) {
-        const perBox = document.createElement('div'); perBox.className = 'per';
-        f.members.forEach(m => m.sexes.forEach(sx => {
-          const key = memberKey(m, sx);
-          const r = document.createElement('div'); r.className = 'row';
-          const label = document.createElement('div'); label.className = 'label'; label.textContent = key + (m.games.length < f.games.length ? ' (' + m.games.join('·') + ')' : ''); r.appendChild(label);
-          const twoM = document.createElement('div'); twoM.className = 'two';
-          [['shiny', sx.shinyList, sx.shinyOwn], ['plain', sx.plainList, sx.plainOwn]].forEach(([colour, listText, own]) => {
-            const box = document.createElement('div');
-            const mini = document.createElement('div'); mini.className = 'mini ' + colour; mini.textContent = (colour === 'shiny' ? '이로치: ' : '일반: ') + listText + (colour === 'shiny' && !own ? ' (일반 쪽을 따름)' : '');
-            box.appendChild(mini);
-            const cur = ((s.members || {})[key] || {})[colour] || '';
-            box.appendChild(strip(f, key, colour, cur, listText.split(' > ')[0]));
-            twoM.appendChild(box);
-          });
-          r.appendChild(twoM);
-          perBox.appendChild(r);
-        }));
-        const note = document.createElement('input'); note.className = 'note'; note.type = 'text'; note.id = 'note-' + f.id; note.placeholder = '메모'; note.value = s.note || '';
-        note.addEventListener('change', () => saveFamily(f, { note: note.value.trim() }));
-        perBox.appendChild(note);
-        body.appendChild(perBox);
-      }
-      row.appendChild(body);
-      list.appendChild(row);
-    });
-    if (!shown) { const e = document.createElement('p'); e.className = 'empty'; e.textContent = '여기 맞는 가족이 없습니다.'; list.appendChild(e); }
+  function renderFamily(f) {
+    const s = saved.get(f.id) || {};
+    const row = document.createElement('article'); row.className = 'fam'; row.id = 'f-' + f.id;
+    const icon = document.createElement('div'); icon.className = 'icon';
+    const ii = document.createElement('img'); ii.src = DATA.iconSheet; ii.alt = ''; ii.style.left = `-${(f.pos % cols) * W}px`; ii.style.top = `-${Math.floor(f.pos / cols) * H}px`;
+    icon.appendChild(ii); row.appendChild(icon);
+    const body = document.createElement('div');
+    const name = document.createElement('div'); name.className = 'name';
+    const st = stateOf(f);
+    name.innerHTML = `<span>${f.name}</span><span class="state ${st === 'changed' ? 'done' : ''}">${st === 'changed' ? '여기서 정함' : ownOf(f, 'shiny') ? '표대로' : '이로치 쪽은 일반을 따름'}</span><span class="games">${f.games.join(' · ')}</span>`;
+    body.appendChild(name);
+    const mem = document.createElement('div'); mem.className = 'members'; mem.textContent = f.members.map(m => m.label).join(' · '); body.appendChild(mem);
+    const two = document.createElement('div'); two.className = 'cols';
+    two.appendChild(column(f, 'shiny', s)); two.appendChild(column(f, 'plain', s));
+    body.appendChild(two);
+    const more = document.createElement('div'); more.className = 'more';
+    const per = document.createElement('button'); per.type = 'button'; per.className = 'btn'; per.textContent = '구성원별'; per.setAttribute('aria-pressed', open.has(f.id) ? 'true' : 'false');
+    per.addEventListener('click', () => { if (open.has(f.id)) open.delete(f.id); else open.add(f.id); redraw(f); });
+    more.appendChild(per);
+    if (st === 'changed') { const clear = document.createElement('button'); clear.type = 'button'; clear.className = 'btn'; clear.textContent = '지우기'; clear.addEventListener('click', () => clearFamily(f)); more.appendChild(clear); }
+    body.appendChild(more);
+    if (open.has(f.id)) {
+      const perBox = document.createElement('div'); perBox.className = 'per';
+      f.members.forEach(m => m.sexes.forEach(sx => {
+        const key = memberKey(m, sx);
+        const r = document.createElement('div'); r.className = 'row';
+        const label = document.createElement('div'); label.className = 'label'; label.textContent = key + (m.games.length < f.games.length ? ' (' + m.games.join('·') + ')' : ''); r.appendChild(label);
+        const twoM = document.createElement('div'); twoM.className = 'two';
+        [['shiny', sx.shinyList, sx.shinyOwn], ['plain', sx.plainList, sx.plainOwn]].forEach(([colour, listText, own]) => {
+          const box = document.createElement('div');
+          const mini = document.createElement('div'); mini.className = 'mini ' + colour; mini.textContent = (colour === 'shiny' ? '이로치: ' : '일반: ') + listText + (colour === 'shiny' && !own ? ' (일반 쪽을 따름)' : '');
+          box.appendChild(mini);
+          const cur = ranksOf(((s.members || {})[key] || {})[colour]);
+          box.appendChild(strip(f, key, colour, cur, listText.split(' > ')[0]));
+          twoM.appendChild(box);
+        });
+        r.appendChild(twoM);
+        perBox.appendChild(r);
+      }));
+      const note = document.createElement('input'); note.className = 'note'; note.type = 'text'; note.id = 'note-' + f.id; note.placeholder = '메모'; note.value = s.note || '';
+      note.addEventListener('change', () => saveFamily(f, { note: note.value.trim() }));
+      perBox.appendChild(note);
+      body.appendChild(perBox);
+    }
+    row.appendChild(body);
+    return row;
+  }
+  // one family drawn again in its place: nothing else moves
+  function redraw(f) {
+    const old = document.getElementById('f-' + f.id);
+    if (old) old.replaceWith(renderFamily(f));
+    counts();
+  }
+  function counts() {
     const changed = fams.filter(f => stateOf(f) === 'changed').length;
     const borrowed = fams.filter(f => !ownOf(f, 'shiny')).length;
-    count.innerHTML = `${fams.length}가족 · 여기서 정함 <b>${changed}</b> · 이로치 쪽이 일반을 따르는 가족 <b>${borrowed}</b>${db ? '' : ' · <span style="color:var(--accent)">저장할 수 없는 상태입니다 (다시 열어 보세요)</span>'}`;
+    count.innerHTML = `${shownList.length}가족 보임 (전체 ${fams.length}) · 여기서 정함 <b>${changed}</b> · 이로치 쪽이 일반을 따르는 가족 <b>${borrowed}</b>${db ? '' : ' · <span style="color:var(--accent)">저장할 수 없는 상태입니다 (다시 열어 보세요)</span>'}`;
+  }
+  // the list is drawn a page at a time as it is scrolled, so a thousand strips are never on the page at once
+  let sentinel = null, watcher = null;
+  function render() {
+    list.textContent = '';
+    shownList = fams.filter(matches); shownUpTo = 0;
+    if (!shownList.length) { const e = document.createElement('p'); e.className = 'empty'; e.textContent = '여기 맞는 가족이 없습니다.'; list.appendChild(e); counts(); return; }
+    sentinel = document.createElement('div'); sentinel.className = 'sentinel';
+    list.appendChild(sentinel);
+    if (watcher) watcher.disconnect();
+    watcher = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) more(); }, { rootMargin: '600px' });
+    more();
+    watcher.observe(sentinel);
+    counts();
+  }
+  function more() {
+    const frag = document.createDocumentFragment();
+    const end = Math.min(shownList.length, shownUpTo + PAGE);
+    for (let i = shownUpTo; i < end; i++) frag.appendChild(renderFamily(shownList[i]));
+    shownUpTo = end;
+    list.insertBefore(frag, sentinel);
+    if (shownUpTo >= shownList.length && watcher) watcher.disconnect();
   }
 
   async function saveFamily(f, patch) {
-    const cur = saved.get(f.id) || { shiny: '', plain: '', members: {}, note: '' };
+    const cur = saved.get(f.id) || { shiny: [], plain: [], members: {}, note: '' };
     const next = Object.assign({}, cur, patch, { name: f.name, at: new Date().toISOString() });
     saved.set(f.id, next);
-    render();
+    redraw(f);
     if (!db) { say('저장할 수 없습니다'); return; }
     try { await db.collection('balls').doc(f.id).set(next); say('저장했습니다'); }
     catch (e) { say('저장 실패: ' + (e && e.message ? e.message : e)); }
   }
+  // a tap adds the ball as the next rank (three at most); a tap on a ranked ball takes it out
+  function toggled(ranks, b) {
+    const next = ranks.filter(x => x !== b);
+    if (next.length === ranks.length) { if (next.length >= 3) { say('순위는 셋까지입니다'); return null; } next.push(b); }
+    return next;
+  }
   function choose(f, member, colour, b) {
+    const cur = saved.get(f.id) || {};
     if (member === null) {
-      const cur = saved.get(f.id) || {};
-      saveFamily(f, { [colour]: cur[colour] === b ? '' : b });
+      const next = toggled(ranksOf(cur[colour]), b);
+      if (next) saveFamily(f, { [colour]: next });
     } else {
-      const members = Object.assign({}, (saved.get(f.id) || {}).members || {});
+      const members = Object.assign({}, cur.members || {});
       const m = Object.assign({}, members[member] || {});
-      if (m[colour] === b) delete m[colour]; else m[colour] = b;
+      const next = toggled(ranksOf(m[colour]), b);
+      if (!next) return;
+      if (next.length) m[colour] = next; else delete m[colour];
       if (Object.keys(m).length) members[member] = m; else delete members[member];
       saveFamily(f, { members });
     }
   }
   async function clearFamily(f) {
-    saved.delete(f.id); render();
+    saved.delete(f.id); redraw(f);
     if (!db) return;
     try { await db.collection('balls').doc(f.id).delete(); say('지웠습니다'); } catch (e) { say('지우기 실패'); }
   }
 
-  document.getElementById('q').addEventListener('input', e => { query = e.target.value.trim(); render(); });
+  let typing = 0;
+  document.getElementById('q').addEventListener('input', e => { clearTimeout(typing); typing = setTimeout(() => { query = e.target.value.trim(); render(); }, 250); });
   document.getElementById('chips').addEventListener('click', e => {
     const b = e.target.closest('.chip'); if (!b) return;
     filter = b.dataset.filter;
@@ -286,11 +329,11 @@
   (async () => {
     try {
       db = await (window.claude && window.claude.use ? window.claude.use('db') : Promise.resolve(null));
-      if (!db) { render(); return; }
+      if (!db) { counts(); return; }
       const snap = await db.collection('balls').get();
-      snap.docs.forEach(d => { const v = d.data(); if (v) saved.set(d.id, { shiny: v.shiny || '', plain: v.plain || '', members: v.members || {}, note: v.note || '' }); });
+      snap.docs.forEach(d => { const v = d.data(); if (v) saved.set(d.id, { shiny: ranksOf(v.shiny), plain: ranksOf(v.plain), members: v.members || {}, note: v.note || '' }); });
       render();
-    } catch (e) { db = null; render(); }
+    } catch (e) { db = null; counts(); }
   })();
 })();
 </script>

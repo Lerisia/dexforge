@@ -104,7 +104,7 @@ foreach (var (sp, form) in keys.Select(k => (k.Item1, k.Item2)).Distinct().Order
     {
         var own = lists.GetValueOrDefault((sp, form, sex, colour)) ?? new();
         var generic = sex >= 0 ? lists.GetValueOrDefault((sp, form, -1, colour)) ?? new() : new();
-        var merged = own.Concat(generic.Where(g => !own.Any(o => o.Ball == g.Ball))).ToList();
+        var merged = own.Concat(generic.Where(g => !own.Any(o => o.Ball == g.Ball))).Where(x => x.Ball != (int)Ball.Poke).Take(3).ToList();   // three ranks, then a Poké Ball (owner)
         if (merged.Count == 0) continue;
         sb.Append($"{sp}\t{form}\t{(sex == 0 ? "수" : sex == 1 ? "암" : "")}\t{(colour == 0 ? "일반" : "")}\t{string.Join(">", merged.Select(x => ko.balllist[x.Ball]))}\t{label}: {string.Join(">", merged.Select(x => x.Source))}\n"); rows++;
     }

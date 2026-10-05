@@ -4,9 +4,9 @@ namespace Dexforge;
 
 /// <summary>
 /// The one ball table every game draws on (balls.tsv): for each species and form — split by sex where the owner wants it,
-/// and by colour (shiny or plain) where the owner wants that — the balls in order of preference. A maker tries them from
-/// the top and keeps the first the game allows, a Poké Ball being the last resort of every list; so a ball picked with a
-/// later game in mind falls through to the next in an older one that has no such ball.
+/// and by colour (shiny or plain) where the owner wants that — up to three balls in order of preference. A maker tries them
+/// from the top and keeps the first the game allows, and a Poké Ball when none of the three will do; so a ball picked with
+/// a later game in mind falls through to the next in an older one that has no such ball.
 /// </summary>
 public sealed class Balls
 {
@@ -35,8 +35,11 @@ public sealed class Balls
 
     public int Count => table.Count;
 
+    /// <summary>Three balls are as many as the owner ranks; when none of them will do, a Poké Ball (owner, 2026-10-05).</summary>
+    public const int Ranks = 3;
+
     /// <summary>
-    /// The balls wanted for this Pokémon, best first, always ending in a Poké Ball: the row for its sex and colour, else its
+    /// The balls wanted for this Pokémon, best first — the three ranked, then a Poké Ball: the row for its sex and colour, else its
     /// sex for either colour, else its sex for the other colour (a pick is better than none), then the same without a sex.
     /// </summary>
     public IReadOnlyList<Ball> Prefer(ushort species, byte form, byte? gender, bool shiny)
@@ -44,7 +47,11 @@ public sealed class Balls
         int sex = gender is 0 or 1 ? gender.Value : -1;
         int colour = shiny ? 1 : 0;
         foreach (var (s, c) in new[] { (sex, colour), (sex, -1), (sex, 1 - colour), (-1, colour), (-1, -1), (-1, 1 - colour) })
-            if (table.TryGetValue((species, form, s, c), out var balls)) return balls.Contains(Ball.Poke) ? balls : [.. balls, Ball.Poke];
+            if (table.TryGetValue((species, form, s, c), out var balls))
+            {
+                var ranked = balls.TakeWhile(b => b != Ball.Poke).Take(Ranks).ToList();
+                return [.. ranked, Ball.Poke];
+            }
         // no sex given where the rows go by sex: the male's
         if (sex < 0 && HangsOnSex(species, form)) return Prefer(species, form, 0, shiny);
         return [Ball.Poke];

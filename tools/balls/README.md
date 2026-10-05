@@ -1,9 +1,9 @@
 # The one ball table
 
 `src/Dexforge.Core/Data/balls.tsv` is the ball table every game draws on: for each species and form — by sex where the
-owner split it, and by colour where a pick was made for a plain Pokémon — the balls in order of preference
-(`문볼>러브러브볼`). A maker tries them from the top and keeps the first the game allows; a Poké Ball is the last resort
-of every list and is not written. So a ball picked with a later game in mind falls through to the next in an older one
+owner split it, and by colour where a pick was made for a plain Pokémon — up to three balls in order of preference
+(`문볼>러브러브볼`). A maker tries them from the top and keeps the first the game allows; when none of the three will do,
+a Poké Ball (owner, 2026-10-05), which is not written. So a ball picked with a later game in mind falls through to the next in an older one
 that has no such ball, and one list serves Ultra Sun, Sword, Scarlet and Z-A alike (owner, 2026-10-05: "볼은 철저히
 우선순위제").
 
