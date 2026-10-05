@@ -13,3 +13,8 @@ carried (`usum-balls.tsv`, the family lines expanded over the template), and las
 and Z-A tables — each ball once. A pick made where the game allowed no shiny (a static, a raid, the plain ones of the
 Ultra Sun dex) was a pick for a plain Pokémon and sits in the `일반` row; a shiny falls back to it until the owner picks
 for shiny ones separately. Run it from this folder with the Dexforge.Core project referenced; it is not run by the program.
+
+`ball-picker.html` is the two-colour review page (shiny on the left, plain on the right, the final evolutions in both
+colours), built by `Families.cs` (the families of every dex with each member's current first ball per colour) and a sprite
+step; it saves to the artifact's database (`balls/<family>`: `shiny`, `plain`, `members`, `note`) and the picks are
+copied into `balls.tsv` by hand: a pick becomes the head of that colour's list, the old list following as fallbacks.
