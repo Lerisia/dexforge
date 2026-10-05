@@ -14,11 +14,13 @@ var pt = PersonalTable.SV;
 var keys = new HashSet<(ushort, byte)>();
 var games = new Dictionary<(ushort, byte), HashSet<string>>();
 void Mark((ushort, byte) k, string g) { keys.Add(k); if (!games.TryGetValue(k, out var s)) games[k] = s = new(); s.Add(g); }
+var plainIn = new Dictionary<(ushort, byte), HashSet<string>>();   // the games where the dex keeps it plain (no shiny to be had, or shiny only by a card)
+void Plain((ushort, byte) k, string g) { if (!plainIn.TryGetValue(k, out var s)) plainIn[k] = s = new(); s.Add(g); }
 var usum = new SAV7USUM(File.ReadAllBytes("/home/elyss/storage/dexforge/src/Dexforge.Core/Data/template/dex"));
-foreach (var p in usum.BoxData.Where(p => p.Species != 0)) if (new LegalityAnalysis(p).EncounterMatch is not MysteryGift) Mark((p.Species, p.Form), "울트라썬");
-foreach (var e in Dexforge.Sword.Plan8.All()) if (e.Source != Dexforge.Sword.Source.None && e.Source != Dexforge.Sword.Source.Card && (e.Template?.FixedBall is null or Ball.None)) Mark((e.Species, e.Form), "소드");
-foreach (var e in Dexforge.Scarlet.Plan9.All) if (e.Template.FixedBall == Ball.None) Mark((e.Species, e.Form), "스칼렛");
-foreach (var e in Dexforge.ZA.Plan9a.All) if (e.Template.FixedBall == Ball.None) Mark((e.Species, e.Form), "Z-A");
+foreach (var p in usum.BoxData.Where(p => p.Species != 0)) if (new LegalityAnalysis(p).EncounterMatch is not MysteryGift) { Mark((p.Species, p.Form), "울트라썬"); if (!p.IsShiny) Plain((p.Species, p.Form), "울트라썬"); }
+foreach (var e in Dexforge.Sword.Plan8.All()) if (e.Source != Dexforge.Sword.Source.None && e.Source != Dexforge.Sword.Source.Card && (e.Template?.FixedBall is null or Ball.None)) { Mark((e.Species, e.Form), "소드"); if (!e.Shiny || e.Template?.Shiny == Shiny.Never) Plain((e.Species, e.Form), "소드"); }
+foreach (var e in Dexforge.Scarlet.Plan9.All) if (e.Template.FixedBall == Ball.None) { Mark((e.Species, e.Form), "스칼렛"); if (e.ShinyLocked) Plain((e.Species, e.Form), "스칼렛"); }
+foreach (var e in Dexforge.ZA.Plan9a.All) if (e.Template.FixedBall == Ball.None) { Mark((e.Species, e.Form), "Z-A"); if (e.ShinyLocked) Plain((e.Species, e.Form), "Z-A"); }
 // Legends: Arceus picks no balls (one Hisuian ball for all), but its species belong to their lines (the Ursaluna an Ursaring becomes there)
 foreach (var e in Dexforge.Arceus.Plan8a.All) Mark((e.Species, e.Form), "아르세우스");
 string Label(ushort sp, byte f)
@@ -78,7 +80,10 @@ foreach (var g in groups)
             plain = ko.balllist[(int)balls.Prefer(sp, f, sex, false)[0]], plainList = string.Join(" > ", balls.Prefer(sp, f, sex, false).Select(b => ko.balllist[(int)b])), plainOwn = balls.PickedFor(sp, f, sex, false),
         };
         var pi = pt.GetFormEntry(sp, f);
+        var plainGames = plainIn.GetValueOrDefault((sp, f)) ?? new();
+        var shinyGames = games[(sp, f)].Where(g => g != "아르세우스" && !plainGames.Contains(g)).ToList();
         ms.Add(new { id = $"{sp}-{f}", label = Label(sp, f), slug = Slug(sp, f), games = games[(sp, f)].OrderBy(x => x).ToList(), picked = balls.Has(sp, f), gen = Gen(sp, f),
+                     shinyGames = shinyGames.OrderBy(x => x).ToList(), plainGames = plainGames.OrderBy(x => x).ToList(),
                      sexed = !(pi.Genderless || pi.OnlyMale || pi.OnlyFemale),
                      final = !Fwd(sp, f).Any(x => keys.Contains((x.Species, x.Form))),
                      sexes = bySex ? new[] { One(0), One(1) } : new[] { One(null) } });

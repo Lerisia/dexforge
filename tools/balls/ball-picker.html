@@ -43,6 +43,7 @@
   .name .games { font-size: 11px; font-weight: 500; color: var(--muted); }
   .members { color: var(--muted); font-size: 13px; margin-top: 1px; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .cols.one { grid-template-columns: 1fr; }
   @media (max-width: 560px) { .cols { grid-template-columns: 1fr; } }
   .col { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--card); }
   .col h3 { margin: 0 0 4px; font-size: 13px; font-weight: 700; letter-spacing: 0.02em; }
@@ -100,7 +101,7 @@
         <button class="chip" data-filter="all" aria-pressed="true">전부</button>
         <button class="chip" data-filter="todo-shiny" aria-pressed="false">이로치 안 정함</button>
         <button class="chip" data-filter="todo-plain" aria-pressed="false">일반 안 정함</button>
-        <button class="chip" data-filter="plain-only" aria-pressed="false">일반만 정해진 것</button>
+        <button class="chip" data-filter="has-plain" aria-pressed="false">일반이 있는 가족</button>
         <button class="chip" data-filter="changed" aria-pressed="false">여기서 바꾼 것</button>
       </div>
       <div class="chips" id="games">
@@ -113,7 +114,7 @@
     </div>
   </header>
   <main id="list"></main>
-  <p class="sub" id="foot" style="margin-top:16px">가족은 최종 진화체의 세대(갈래가 여럿이면 가장 뒤 세대)로 묶여 도감 번호순입니다. 가족마다 왼쪽은 이로치, 오른쪽은 일반입니다. 그림은 최종 진화체의 이로치와 일반 색입니다. '지금'은 네 게임이 같이 쓰는 우선순위 표의 순위이고(넣을 수 없는 게임에서는 그다음 순위로, 셋 다 안 되면 몬스터볼), 보라색 '일반 쪽을 따름'은 이로치 쪽이 따로 정해진 적이 없어 일반 쪽 볼을 쓰고 있다는 뜻입니다. 볼을 차례로 누르면 1·2·3순위가 되고(최대 셋, 다시 누르면 뺍니다). 그 게임에서 1순위가 안 되면 2순위, 2순위도 안 되면 3순위, 셋 다 안 되면 몬스터볼입니다 — 여기서 정한 순위가 지금의 순위를 통째로 대신합니다. 구성원마다 다르게 하려면 '구성원별'을 누르세요. '성별별 다름'을 켜면 수컷과 암컷 줄이 따로 나옵니다(가족에서도, 구성원별에서도). 선물·화석·배포처럼 볼이 정해진 것은 여기 없습니다. LEGENDS 아르세우스 도감의 종은 계통을 잇고 세대를 정하는 데만 쓰이고(거기선 히스이 볼 하나로 통일), 그 도감에만 있는 종은 고를 것이 없어 표시만 합니다.</p>
+  <p class="sub" id="foot" style="margin-top:16px">가족은 최종 진화체의 세대(갈래가 여럿이면 가장 뒤 세대)로 묶여 도감 번호순입니다. 이로치가 될 수 있는 것은 전부 이로치로 만드므로 볼은 한 줄입니다. 일반 색으로만 잡을 수 있는 구성원(이로치가 막힌 고정 조우, 이로치는 배포뿐인 것)이 있는 가족에만 '일반' 칸이 하나 더 있고, 그 칸의 볼은 그 구성원·그 게임에만 씁니다. 그림은 최종 진화체입니다. '지금'은 네 게임이 같이 쓰는 우선순위 표의 순위이고(넣을 수 없는 게임에서는 그다음 순위로, 셋 다 안 되면 몬스터볼), 보라색 '일반 쪽을 따름'은 이로치 쪽이 따로 정해진 적이 없어 일반 쪽 볼을 쓰고 있다는 뜻입니다. 볼을 차례로 누르면 1·2·3순위가 되고(최대 셋, 다시 누르면 뺍니다). 그 게임에서 1순위가 안 되면 2순위, 2순위도 안 되면 3순위, 셋 다 안 되면 몬스터볼입니다 — 여기서 정한 순위가 지금의 순위를 통째로 대신합니다. 구성원마다 다르게 하려면 '구성원별'을 누르세요. '성별별 다름'을 켜면 수컷과 암컷 줄이 따로 나옵니다(가족에서도, 구성원별에서도). 선물·화석·배포처럼 볼이 정해진 것은 여기 없습니다. LEGENDS 아르세우스 도감의 종은 계통을 잇고 세대를 정하는 데만 쓰이고(거기선 히스이 볼 하나로 통일), 그 도감에만 있는 종은 고를 것이 없어 표시만 합니다.</p>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -144,6 +145,8 @@
   function ranksOf(x) { return Array.isArray(x) ? x : x ? [x] : []; }
   function sexRanks(s, sex, colour) { return ranksOf(((s.sex || {})[sex] || {})[colour]); }
   function anySexed(f) { return f.members.some(m => m.sexed); }
+  const hasShiny = f => f.members.some(m => m.shinyGames.length), hasPlain = f => f.members.some(m => m.plainGames.length);
+  function plainNote(f) { return f.members.filter(m => m.plainGames.length).map(m => m.label + '(' + m.plainGames.join('·') + ')').join(', '); }
   function stateOf(f) {
     const s = saved.get(f.id);
     if (!s) return 'todo';
@@ -155,9 +158,9 @@
     if (query && !(f.name + ' ' + f.members.map(m => m.label).join(' ')).includes(query)) return false;
     if (game && !f.games.includes(game)) return false;
     const s = saved.get(f.id) || {};
-    if (filter === 'todo-shiny') return !ranksOf(s.shiny).length && !sexRanks(s, '수', 'shiny').length && !ownOf(f, 'shiny');
-    if (filter === 'todo-plain') return !ranksOf(s.plain).length && !sexRanks(s, '수', 'plain').length && !ownOf(f, 'plain');
-    if (filter === 'plain-only') return !ownOf(f, 'shiny') && ownOf(f, 'plain');
+    if (filter === 'todo-shiny') return hasShiny(f) && !ranksOf(s.shiny).length && !sexRanks(s, '수', 'shiny').length && !ownOf(f, 'shiny');
+    if (filter === 'todo-plain') return hasPlain(f) && !ranksOf(s.plain).length && !sexRanks(s, '수', 'plain').length && !ownOf(f, 'plain');
+    if (filter === 'has-plain') return hasPlain(f);
     if (filter === 'changed') return stateOf(f) === 'changed';
     return true;
   }
@@ -185,7 +188,7 @@
   }
   function column(f, colour, s) {
     const col = document.createElement('div'); col.className = 'col ' + colour;
-    const h = document.createElement('h3'); h.textContent = colour === 'shiny' ? '이로치' : '일반'; col.appendChild(h);
+    const h = document.createElement('h3'); h.textContent = colour === 'shiny' ? '이로치' : '일반으로만 잡는 것 — ' + plainNote(f); col.appendChild(h);
     const fin = document.createElement('div'); fin.className = 'finals';
     f.members.filter(m => m.final && m.sprite >= 0).forEach(m => fin.appendChild(sprite(colour === 'shiny' ? DATA.shinySheet : DATA.plainSheet, m.sprite, m.label)));
     col.appendChild(fin);
@@ -221,11 +224,12 @@
     const body = document.createElement('div');
     const name = document.createElement('div'); name.className = 'name';
     const st = stateOf(f);
-    name.innerHTML = `<span>${f.name}</span><span class="state ${st === 'changed' ? 'done' : ''}">${st === 'changed' ? '여기서 정함' : ownOf(f, 'shiny') ? '표대로' : '이로치 쪽은 일반을 따름'}</span><span class="games">${f.games.join(' · ')}</span>`;
+    name.innerHTML = `<span>${f.name}</span><span class="state ${st === 'changed' ? 'done' : ''}">${st === 'changed' ? '여기서 정함' : !hasShiny(f) || ownOf(f, 'shiny') ? '표대로' : '이로치 쪽은 일반을 따름'}</span><span class="games">${f.games.join(' · ')}</span>`;
     body.appendChild(name);
     const mem = document.createElement('div'); mem.className = 'members'; mem.textContent = f.members.map(m => m.label).join(' · '); body.appendChild(mem);
-    const two = document.createElement('div'); two.className = 'cols';
-    two.appendChild(column(f, 'shiny', s)); two.appendChild(column(f, 'plain', s));
+    const two = document.createElement('div'); two.className = 'cols' + (hasShiny(f) && hasPlain(f) ? '' : ' one');
+    if (hasShiny(f)) two.appendChild(column(f, 'shiny', s));
+    if (hasPlain(f)) two.appendChild(column(f, 'plain', s));
     body.appendChild(two);
     const more = document.createElement('div'); more.className = 'more';
     const per = document.createElement('button'); per.type = 'button'; per.className = 'btn'; per.textContent = '구성원별'; per.setAttribute('aria-pressed', open.has(f.id) ? 'true' : 'false');
@@ -249,8 +253,9 @@
         if (arceusOnly(m)) { perBox.appendChild(r); return; }
         const twoM = document.createElement('div'); twoM.className = 'two';
         [['shiny', sx.shinyList, sx.shinyOwn], ['plain', sx.plainList, sx.plainOwn]].forEach(([colour, listText, own]) => {
+          if (colour === 'shiny' ? !m.shinyGames.length : !m.plainGames.length) return;
           const box = document.createElement('div');
-          const mini = document.createElement('div'); mini.className = 'mini ' + colour; mini.textContent = (colour === 'shiny' ? '이로치: ' : '일반: ') + listText + (colour === 'shiny' && !own ? ' (일반 쪽을 따름)' : '');
+          const mini = document.createElement('div'); mini.className = 'mini ' + colour; mini.textContent = (colour === 'shiny' ? '이로치: ' : '일반(' + m.plainGames.join('·') + '): ') + listText + (colour === 'shiny' && !own ? ' (일반 쪽을 따름)' : '');
           box.appendChild(mini);
           const cur = ranksOf(((s.members || {})[key] || {})[colour]);
           box.appendChild(strip(f, key, colour, cur, listText.split(' > ')[0]));
@@ -275,8 +280,8 @@
   }
   function counts() {
     const changed = fams.filter(f => stateOf(f) === 'changed').length;
-    const borrowed = fams.filter(f => !ownOf(f, 'shiny')).length;
-    count.innerHTML = `${shownList.length}가족 보임 (전체 ${fams.length}) · 여기서 정함 <b>${changed}</b> · 이로치 쪽이 일반을 따르는 가족 <b>${borrowed}</b>${db ? '' : ' · <span style="color:var(--accent)">저장할 수 없는 상태입니다 (다시 열어 보세요)</span>'}`;
+    const borrowed = fams.filter(f => hasShiny(f) && !ownOf(f, 'shiny')).length, plains = fams.filter(hasPlain).length;
+    count.innerHTML = `${shownList.length}가족 보임 (전체 ${fams.length}) · 여기서 정함 <b>${changed}</b> · 이로치 쪽이 일반을 따르는 가족 <b>${borrowed}</b> · 일반 칸이 있는 가족 ${plains}${db ? '' : ' · <span style="color:var(--accent)">저장할 수 없는 상태입니다 (다시 열어 보세요)</span>'}`;
   }
   // the list is drawn a page at a time as it is scrolled, so a thousand strips are never on the page at once
   let sentinel = null, watcher = null;
