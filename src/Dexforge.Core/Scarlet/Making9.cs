@@ -68,7 +68,7 @@ public static class Making9
             $"바이올렛      같은 이름, SID / TID {maker.Violet.ID32 / 1_000_000:0000} / {maker.Violet.ID32 % 1_000_000:000000} — 바이올렛 전용은 거기서 잡아 교환",
             $"볼            {(opt.Ball is { } ob ? $"{ko.balllist[ob]}로 통일 (안 되는 포켓몬은 몬스터볼)" : "포켓몬마다 골라 둔 볼")}",
             $"색            {(opt.Shiny ? "이로치 (고정·레이드·교환은 일반)" : "일반")}",
-            $"크기          {opt.Size switch { SizeChoice.Smallest => "가장 작게 (스케일 0; 야생은 조그만 증표, 알은 증표 없이)", SizeChoice.Largest => "가장 크게 (스케일 255; 야생은 커다란 증표, 알은 증표 없이)", _ => "게임이 뽑은 대로" }}",
+            $"크기          {opt.Size switch { SizeChoice.Smallest => "가장 작게 (스케일 0, 조그만 증표)", SizeChoice.Largest => "가장 크게 (스케일 255, 커다란 증표)", _ => "게임이 뽑은 대로" }}",
             $"레벨          {(opt.Level == LevelChoice.Hundred ? "100" : "잡은 레벨 그대로 (진화에 필요한 만큼만 올림)")}",
             $"성별          {opt.Sex switch { SexChoice.Male => "수컷 (가능한 종)", SexChoice.Female => "암컷 (가능한 종)", _ => "게임이 뽑은 대로" }}",
             $"잡은 기간     {opt.From:yyyy-MM-dd} ~ {opt.To:yyyy-MM-dd}",

@@ -99,8 +99,8 @@ public partial class MainWindow : Window
                : SizeAlpha.IsChecked == true ? "이차원에 있는 종은 전부 우두머리로 (크기 255, 3V 보장). 야생·고정은 게임이 뽑은 대로입니다."
                : "게임이 뽑은 대로입니다.")
             : IsScarlet
-            ? (SizeSmallest.IsChecked == true ? "야생은 스케일 0 (XXXS) 에 조그만 증표, 알은 스케일 0 에 증표 없이. 고정·레이드는 게임이 정한 크기입니다."
-               : SizeLargest.IsChecked == true ? "야생은 스케일 255 (XXXL) 에 커다란 증표, 알은 스케일 255 에 증표 없이. 고정·레이드는 게임이 정한 크기입니다."
+            ? (SizeSmallest.IsChecked == true ? "야생과 알 전부 스케일 0 (XXXS) 에 조그만 증표(누룩스시티의 크기 감정사가 붙여 줌). 고정·레이드는 게임이 정한 크기입니다."
+               : SizeLargest.IsChecked == true ? "야생과 알 전부 스케일 255 (XXXL) 에 커다란 증표(누룩스시티의 크기 감정사가 붙여 줌). 고정·레이드는 게임이 정한 크기입니다."
                : "게임이 뽑은 대로입니다.")
             : SizeSmallest.IsChecked == true ? "키 0, 무게 0 (XXXS). 우두머리와 고정 조우는 게임이 정한 크기입니다. 시드를 찾느라 1분쯤 걸립니다."
             : SizeAlpha.IsChecked == true ? "우두머리가 있는 종은 전부 우두머리로 (크기 최대). 없는 종은 게임이 뽑은 대로입니다."

@@ -126,7 +126,7 @@ public class ScarletTests
     }
 
     [Fact]
-    public void A_hatchling_takes_the_size_asked_without_a_mark()
+    public void A_hatchling_takes_the_size_asked_and_its_mark()
     {
         var trainer = new SimpleTrainerInfo(GameVersion.SL) { OT = "재연", Gender = 1, Language = (int)LanguageID.Korean, ID32 = 123456789 };
         var egg = Plan9.All.First(e => e.Source == Source9.Egg);
@@ -136,7 +136,8 @@ public class ScarletTests
             Assert.True(made.Legal, made.Report);
             Assert.Equal(size == SizeChoice.Smallest ? 0 : 255, made.Pk.Scale);
             Assert.Equal(made.Pk.Scale, made.Pk.HeightScalar);
-            Assert.False(made.Pk.RibbonMarkMini || made.Pk.RibbonMarkJumbo);
+            Assert.Equal(size == SizeChoice.Smallest, made.Pk.RibbonMarkMini);   // the size judge marks hatched Pokémon too
+            Assert.Equal(size == SizeChoice.Largest, made.Pk.RibbonMarkJumbo);
             Assert.Equal(Maker9.Mesagoza, made.Pk.MetLocation);   // hatched riding around Mesagoza
         }
     }
