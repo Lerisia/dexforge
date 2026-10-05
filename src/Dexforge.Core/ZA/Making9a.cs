@@ -43,7 +43,7 @@ public static class Making9a
         uint id32 = sid7 * 1_000_000 + tid7;
         var me = new Trainer(opt.Name, sav.Gender, (ushort)(id32 & 0xFFFF), (ushort)(id32 >> 16), sav.Language, GameVersion.ZA, 0, 0, 0);
         var trainer = new SimpleTrainerInfo(GameVersion.ZA) { OT = opt.Name, Gender = sav.Gender, Language = sav.Language, ID32 = id32 };
-        var maker = new Maker9a(trainer, new Balls9a(), random, opt);
+        var maker = new Maker9a(trainer, random, opt);
 
         var entries = Plan9a.All;
         var made = new List<Made9a>(); var failed = new List<string>();

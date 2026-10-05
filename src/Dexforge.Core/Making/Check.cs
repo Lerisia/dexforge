@@ -74,16 +74,18 @@ public static class Check
                 if (ivs == IvChoice.Six && free && perfect != 6) faults.Add($"{name}: 6V 가 아님 ({perfect})");
                 if (ivs == IvChoice.FiveFromEggs && la.EncounterMatch is IEncounterEgg && perfect < 5) faults.Add($"{name}: 알인데 5V 가 아님 ({perfect})");
             }
-            // Each in the ball picked for it; or, where one ball was asked for, in that one, and in a Poke Ball only where that one will not do.
-            if (ball is not { } want) { if (p.Ball != SexBalls.Expected(o, p.Gender)) faults.Add($"{name}: 볼이 틀과 다름"); }
-            else if (la.EncounterMatch is MysteryGift) { if (p.Ball != o.Ball) faults.Add($"{name}: 카드가 정한 볼이 바뀜"); }
-            else if (p.Ball != want)
+            // Each in the first ball of the owner's list it can be in (the one asked for, where one was, with a Poke Ball behind it); a card's ball stays the card's.
+            if (la.EncounterMatch is MysteryGift) { if (p.Ball != o.Ball) faults.Add($"{name}: 카드가 정한 볼이 바뀜"); }
+            else
             {
-                if (p.Ball != (int)Ball.Poke) faults.Add($"{name}: 고른 볼도 몬스터볼도 아님 ({ko.balllist[p.Ball]})");
-                else
+                var wanted = Balls.Shared.Wanted(ball, o.Species, o.Form, p.Gender == 2 ? null : p.Gender, p.IsShiny);
+                int at = wanted.ToList().IndexOf((Ball)p.Ball);
+                if (at < 0) faults.Add($"{name}: 고른 볼 목록에 없는 볼 ({ko.balllist[p.Ball]})");
+                // a hatched one's ball goes with its ability, settled together as it was drawn: that it is on the list is enough
+                else if (la.EncounterMatch is not IEncounterEgg) for (int k = 0; k < at; k++)
                 {
-                    var inIt = (PK7)p.Clone(); inIt.Ball = (byte)want; inIt.RefreshChecksum();
-                    if (new LegalityAnalysis(inIt).Valid) faults.Add($"{name}: 고른 볼이 되는데 몬스터볼에 들어감");
+                    var inIt = (PK7)p.Clone(); inIt.Ball = (byte)wanted[k]; inIt.RefreshChecksum();
+                    if (new LegalityAnalysis(inIt).Valid) { faults.Add($"{name}: {ko.balllist[(int)wanted[k]]}이 되는데 {ko.balllist[p.Ball]}에 들어감"); break; }
                 }
             }
         }

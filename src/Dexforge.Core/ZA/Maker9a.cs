@@ -10,7 +10,7 @@ public sealed record Made9a(Entry9a Entry, PA9 Pk, string How, ulong? Seed, bool
 /// or the size asked for), a static, a gift or a trade as the game fixes it; then evolves it or changes its form as the
 /// plan says, in the owner's ball, on a day of the period.
 /// </summary>
-public sealed class Maker9a(SimpleTrainerInfo trainer, Balls9a balls, Random random, Options9a opt)
+public sealed class Maker9a(SimpleTrainerInfo trainer, Random random, Options9a opt)
 {
     /// <summary>The trainer's other Z-A (the second console): the same name, its own ids. A trade evolution goes there and comes back.</summary>
     public SimpleTrainerInfo Other { get; } = new(GameVersion.ZA) { OT = trainer.OT, Gender = trainer.Gender, Language = trainer.Language, ID32 = (uint)random.Next(0, 4295) * 1_000_000u + (uint)random.Next(0, 1_000_000) };
@@ -67,16 +67,11 @@ public sealed class Maker9a(SimpleTrainerInfo trainer, Balls9a balls, Random ran
         }
         pk.MetDate = Day();
 
-        // the ball picked for it, when the Pokémon can be in it
+        // the balls the owner wants, best first, the first the game allows
         if (e.Template.FixedBall == Ball.None)
         {
-            var wanted = (opt.Ball is { } one ? new[] { (Ball)one } : balls.For(e.Species, e.Form, pk.Gender == 2 ? null : pk.Gender) is { } picked ? new[] { picked } : []).Append(Ball.Poke).Distinct().ToArray();
-            foreach (var b in wanted)
-            {
-                pk.Ball = (byte)b; pk.RefreshChecksum();
-                if (new LegalityAnalysis(pk).Valid) break;
-            }
-            if ((Ball)pk.Ball != wanted[0]) how += $" (볼 {Plan9a.Ko.balllist[(int)wanted[0]]} 불가 → {Plan9a.Ko.balllist[pk.Ball]})";
+            var first = Balls.Choose(pk, Balls.Shared.Wanted(opt.Ball, e.Species, e.Form, pk.Gender == 2 ? null : pk.Gender, pk.IsShiny));
+            if ((Ball)pk.Ball != first) how += $" (볼 {Plan9a.Ko.balllist[(int)first]} 불가 → {Plan9a.Ko.balllist[pk.Ball]})";
         }
 
         if (e.Evolves) Evolve9a.Evolve(pk, e.Species, e.Form, Other);

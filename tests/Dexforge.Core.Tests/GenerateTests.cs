@@ -275,10 +275,17 @@ public class WhenSixPerfectValuesAreAskedFor(Perfect m) : IClassFixture<Perfect>
     }
 
     [Fact]
-    public void EachKeepsTheBallPickedForIt()
+    public void EachIsInTheFirstBallOfItsListItCanBeIn()
     {
-        // The Ralts line and Mimikyu go by sex: a Moon Ball when male, a Love Ball when female.
-        for (int i = 0; i < m.Was.Count; i++) Assert.Equal(SexBalls.Expected(m.Was[i], m.All[i].Gender), m.All[i].Ball);
+        // The Ralts line and Mimikyu go by sex: a Moon Ball when male, a Love Ball when female; a card's ball is the card's.
+        for (int i = 0; i < m.Was.Count; i++)
+        {
+            var p = m.All[i];
+            if (new LegalityAnalysis(p).EncounterMatch is MysteryGift) { Assert.Equal(m.Was[i].Ball, p.Ball); continue; }
+            Assert.Contains((Ball)p.Ball, Balls.Shared.Prefer(p.Species, p.Form, p.Gender == 2 ? null : p.Gender, p.IsShiny));
+        }
+        Assert.All(m.All.Where(p => p.Species is 280 or 281 or 282 or 778 && p.Gender == 0), p => Assert.Equal((int)Ball.Moon, p.Ball));
+        Assert.All(m.All.Where(p => p.Species is 280 or 281 or 282 or 778 && p.Gender == 1), p => Assert.Equal((int)Ball.Love, p.Ball));
     }
 }
 

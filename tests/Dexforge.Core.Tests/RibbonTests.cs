@@ -77,7 +77,7 @@ public class RibbonTests
         Assert.Null(Ribbons.Find("알로라챔피언", Ribbons.Sword));
 
         var friend = new SimpleTrainerInfo(GameVersion.SW) { OT = "새아", Gender = 1, Language = 8, ID32 = 987654321 };
-        var egg = new Maker8(tr, friend, new Balls8(Plan8.Ko), new Random(1), 2021, true, null).Make(Plan8.All().First(x => x.Species == 25 && x.Form == 0)).Pk;
+        var egg = new Maker8(tr, friend, new Random(1), 2021, true, null).Make(Plan8.All().First(x => x.Species == 25 && x.Form == 0)).Pk;
         Assert.True(new LegalityAnalysis(egg).Valid);
         int put = Ribbons.Put(egg, Ribbons.Sword.Select(r => r.Key));
         Assert.Equal(5, put);

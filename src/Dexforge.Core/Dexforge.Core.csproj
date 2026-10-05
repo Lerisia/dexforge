@@ -7,12 +7,12 @@
   <ItemGroup>
     <PackageReference Include="PKHeX.Core" Version="26.8.26" />
     <EmbeddedResource Include="Data/template/dex" LogicalName="template.dex" />
+    <EmbeddedResource Include="Data/balls.tsv" LogicalName="balls" />
     <EmbeddedResource Include="Data/template/effort.tsv" LogicalName="template.effort" />
     <EmbeddedResource Include="Data/sword/main" LogicalName="sword.main" />
     <EmbeddedResource Include="Data/sword/backup" LogicalName="sword.backup" />
     <EmbeddedResource Include="Data/sword/poke_trade" LogicalName="sword.poke_trade" />
     <EmbeddedResource Include="Data/sword/nx_save_meta.bin" LogicalName="sword.nx_save_meta" />
-    <EmbeddedResource Include="Data/sword/balls.tsv" LogicalName="sword.balls" />
     <EmbeddedResource Include="Data/sword/trackers.tsv" LogicalName="sword.trackers" />
     <EmbeddedResource Include="Data/sword/events.tsv" LogicalName="sword.events" />
     <EmbeddedResource Include="Data/sword/effort.tsv" LogicalName="sword.effort" />
@@ -23,13 +23,11 @@
     <EmbeddedResource Include="Data/arceus/nx_save_meta.bin" LogicalName="arceus.nx_save_meta" />
     <EmbeddedResource Include="Data/arceus/spawners.tsv" LogicalName="arceus.spawners" />
     <EmbeddedResource Include="Data/scarlet/plan.tsv" LogicalName="scarlet.plan" />
-    <EmbeddedResource Include="Data/scarlet/balls.tsv" LogicalName="scarlet.balls" />
     <EmbeddedResource Include="Data/scarlet/events.tsv" LogicalName="scarlet.events" />
     <EmbeddedResource Include="Data/scarlet/main" LogicalName="scarlet.main" />
     <EmbeddedResource Include="Data/scarlet/backup" LogicalName="scarlet.backup" />
     <EmbeddedResource Include="Data/scarlet/poke_trade" LogicalName="scarlet.poke_trade" />
     <EmbeddedResource Include="Data/scarlet/nx_save_meta.bin" LogicalName="scarlet.nx_save_meta" />
-    <EmbeddedResource Include="Data/za/balls.tsv" LogicalName="za.balls" />
     <EmbeddedResource Include="Data/za/main" LogicalName="za.main" />
     <EmbeddedResource Include="Data/za/backup" LogicalName="za.backup" />
     <EmbeddedResource Include="Data/za/nx_save_meta.bin" LogicalName="za.nx_save_meta" />

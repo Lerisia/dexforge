@@ -33,7 +33,7 @@ public static class Making8
         var me = new Trainer(opt.Name, sav.Gender, (ushort)(id32 & 0xFFFF), (ushort)(id32 >> 16), sav.Language, GameVersion.SW, 0, 0, 0);
         var trainer = new SimpleTrainerInfo(GameVersion.SW) { OT = opt.Name, Gender = sav.Gender, Language = sav.Language, ID32 = id32 };
         var friend = new SimpleTrainerInfo(GameVersion.SW) { OT = "새아", Gender = 1, Language = sav.Language, ID32 = (uint)random.Next(0, 4295) * 1_000_000 + (uint)random.Next(0, 1_000_000) };
-        var maker = new Maker8(trainer, friend, new Balls8(ko), random, opt.Year, opt.Shiny, opt.Ball is { } b ? (Ball)b : null);
+        var maker = new Maker8(trainer, friend, random, opt.Year, opt.Shiny, opt.Ball is { } b ? (Ball)b : null);
 
         var entries = Plan8.All().Where(e => e.Source != Source.None).ToList();
         var made = new List<Made8>(); var failed = new List<string>();

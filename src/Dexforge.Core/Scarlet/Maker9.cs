@@ -10,7 +10,7 @@ public sealed record Made9(Entry9 Entry, PK9 Pk, string How, ulong? Seed, bool L
 /// shiny, the scale asked for), a static as the game fixes it, a hatch for the starters, a raid or a trade where nothing
 /// else gives the species; then evolves it as needed, in the owner's ball, on a day of the period.
 /// </summary>
-public sealed class Maker9(SimpleTrainerInfo trainer, Balls9 balls, Random random, Options9 opt)
+public sealed class Maker9(SimpleTrainerInfo trainer, Random random, Options9 opt)
 {
     /// <summary>The trainer's own Violet: the same name, its own ids. What only Violet has is caught there and traded over.</summary>
     public SimpleTrainerInfo Violet { get; } = new(GameVersion.VL) { OT = trainer.OT, Gender = trainer.Gender, Language = trainer.Language, ID32 = (uint)random.Next(0, 4295) * 1_000_000u + (uint)random.Next(0, 1_000_000) };
@@ -91,16 +91,11 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Balls9 balls, Random rando
         else pk.MetDate = day;
         if (e.Violet) pk.UpdateHandler(trainer);
 
-        // the ball the owner picked, when the Pokémon can be in it
+        // the balls the owner wants, best first, the first the game allows
         if (e.Template.FixedBall == Ball.None)
         {
-            var wanted = (opt.Ball is { } one ? new[] { (Ball)one } : balls.For(e.Species, e.Form, pk.Gender == 2 ? null : pk.Gender) is { } picked ? new[] { picked } : []).Append(Ball.Poke).Distinct().ToArray();
-            foreach (var b in wanted)
-            {
-                pk.Ball = (byte)b; pk.RefreshChecksum();
-                if (new LegalityAnalysis(pk).Valid) break;
-            }
-            if ((Ball)pk.Ball != wanted[0]) how += $" (볼 {Plan9.Ko.balllist[(int)wanted[0]]} 불가 → {Plan9.Ko.balllist[pk.Ball]})";
+            var first = Balls.Choose(pk, Balls.Shared.Wanted(opt.Ball, e.Species, e.Form, pk.Gender == 2 ? null : pk.Gender, pk.IsShiny));
+            if ((Ball)pk.Ball != first) how += $" (볼 {Plan9.Ko.balllist[(int)first]} 불가 → {Plan9.Ko.balllist[pk.Ball]})";
         }
 
         if (e.Evolves) Evolve9.Evolve(pk, e.Species, e.Form, trainer, Violet, random);

@@ -74,7 +74,7 @@ public class SwordTests
         var random = new Random(1);
         var tr = new SimpleTrainerInfo(GameVersion.SW) { OT = "우리", Gender = 1, Language = 8, ID32 = 123456789 };
         var friend = new SimpleTrainerInfo(GameVersion.SW) { OT = "새아", Gender = 1, Language = 8, ID32 = 987654321 };
-        var m = new Maker8(tr, friend, new Balls8(Plan8.Ko), random, 2021, true, null).Make(e);
+        var m = new Maker8(tr, friend, random, 2021, true, null).Make(e);
         Assert.True(m.Legal, m.Report);
         Assert.Equal(species, m.Pk.Species);
         Assert.Equal(2021, m.Pk.MetDate!.Value.Year);
@@ -123,7 +123,7 @@ public class SwordTests
     {
         var tr = new SimpleTrainerInfo(GameVersion.SW) { OT = "우리", Gender = 1, Language = 8, ID32 = 123456789 };
         var friend = new SimpleTrainerInfo(GameVersion.SW) { OT = "새아", Gender = 1, Language = 8, ID32 = 987654321 };
-        var maker = new Maker8(tr, friend, new Balls8(Plan8.Ko), new Random(5), 2021, true, null);
+        var maker = new Maker8(tr, friend, new Random(5), 2021, true, null);
         var heroes = Events8.All.Where(e => e.Card.Species is 888 or 889 && e.Card.IsShiny).ToList();
         Assert.Equal(2, heroes.Count);
         var days = heroes.Select(e => maker.MakeEvent(e).First().Pk.MetDate).ToList();

@@ -9,7 +9,7 @@ public sealed record Made8(Entry Entry, PK8 Pk, string How, ulong? Seed, bool Le
 /// Makes each entry: hatches, revives, catches or receives the first stage the way the game draws it, then evolves and
 /// changes form as needed, dates it in 2021, and checks it with PKHeX.
 /// </summary>
-public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, Balls8 balls, Random random, int year, bool shiny, Ball? oneBall)
+public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, Random random, int year, bool shiny, Ball? oneBall)
 {
     /// <summary>The trainer's own Shield game: the same name, its own ids. What only Shield has is caught there and traded over.</summary>
     private readonly SimpleTrainerInfo shield = new(GameVersion.SH) { OT = trainer.OT, Gender = trainer.Gender, Language = trainer.Language, ID32 = (uint)random.Next(0, 4295) * 1_000_000u + (uint)random.Next(0, 1_000_000) };
@@ -48,9 +48,8 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
         PK8 pk;
         string how;
         ulong? seed = null;
-        // The one ball asked for, else the ball picked for this species (which may hang on the sex it comes out as), and a Poke Ball to fall back on.
-        Ball[] WantedFor(byte? gender) => (e.BallOverride is { } ob ? new[] { ob } : oneBall is { } one ? new[] { one } : balls.For(e.Species, e.Form, gender) is { } picked ? new[] { picked } : [])
-            .Append(Ball.Poke).Distinct().ToArray();
+        // The one ball asked for, else the balls the owner wants for this species (which may hang on the sex it comes out as), best first, a Poke Ball last.
+        Ball[] WantedFor(byte? gender) => e.BallOverride is { } ob ? [ob, Ball.Poke] : [.. Balls.Shared.Wanted(oneBall is { } one ? (int)one : null, e.Species, e.Form, gender, shiny && e.Shiny)];
         Ball[] wanted = WantedFor(e.Gender);
         switch (e.Source)
         {
@@ -128,12 +127,7 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
         if (e.Source != Source.Egg && e.Template!.FixedBall == Ball.None)
         {
             wanted = WantedFor(pk.Gender == 2 ? null : pk.Gender);
-            foreach (var b in wanted)
-            {
-                pk.Ball = (byte)b;
-                pk.RefreshChecksum();
-                if (new LegalityAnalysis(pk).Valid) break;
-            }
+            Balls.Choose(pk, wanted);
         }
         if ((Ball)pk.Ball != wanted[0]) how += $" (볼 {Plan8.Ko.balllist[(int)wanted[0]]} 불가 → {Plan8.Ko.balllist[pk.Ball]})";
 

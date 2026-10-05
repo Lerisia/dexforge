@@ -278,18 +278,18 @@ public sealed class Generator
     }
 
     /// <summary>
-    /// Into the one ball asked for, where the Pokemon can be in it; into a Poke Ball where it cannot.
+    /// Into the first ball of the owner's list the Pokemon can be in (the one asked for, where one was, and a Poke Ball behind it).
     /// What came on a card stays in the card's ball. A hidden ability that alone stands in the way gives place to an ordinary one.
     /// </summary>
     private PK7 Dress(PK7 made)
     {
-        if (opt.Ball is not { } want) return made;
+        if (keepCast) return made;
         var was = new LegalityAnalysis(made).EncounterMatch;
         PK7 Count(PK7 pk) { Balls[pk.Ball] = Balls.GetValueOrDefault(pk.Ball) + 1; return pk; }
         if (was is MysteryGift) return Count(made);
         // What hatched was put in its ball when it was drawn: its ability came with its other values and is not to be changed after.
         if (was is IEncounterEgg) return Count(made);
-        foreach (var ball in new[] { want, (int)Ball.Poke })
+        foreach (int ball in Dexforge.Balls.Shared.Wanted(opt.Ball, made.Species, made.Form, made.Gender == 2 ? null : made.Gender, made.IsShiny).Select(b => (int)b))
         {
             if (made.Ball == ball) return Count(made);
             var pk = (PK7)made.Clone(); pk.Ball = (byte)ball;
@@ -466,7 +466,8 @@ public sealed class Generator
         var diff = new List<string>();
         void C(string n, object x, object y) { if (!Equals(x, y)) diff.Add($"{n} {x}→{y}"); }
         C("species", a.Species, b.Species); C("form", a.Form, b.Form); C("level", a.CurrentLevel, b.CurrentLevel); C("met level", a.MetLevel, b.MetLevel);
-        if (ball) C("ball", SexBalls.Expected(a, b.Gender), (int)b.Ball);
+        // a hatched one was put in a ball of the owner's list as it was drawn; anything else still wears the template's until it is dressed
+        if (ball && b.Ball != a.Ball && !Dexforge.Balls.Shared.Prefer(a.Species, a.Form, b.Gender == 2 ? null : b.Gender, b.IsShiny).Contains((Ball)b.Ball)) diff.Add($"ball {a.Ball}→{b.Ball}");
         if (sex) C("gender", a.Gender, b.Gender);
         C("language", a.Language, b.Language); C("version", a.Version, b.Version);
         C("move1", a.Move1, b.Move1); C("move2", a.Move2, b.Move2); C("move3", a.Move3, b.Move3); C("move4", a.Move4, b.Move4);
@@ -545,10 +546,13 @@ public sealed class Generator
         // Shedinja has no sex, whatever the Nincada it came of had: either will do, and it is left with none.
         bool shed = old.Gender == 2 && PersonalTable.USUM.GetFormEntry(enc.Species, enc.Form).Gender != 0xFF;
         var sex = shed ? null : SexOf(old, enc);
-        var balls = opt.Ball is { } want ? new[] { want, (int)Ball.Poke }.Distinct().ToArray() : [old.Ball];
+        // the balls to try, best first: the one asked for, or the owner's list (which may hang on the sex the egg comes out as), or in a refresh the one it has
+        // the list is the species' as it stands in the box (an Eevee's egg hatches into a Vaporeon's ball), not the egg's
+        IReadOnlyList<Ball> ListFor(byte gender) => keepCast ? [(Ball)old.Ball] : Dexforge.Balls.Shared.Wanted(opt.Ball, old.Species, old.Form, gender == 2 ? null : gender, shines);
+        int ballCount = Math.Max(ListFor(0).Count, ListFor(1).Count);
         int tries = opt.Ivs == IvChoice.Six ? (shines ? 400000 : 4000) : shines ? 40000 : 400;
 
-        foreach (int ball in balls)
+        for (int ballIndex = 0; ballIndex < ballCount; ballIndex++)
         {
             // The parent that passes its ability on has the ability this one had; where that will not do in the ball, an ordinary one.
             foreach (int ability in new[] { had, 0, 1 }.Distinct())
@@ -564,7 +568,7 @@ public sealed class Generator
                     if (pk.HandlingTrainerName == was.Name) { pk.HandlingTrainerName = Me.Name; pk.HandlingTrainerGender = Me.Gender; }
                     Nursery7.Put(pk, egg);
                     if (shed) pk.Gender = old.Gender;
-                    pk.Ball = (byte)(opt.Ball is null ? SexBalls.Expected(old, pk.Gender) : ball);
+                    var list = ListFor(pk.Gender); pk.Ball = (byte)list[Math.Min(ballIndex, list.Count - 1)];
                     pk.MetDate = day;
                     if (old.EggMetDate is not null) pk.EggMetDate = day;
                     pk.RefreshChecksum();
@@ -581,7 +585,7 @@ public sealed class Generator
                 var probe = nursery.Lay(parents, owner.Tid, owner.Sid, shines, sex, Stands, tries);
                 if (probe is null || made is null) continue;
                 used.Add(made.PID); used.Add(made.EncryptionConstant);
-                if (opt.Ball is not null && made.Ball != old.Ball && ability != had) AbilityGivenUp++;
+                if ((Ball)made.Ball != ListFor(made.Gender)[0] && ability != had) AbilityGivenUp++;
                 Origins.Add(new EggOrigin(Name(old), made.EncryptionConstant, owner.Tid, owner.Sid, probe.Seed, parents));
                 nursery.Notes.Add($"{Name(old)}: 알 시드 {string.Join(",", probe.Seed.Select(x => x.ToString("X8")))} — {owner.Name} {owner.Tid:00000}/{owner.Sid:00000}; " +
                     $"부모 개체값 수 {string.Join("/", parents.MaleIvs)} 암 {string.Join("/", parents.FemaleIvs)}, 도구 수 {(int)parents.MaleHolds} 암 {(int)parents.FemaleHolds}, 물려주는 특성 {parents.Ability}, " +
