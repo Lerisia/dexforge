@@ -133,9 +133,10 @@ public class ScarletTests
         Assert.All(all, e => Assert.True(e.End is null || e.Start <= e.End, e.Title));
         // only Violet's cards: Talonflame, Gyarados and the shiny Koraidon
         Assert.Equal([49, 52, 1540], all.Where(e => e.Violet).Select(e => e.Card.CardID).Order().ToArray());
-        // what one code hands over together shares a group; a card alone is its own
-        Assert.Equal(5, all.GroupBy(e => e.Group).Count(g => g.Count() > 1));
-        Assert.Equal(all.Count - 5, all.GroupBy(e => e.Group).Count());
+        // what one code hands over together shares a group (CoroCoro's pairs, the shiny Koraidon and Miraidon, and the sets given out over one window by one trainer: the birthday Flabébé colours, the mythical trios); a card alone is its own
+        Assert.Equal(9, all.GroupBy(e => e.Group).Count(g => g.Count() > 1));
+        Assert.Equal(all.Count - 14, all.GroupBy(e => e.Group).Count());
+        Assert.Single(all.Where(e => e.Card.CardID is 1011 or 1012 or 1013).Select(e => e.Group).Distinct());
         // a plain gift in a Poké Ball is not evolved (the anime's three starters); one in another ball is, unless it is Pikachu
         Assert.All(all.Where(e => e.Card.Species is 25 or 906 or 909 or 912), e => Assert.Empty(e.Evolutions));
         Assert.Contains(all, e => e.Card.Species == 915 && e.Evolutions.Select(x => x.Species).Distinct().Single() == 916);   // Lechonk (Cherish Ball) → Oinkologne, both sexes' forms

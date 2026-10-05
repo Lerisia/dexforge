@@ -1,15 +1,15 @@
 카드번호	카드 제목	포켓몬	폼	이로치	레벨	볼	어버이	TID	SID	지역단	시작	끝	교차	설명	같은 카드	같은 코드	버전
-1	Happy Birthday!	플라베베	3	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2		
-1	Happy Birthday!	플라베베	2	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2		
-1	Happy Birthday!	플라베베	0	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2		
-1	Happy Birthday!	플라베베	4	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2		
-1	Happy Birthday!	플라베베	1	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2		
+1	Happy Birthday!	플라베베	3	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2	same-2022-11-18-2023-10-31-pok-center-japan	
+1	Happy Birthday!	플라베베	2	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2	same-2022-11-18-2023-10-31-pok-center-japan	
+1	Happy Birthday!	플라베베	0	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2	same-2022-11-18-2023-10-31-pok-center-japan	
+1	Happy Birthday!	플라베베	4	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2	same-2022-11-18-2023-10-31-pok-center-japan	
+1	Happy Birthday!	플라베베	1	Never	5	프레셔스볼	PokéCenter	41470	18	Japan	2022-11-18	2023-10-31	ID 날짜 일치	Pok�mon Center Birthday Distribution	2	same-2022-11-18-2023-10-31-pok-center-japan	
 6	Ground Tera Type Gyarados Gift	갸라도스	0	Never	20	몬스터볼		0	0	Japan	2022-12-17	2023-01-31	부분 일치	Jump Festa 2023 Gyarados	1		
 24	Nontaro’s Grimmsnarl Gift	오롱털	0	AlwaysSquare	50	프레셔스볼	Nontaro	47944	369	Global	2023-07-28	2023-08-18	부분 일치	Chaiyawat Traiwichcha's Grimmsnarl	1		
 25	ポケセン’s Pikachu Gift	피카츄	0	Never	25	프레셔스볼	ポケセン	64598	384	Japan	2023-04-22	2023-06-30	부분 일치	25th Anniversary Pikatto Pika Pika Pikachu	2		
 28	そらみつ’s Bronzong Gift	동탁군	0	Never	50	프레셔스볼	そらみつ	50130	430	Japan	2023-06-10	2023-06-11	일치	Yasuharu Shimizu's Bronzong	1		
-31	Happy Birthday!	카르본	0	Never	5	프레셔스볼	PokéCenter	35965	476	Japan	2023-11-01	2024-10-31	부분 일치	Pokémon Center Birthday Pawmi & Charcadet	1		
-31	Happy Birthday!	빠모	0	Never	5	프레셔스볼	PokéCenter	35965	476	Japan	2023-11-01	2024-10-31	부분 일치	Pokémon Center Birthday Pawmi & Charcadet	1		
+31	Happy Birthday!	카르본	0	Never	5	프레셔스볼	PokéCenter	35965	476	Japan	2023-11-01	2024-10-31	부분 일치	Pokémon Center Birthday Pawmi & Charcadet	1	same-2023-11-01-2024-10-31-pok-center-japan	
+31	Happy Birthday!	빠모	0	Never	5	프레셔스볼	PokéCenter	35965	476	Japan	2023-11-01	2024-10-31	부분 일치	Pokémon Center Birthday Pawmi & Charcadet	1	same-2023-11-01-2024-10-31-pok-center-japan	
 36	Iron Valiant Gift	무쇠무인	0	Never	75	프렌드볼	コロコロ	26392	549	Japan	2023-12-15	2024-02-14	일치	CoroCoro Roaring Moon & Iron Valiant	1	corocoro-2023	
 36	Roaring Moon Gift	고동치는달	0	Never	75	프렌드볼	コロコロ	26392	549	Japan	2023-12-15	2024-02-14	일치	CoroCoro Roaring Moon & Iron Valiant	1	corocoro-2023	
 38	Brute Bonnet Gift	사나운버섯	0	Never	75	프렌드볼	コロコロ	60312	579	Japan	2024-01-15	2024-03-14	일치	CoroCoro Paradox Pokémon	1	corocoro-2024-c	
@@ -22,9 +22,9 @@
 49	ナーク’s Talonflame Gift	파이어로	0	Never	50	프레셔스볼	ナーク	23065	751	Japan	2024-06-01	2024-06-02	부분 일치	Kaito Arii's Talonflame	1		바이올렛
 50	Eevee Gift	이브이	0	Never	10	몬스터볼		0	0	Japan	2024-07-14	2024-09-30	일치	PokéDoko Eevee	1		
 52	Sophia’s Gyarados Gift	갸라도스	0	Never	50	프레셔스볼	Sophia	8320	797	Global	2024-05-12	2024-06-30	일치	Melvin Keh's Gyarados	1		바이올렛
-54	Mythical Pokémon Keldeo Gift	케르디오	0	Never	50	프레셔스볼	だいさくせん	42850	827	Japan	2024-11-22	2025-04-30	부분 일치	Pokémon Get Large-scale Campaign 2024 Pokémon	1		
-55	Mythical Pokémon Zarude Gift	자루도	0	Never	50	프레셔스볼	だいさくせん	59810	842	Japan	2024-11-22	2025-04-30	부분 일치	Pokémon Get Large-scale Campaign 2024 Pokémon	1		
-56	Mythical Pokémon Deoxys Gift	테오키스	0	Never	50	프레셔스볼	だいさくせん	11234	858	Japan	2024-11-22	2025-04-30	부분 일치	Pokémon Get Large-scale Campaign 2024 Pokémon	1		
+54	Mythical Pokémon Keldeo Gift	케르디오	0	Never	50	프레셔스볼	だいさくせん	42850	827	Japan	2024-11-22	2025-04-30	부분 일치	Pokémon Get Large-scale Campaign 2024 Pokémon	1	same-2024-11-22-2025-04-30-japan	
+55	Mythical Pokémon Zarude Gift	자루도	0	Never	50	프레셔스볼	だいさくせん	59810	842	Japan	2024-11-22	2025-04-30	부분 일치	Pokémon Get Large-scale Campaign 2024 Pokémon	1	same-2024-11-22-2025-04-30-japan	
+56	Mythical Pokémon Deoxys Gift	테오키스	0	Never	50	프레셔스볼	だいさくせん	11234	858	Japan	2024-11-22	2025-04-30	부분 일치	Pokémon Get Large-scale Campaign 2024 Pokémon	1	same-2024-11-22-2025-04-30-japan	
 62	Happy Birthday!	두리쥐	0	Never	5	프레셔스볼	PokéCenter	47437	949	Japan	2024-11-01	2025-10-31	부분 일치	Pokémon Center Birthday Tandemaus	1		
 66	Wei Chyr’s Rillaboom Gift	고릴타	0	Never	50	프레셔스볼	Wei Chyr	59059	1010	Global	2025-04-19	2025-07-31	일치	Wei Chyr's Rillaboom	1		
 67	ヒュウマ’s Flutter Mane Gift	날개치는머리	0	Never	50	프레셔스볼	ヒュウマ	10685	1026	Japan	2025-06-21	2025-06-22	일치	Hyuma Hara's Flutter Mane	1		
@@ -57,9 +57,9 @@
 1007	Baxcalibur Gift	드닐레이브	0	Never	54	프레셔스볼	윈터페스타	17317	15369	South Korea	2023-12-30	2023-12-31	부분 일치	Winter Festa 2023 Baxcalibur	1		
 1008	신여명’s Flutter Mane Gift	날개치는머리	0	Never	50	프레셔스볼	신여명	34681	15384	South Korea	2024-05-05	2024-05-07	일치	Shin Yeo-myeong's Flutter Mane	1		
 1010	아론’s Lucario Gift	루카리오	0	Never	50	프레셔스볼	아론	12682	15415	South Korea	2025-01-22	2025-03-31	일치	Sir Aaron's Lucario	1		
-1011	Mythical Pokémon Keldeo Gift	케르디오	0	Never	50	프레셔스볼	대작전	20642	15430	South Korea	2024-11-22	2025-04-30	부분 일치	The Great Pokémon Get Operation 2024 Pokémon	1		
-1012	Mythical Pokémon Zarude Gift	자루도	0	Never	50	프레셔스볼	대작전	37602	15445	South Korea	2024-11-22	2025-04-30	부분 일치	The Great Pokémon Get Operation 2024 Pokémon	1		
-1013	Mythical Pokémon Deoxys Gift	테오키스	0	Never	50	프레셔스볼	대작전	54562	15460	South Korea	2024-11-22	2025-04-30	부분 일치	The Great Pokémon Get Operation 2024 Pokémon	1		
+1011	Mythical Pokémon Keldeo Gift	케르디오	0	Never	50	프레셔스볼	대작전	20642	15430	South Korea	2024-11-22	2025-04-30	부분 일치	The Great Pokémon Get Operation 2024 Pokémon	1	same-2024-11-22-2025-04-30-대작전-south-korea	
+1012	Mythical Pokémon Zarude Gift	자루도	0	Never	50	프레셔스볼	대작전	37602	15445	South Korea	2024-11-22	2025-04-30	부분 일치	The Great Pokémon Get Operation 2024 Pokémon	1	same-2024-11-22-2025-04-30-대작전-south-korea	
+1013	Mythical Pokémon Deoxys Gift	테오키스	0	Never	50	프레셔스볼	대작전	54562	15460	South Korea	2024-11-22	2025-04-30	부분 일치	The Great Pokémon Get Operation 2024 Pokémon	1	same-2024-11-22-2025-04-30-대작전-south-korea	
 1019	Ditto Gift	메타몽	0	Never	30	프레셔스볼	포켓몬타운	34553	15552	South Korea	2025-04-25	2025-05-06	부분 일치	Pokémon Town 2025 Ditto	1		
 1020	홍주영’s Porygon2 Gift	폴리곤2	0	Never	50	프레셔스볼	홍주영	51695	15567	South Korea	2025-06-07	2025-06-08	부분 일치	Juyoung Hong's Porygon2	1		
 1501	Flying Tera Type Pikachu Gift	피카츄	0	Never	5	몬스터볼		0	0	Global	2022-11-18	2023-02-28	일치	Flying Terastal Pikachu	2		

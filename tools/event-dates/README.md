@@ -18,7 +18,9 @@ window each was given out in.
 3. `dates-by-hand.tsv`: Sword windows checked against the official announcements where the sources disagreed (the Pokémon
    Center birthday gifts, Ash's Partner Cap Pikachu, the international Zarude).
 4. `build-list-sv.py` writes Scarlet's table from the catalogue and the matched dates, with the groups of what one code
-   hands over together (CoroCoro's Paradox pairs, the shiny Koraidon and Miraidon of 2025). PKHeX knows itself when each
+   hands over together: the known ones (CoroCoro's Paradox pairs, the shiny Koraidon and Miraidon of 2025) and, by the
+   owner's rule of 2026-10-05, every set of cards given out over one window by one trainer in one region (the mythical
+   trios of the Get campaigns, the birthday gifts). Sword's table carries the same groups, set by the same rule. PKHeX knows itself when each
    ninth-generation card was really handed out (`WC9.GetDistributionWindow`), and the maker keeps the received day inside
    that window where the table's disagrees — thirty of the eighty-two differ by more than a day at one end, Serebii's and
    Bulbapedia's windows usually being the narrower.

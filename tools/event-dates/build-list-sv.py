@@ -3,7 +3,7 @@
 program carries: src/Dexforge.Core/Data/scarlet/events.tsv, one line per distribution Scarlet can receive in the game itself.
 Copies of one card that differ only in moves or Tera type (Mew's eighteen) are one line; the HOME gifts are left out; a card
 only Violet receives is marked; what one code hands over together is given a group, so the maker receives it on one day."""
-import csv, pathlib, sys
+import csv, pathlib, re, sys
 HERE = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else '.')
 OUT = pathlib.Path(__file__).resolve().parents[2] / 'src/Dexforge.Core/Data/scarlet/events.tsv'
 # one serial code, several cards (CoroCoro's Paradox pairs, the shiny Koraidon and Miraidon of 2025)
@@ -28,6 +28,15 @@ def main():
                'TID': c['TID'], 'SID': c['SID'], '지역단': d['지역단'] if d else '', '시작': start, '끝': end, '교차': d['교차'] if d else '없음', '설명': (d['설명'] if d else '')[:120],
                '같은 카드': 1, '같은 코드': GROUPS.get((c['카드번호'], c['포켓몬']), ''), '버전': '바이올렛' if c['비고'].strip() == '바이올렛' else ''}
         seen[key] = row; rows.append(row)
+    # cards given out over the same window by the same trainer in the same region came by one code: one day for them (owner, 2026-10-05)
+    sets = {}
+    for r in rows:
+        if r['같은 코드']: continue
+        sets.setdefault((r['시작'], r['끝'], r['어버이'], r['지역단']), []).append(r)
+    for (start, end, ot, region), members in sets.items():
+        if len(members) < 2: continue
+        gid = 'same-' + re.sub(r'[^0-9A-Za-z가-힣]+', '-', '-'.join([start, end, ot, region])).strip('-').lower()
+        for r in members: r['같은 코드'] = gid
     missing = [r for r in rows if not r['시작']]
     if missing: sys.exit('no date for: ' + ', '.join(f"#{r['카드번호']} {r['카드 제목']}" for r in missing))
     OUT.write_text('\n'.join(['\t'.join(HDR)] + ['\t'.join(str(r[h]) for h in HDR) for r in rows]) + '\n', encoding='utf-8')

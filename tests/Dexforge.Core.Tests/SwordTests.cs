@@ -114,7 +114,8 @@ public class SwordTests
         Assert.Contains(all, e => e.Card.Species == 133 && e.Evolutions.Count == 8);      // a birthday Eevee: all eight
         Assert.DoesNotContain(all, e => e.Card.CanGigantamax && e.Evolutions.Count > 0);  // a Gigantamax gift cannot evolve
         Assert.Contains(all, e => e.Card.Species == 25 && e.Card.Form == 7 && e.Start == new DateOnly(2020, 9, 29));   // Ash's Partner Cap, looked up by hand
-        Assert.Equal(all.Count - 2, all.Select(e => e.Group).Distinct().Count());   // the shiny heroes and HOME's two starters: one code each
+        Assert.Equal(14, all.GroupBy(e => e.Group).Count(g => g.Count() > 1));   // the shiny heroes, HOME's two starters, and the sets given out over one window by one trainer (the movie's Celebi and Zarude, the mythical trios, the birthday pairs…)
+        Assert.Equal(all.Count - 17, all.Select(e => e.Group).Distinct().Count());
     }
 
     [Fact]
