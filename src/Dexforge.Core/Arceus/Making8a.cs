@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Text;
 using PKHeX.Core;
 
 namespace Dexforge.Arceus;
@@ -12,8 +11,6 @@ public static class Making8a
     /// <summary>The files JKSV wants in a backup folder besides the save itself, carried inside with the template.</summary>
     private static readonly (string Resource, string File)[] Sidecars = [("arceus.backup", "backup"), ("arceus.main2", "main2"), ("arceus.nx_save_meta", ".nx_save_meta.bin")];
 
-    public static string FolderFor(string under, Trainer me) => Path.Combine(under, $"Dexforge-Arceus-{me.Name}-{me.Shown:000000}");
-
     /// <summary>The Hisuian balls a catch can be asked to go in, by PKHeX's number.</summary>
     public static readonly Ball[] Balls = [Ball.LAPoke, Ball.LAGreat, Ball.LAUltra, Ball.LAFeather, Ball.LAWing, Ball.LAJet, Ball.LAHeavy, Ball.LALeaden, Ball.LAGigaton];
 
@@ -22,22 +19,13 @@ public static class Making8a
     public static Made Run(Options8a opt, string? outDir, string under, Action<int, int>? step = null)
     {
         var ko = Plan8a.Ko;
-        int room = Legal.GetMaxLengthOT(8, LanguageID.Korean);
-        if (opt.Name.Length < 1 || opt.Name.Length > room) return new Made(2, null, [], [$"어버이 이름은 1글자에서 {room}글자 사이여야 합니다."]);
-        if (opt.Sid is > 4294) return new Made(2, null, [], ["SID 는 0000 에서 4294 사이여야 합니다."]);
-        if (opt.Tid is > 999_999) return new Made(2, null, [], ["TID 는 000000 에서 999999 사이여야 합니다."]);
-        if (opt.Sid == 4294 && opt.Tid > 967_295) return new Made(2, null, [], ["SID 4294 에서는 TID 가 967295 까지입니다."]);
-        if (opt.From < Released) return new Made(2, null, [], [$"첫날은 {Released:yyyy-MM-dd} (LEGENDS 아르세우스 발매일) 이후여야 합니다."]);
-        if (opt.To < opt.From) return new Made(2, null, [], ["마지막 날이 첫날보다 앞섭니다."]);
-        if (opt.To.Year > 2099) return new Made(2, null, [], ["마지막 날은 2099년까지입니다."]);
-        if (!Balls.Contains((Ball)opt.Ball)) return new Made(2, null, [], ["볼은 히스이 지방의 볼이어야 합니다: " + string.Join(", ", Balls.Select(b => ko.balllist[(int)b]))]);
-        if (opt.Size == SizeChoice.Largest) return new Made(2, null, [], ["LEGENDS 아르세우스에는 '최대' 크기가 없습니다 (최소·우두머리·랜덤)."]);
+        if ((SwitchMaking.RefusedTrainer(opt.Name, opt.Tid, opt.Sid) ?? SwitchMaking.RefusedPeriod(opt.From, opt.To, Released, "LEGENDS 아르세우스")) is { } why) return SwitchMaking.Refused(why);
+        if (!Balls.Contains((Ball)opt.Ball)) return SwitchMaking.Refused("볼은 히스이 지방의 볼이어야 합니다: " + string.Join(", ", Balls.Select(b => ko.balllist[(int)b])));
+        if (opt.Size == SizeChoice.Largest) return SwitchMaking.Refused("LEGENDS 아르세우스에는 '최대' 크기가 없습니다 (최소·우두머리·랜덤).");
 
         var random = new Random(opt.Seed);
         var sav = new SAV8LA(Embedded.Bytes("arceus.main"));
-        uint sid7 = opt.Sid ?? (uint)random.Next(0, 4295);
-        uint tid7 = opt.Tid ?? (uint)random.Next(0, sid7 == 4294 ? 967_296 : 1_000_000);
-        uint id32 = sid7 * 1_000_000 + tid7;
+        uint id32 = SwitchMaking.Id32(random, opt.Tid, opt.Sid);
         var me = new Trainer(opt.Name, sav.Gender, (ushort)(id32 & 0xFFFF), (ushort)(id32 >> 16), sav.Language, GameVersion.PLA, 0, 0, 0);
         var trainer = new SimpleTrainerInfo(GameVersion.PLA) { OT = opt.Name, Gender = sav.Gender, Language = sav.Language, ID32 = id32 };
         // the research first: the save's research standing decides how many shiny rolls each catch gets, so it is settled
@@ -52,16 +40,15 @@ public static class Making8a
             var e = entries[i];
             var m = maker.Make(e);
             if (m.Legal) made.Add(m);
-            else failed.Add($"{Plan8a.Label(e.Species, e.Form)}: {(m.Report.Contains("Invalid") ? string.Join(" | ", m.Report.Split('\n').Where(l => l.Contains("Invalid"))) : m.Report)}");
+            else failed.Add($"{Plan8a.Label(e.Species, e.Form)}: {SwitchMaking.Faults(m.Report)}");
             step?.Invoke(i + 1, entries.Count);
         }
 
-        var lines = new List<string>
-        {
+        List<string> lines =
+        [
             "LEGENDS 아르세우스 히스이도감 세이브 — 만든 기록",
             "",
-            $"어버이        {me.Name} ({(me.Gender == 0 ? "남" : "여")})",
-            $"SID / TID     {me.Sid7:0000} / {me.Shown:000000}",
+            .. SwitchMaking.TrainerLines(me),
             $"볼            {ko.balllist[opt.Ball]}로 통일 (조우가 볼을 정한 것은 그 볼)",
             $"색            {(opt.Shiny ? "이로치 (고정 조우는 일반)" : "일반")}",
             $"크기          {opt.Size switch { SizeChoice.Smallest => "가장 작게 (키 0, 무게 0; 고정 조우는 게임이 정한 크기)", SizeChoice.Alpha => "우두머리 (우두머리가 있는 종은 전부)", _ => "게임이 뽑은 대로" }}",
@@ -70,7 +57,7 @@ public static class Making8a
             $"잡은 기간     {opt.From:yyyy-MM-dd} ~ {opt.To:yyyy-MM-dd}",
             $"시드          {opt.Seed}",
             "",
-        };
+        ];
         if (failed.Count != 0)
         {
             var refused = new List<string> { "만들지 못한 개체가 있어 세이브를 쓰지 않습니다." };
@@ -122,12 +109,7 @@ public static class Making8a
             lines.Add($"  {Plan8a.Label(pk.Species, pk.Form)}{(pk.IsShiny ? " ★" : "")}{(pk.IsAlpha ? " 우두머리" : "")} Lv{pk.CurrentLevel} {ko.natures[(int)pk.Nature]} {ko.abilitylist[pk.Ability]} {pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE} 키{pk.HeightScalar} 무게{pk.WeightScalar} {ko.balllist[pk.Ball]} — {m.How}{(m.Generator is { } g ? $" · G {g:X16}" : "")}{(m.FixedSeed is { } f ? $" · F {f:X16}" : "")}");
         }
 
-        outDir ??= FolderFor(under, me);
-        Directory.CreateDirectory(outDir);
-        File.WriteAllBytes(Path.Combine(outDir, "main"), data);
-        foreach (var (res, file) in Sidecars) File.WriteAllBytes(Path.Combine(outDir, file), Embedded.Bytes(res));
-        File.WriteAllLines(Path.Combine(outDir, Making.RecordName), lines, new UTF8Encoding(true));
-        return new Made(0, outDir, lines, [], me);
+        return SwitchMaking.Write(outDir, under, "Arceus", me, data, Sidecars, lines);
     }
 
     /// <summary>

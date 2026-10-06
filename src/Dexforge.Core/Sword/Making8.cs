@@ -1,4 +1,3 @@
-using System.Text;
 using PKHeX.Core;
 
 namespace Dexforge.Sword;
@@ -10,25 +9,17 @@ public static class Making8
     /// <summary>The files JKSV wants in a backup folder besides the save itself, carried inside with the template.</summary>
     private static readonly (string Resource, string File)[] Sidecars = [("sword.backup", "backup"), ("sword.poke_trade", "poke_trade"), ("sword.nx_save_meta", ".nx_save_meta.bin")];
 
-    public static string FolderFor(string under, Trainer me) => Path.Combine(under, $"Dexforge-Sword-{me.Name}-{me.Shown:000000}");
-
     /// <param name="outDir">Where to write; none, and the folder is named after the trainer, under <paramref name="under"/>.</param>
     /// <param name="step">Told how many are done, and of how many.</param>
     public static Made Run(Options8 opt, string? outDir, string under, Action<int, int>? step = null)
     {
         var ko = Plan8.Ko;
-        int room = Legal.GetMaxLengthOT(8, LanguageID.Korean);
-        if (opt.Name.Length < 1 || opt.Name.Length > room) return new Made(2, null, [], [$"어버이 이름은 1글자에서 {room}글자 사이여야 합니다."]);
-        if (opt.Sid is > 4294) return new Made(2, null, [], ["SID 는 0000 에서 4294 사이여야 합니다."]);
-        if (opt.Tid is > 999_999) return new Made(2, null, [], ["TID 는 000000 에서 999999 사이여야 합니다."]);
-        if (opt.Sid == 4294 && opt.Tid > 967_295) return new Made(2, null, [], ["SID 4294 에서는 TID 가 967295 까지입니다."]);
-        if (opt.Year is < 2019 or > 2099) return new Made(2, null, [], ["해는 2019 부터 2099 까지입니다 (소드실드는 2019년 11월에 나왔습니다)."]);
+        if ((SwitchMaking.RefusedTrainer(opt.Name, opt.Tid, opt.Sid)) is { } why) return SwitchMaking.Refused(why);
+        if (opt.Year is < 2019 or > 2099) return SwitchMaking.Refused("해는 2019 부터 2099 까지입니다 (소드실드는 2019년 11월에 나왔습니다).");
 
         var random = new Random(opt.Seed);
         var sav = new SAV8SWSH(Resources.Bytes("sword.main"));
-        uint sid7 = opt.Sid ?? (uint)random.Next(0, 4295);
-        uint tid7 = opt.Tid ?? (uint)random.Next(0, sid7 == 4294 ? 967_296 : 1_000_000);
-        uint id32 = sid7 * 1_000_000 + tid7;
+        uint id32 = SwitchMaking.Id32(random, opt.Tid, opt.Sid);
         var me = new Trainer(opt.Name, sav.Gender, (ushort)(id32 & 0xFFFF), (ushort)(id32 >> 16), sav.Language, GameVersion.SW, 0, 0, 0);
         var trainer = new SimpleTrainerInfo(GameVersion.SW) { OT = opt.Name, Gender = sav.Gender, Language = sav.Language, ID32 = id32 };
         var friend = new SimpleTrainerInfo(GameVersion.SW) { OT = "새아", Gender = 1, Language = sav.Language, ID32 = (uint)random.Next(0, 4295) * 1_000_000 + (uint)random.Next(0, 1_000_000) };
@@ -60,16 +51,15 @@ public static class Making8
             foreach (var m in maker.MakeEvent(ev))
             {
                 if (m.Legal) events.Add(m);
-                else failed.Add($"배포 {ev.Title} → {ko.specieslist[m.Entry.Species]}: {(m.Report.Contains("Invalid") ? string.Join(" | ", m.Report.Split('\n').Where(l => l.Contains("Invalid"))) : m.Report)}");
+                else failed.Add($"배포 {ev.Title} → {ko.specieslist[m.Entry.Species]}: {SwitchMaking.Faults(m.Report)}");
             }
         if (made.Count + events.Count > sav.SlotCount) failed.Add($"박스가 모자랍니다: 도감 {made.Count} + 배포 {events.Count} > {sav.SlotCount}");
 
-        var lines = new List<string>
-        {
+        List<string> lines =
+        [
             "소드 전국도감 세이브 — 만든 기록",
             "",
-            $"어버이        {me.Name} ({(me.Gender == 0 ? "남" : "여")})",
-            $"SID / TID     {me.Sid7:0000} / {me.Shown:000000}",
+            .. SwitchMaking.TrainerLines(me),
             $"볼            {(opt.Ball is { } ob ? $"{ko.balllist[ob]}로 통일 (안 되는 포켓몬은 몬스터볼, 선물·배포는 정해진 볼)" : $"{BallNames.Matched} (포켓몬마다 골라 둔 볼)")}",
             $"색            {(opt.Shiny ? "이로치 (안 되는 것은 일반)" : "일반")}",
             $"해            {opt.Year}년 (배포 카드가 그 해에 없던 것은 카드의 날짜)",
@@ -77,7 +67,7 @@ public static class Making8
             $"리본          {(opt.Ribbons.Count == 0 ? "없음" : string.Join(", ", opt.Ribbons.Select(k => Ribbons.Find(k, Ribbons.Sword)?.Name ?? k)))}",
             $"시드          {opt.Seed}",
             "",
-        };
+        ];
         if (failed.Count != 0)
         {
             var refused = new List<string> { "만들지 못한 개체가 있어 세이브를 쓰지 않습니다." };
@@ -119,11 +109,6 @@ public static class Making8
             lines.Add($"  {ko.specieslist[pk.Species]}{(pk.Form != 0 ? " " + Plan8.FormName(pk.Species, pk.Form) : "")}{(pk.IsShiny ? " ★" : "")} Lv{pk.CurrentLevel} {ko.natures[(int)pk.Nature]} {ko.abilitylist[pk.Ability]} {pk.IV_HP}/{pk.IV_ATK}/{pk.IV_DEF}/{pk.IV_SPA}/{pk.IV_SPD}/{pk.IV_SPE} {ko.balllist[pk.Ball]} — {m.How}");
         }
 
-        outDir ??= FolderFor(under, me);
-        Directory.CreateDirectory(outDir);
-        File.WriteAllBytes(Path.Combine(outDir, "main"), data);
-        foreach (var (res, file) in Sidecars) File.WriteAllBytes(Path.Combine(outDir, file), Resources.Bytes(res));
-        File.WriteAllLines(Path.Combine(outDir, Making.RecordName), lines, new UTF8Encoding(true));
-        return new Made(0, outDir, lines, [], me);
+        return SwitchMaking.Write(outDir, under, "Sword", me, data, Sidecars, lines);
     }
 }
