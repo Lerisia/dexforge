@@ -23,7 +23,7 @@ public static class Making9a
 
     /// <param name="outDir">Where to write; none, and the folder is named after the trainer, under <paramref name="under"/>.</param>
     /// <param name="step">Told how many are done, and of how many.</param>
-    public static Made Run(Options9a opt, string? outDir, string under, Action<int, int>? step = null)
+    public static Made Run(Options9 opt, string? outDir, string under, Action<int, int>? step = null)
     {
         var ko = Plan9a.Ko;
         int room = Legal.GetMaxLengthOT(8, LanguageID.Korean);   // six Korean letters, as in the eighth generation

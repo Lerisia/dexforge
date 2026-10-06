@@ -73,18 +73,18 @@ internal sealed class Order
     }
 
     /// <summary>The Scarlet options asked for; or why they cannot be.</summary>
-    public Dexforge.Scarlet.Options9? ToOptions9(out string why)
+    public Dexforge.Options9? ToOptions9(out string why)
     {
         why = "";
         int? ball = null;
         if (Ball is not null && !BallNames.Find(Ball, out ball, out why)) return null;
         var from = DatesGiven ? From : new DateOnly(2024, 1, 1);
         var to = DatesGiven ? To : new DateOnly(2024, 12, 31);
-        return new Dexforge.Scarlet.Options9(Name, Tid, Sid, from, to, Seed, ball, Shiny, Size, Level, Sex);
+        return new Dexforge.Options9(Name, Tid, Sid, from, to, Seed, ball, Shiny, Size, Level, Sex);
     }
 
     /// <summary>The Legends: Z-A options asked for; or why they cannot be.</summary>
-    public Dexforge.ZA.Options9a? ToOptions9a(out string why)
+    public Dexforge.Options9? ToOptions9a(out string why)
     {
         why = "";
         int? ball = null;
@@ -92,7 +92,7 @@ internal sealed class Order
         var (defaultFrom, defaultTo) = Dexforge.ZA.Making9a.DefaultPeriod();
         var from = DatesGiven ? From : defaultFrom;
         var to = DatesGiven ? To : defaultTo;
-        return new Dexforge.ZA.Options9a(Name, Tid, Sid, from, to, Seed, ball, Shiny, Size, Level, Sex);
+        return new Dexforge.Options9(Name, Tid, Sid, from, to, Seed, ball, Shiny, Size, Level, Sex);
     }
 
     /// <summary>The event box options asked for; or why they cannot be.</summary>

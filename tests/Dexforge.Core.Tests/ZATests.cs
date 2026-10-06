@@ -97,7 +97,7 @@ public class ZATests
         var into = Path.Combine(Path.GetTempPath(), "dexforge-za-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var made = Making9a.Run(new Options9a("재연", 123456, 1234, new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), 20261005, Size: SizeChoice.Alpha), into, into);
+            var made = Making9a.Run(new Options9("재연", 123456, 1234, new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), 20261005, Size: SizeChoice.Alpha), into, into);
             Assert.True(made.Code == 0, string.Join("\n", made.Refused.Take(40)));
             var sav = new SAV9ZA(File.ReadAllBytes(Path.Combine(into, "main")));
             Assert.True(sav.ChecksumsValid);

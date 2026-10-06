@@ -10,7 +10,7 @@ public sealed record Made9a(Entry9a Entry, PA9 Pk, string How, ulong? Seed, bool
 /// or the size asked for), a static, a gift or a trade as the game fixes it; then evolves it or changes its form as the
 /// plan says, in the owner's ball, on a day of the period.
 /// </summary>
-public sealed class Maker9a(SimpleTrainerInfo trainer, Random random, Options9a opt)
+public sealed class Maker9a(SimpleTrainerInfo trainer, Random random, Options9 opt)
 {
     /// <summary>The trainer's other Z-A (the second console): the same name, its own ids. A trade evolution goes there and comes back.</summary>
     public SimpleTrainerInfo Other { get; } = new(GameVersion.ZA) { OT = trainer.OT, Gender = trainer.Gender, Language = trainer.Language, ID32 = (uint)random.Next(0, 4295) * 1_000_000u + (uint)random.Next(0, 1_000_000) };

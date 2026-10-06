@@ -260,7 +260,7 @@ public partial class MainWindow : Window
     }
 
     /// <summary>What the form asks for Scarlet; or what on it cannot be read.</summary>
-    public bool Read9(out Scarlet.Options9 asked, out string why)
+    public bool Read9(out Options9 asked, out string why)
     {
         asked = null!; why = "";
         var name = (NameBox.Text ?? "").Trim();
@@ -272,12 +272,12 @@ public partial class MainWindow : Window
         var size = SizeSmallest.IsChecked == true ? SizeChoice.Smallest : SizeLargest.IsChecked == true ? SizeChoice.Largest : SizeChoice.Random;
         var sex = SexMale.IsChecked == true ? SexChoice.Male : SexFemale.IsChecked == true ? SexChoice.Female : SexChoice.Random;
         var level = LevelHundred.IsChecked == true ? LevelChoice.Hundred : LevelChoice.Lowest;
-        asked = new Scarlet.Options9(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, true, size, level, sex);
+        asked = new Options9(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, true, size, level, sex);
         return true;
     }
 
     /// <summary>What the form asks for Legends: Z-A; or what on it cannot be read.</summary>
-    public bool Read9a(out ZA.Options9a asked, out string why)
+    public bool Read9a(out Options9 asked, out string why)
     {
         asked = null!; why = "";
         var name = (NameBox.Text ?? "").Trim();
@@ -289,7 +289,7 @@ public partial class MainWindow : Window
         var size = SizeSmallest.IsChecked == true ? SizeChoice.Smallest : SizeAlpha.IsChecked == true ? SizeChoice.Alpha : SizeLargest.IsChecked == true ? SizeChoice.Largest : SizeChoice.Random;
         var sex = SexMale.IsChecked == true ? SexChoice.Male : SexFemale.IsChecked == true ? SexChoice.Female : SexChoice.Random;
         var level = LevelHundred.IsChecked == true ? LevelChoice.Hundred : LevelChoice.Lowest;
-        asked = new ZA.Options9a(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, true, size, level, sex);
+        asked = new Options9(name, tid, sid, FromBox.Day, ToBox.Day, Random.Shared.Next(), ball, true, size, level, sex);
         return true;
     }
 
