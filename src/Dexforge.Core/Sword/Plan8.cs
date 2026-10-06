@@ -50,7 +50,7 @@ public static class Plan8
         {
             var names = new Dictionary<string, ushort>();
             for (ushort i = 1; i < Ko.specieslist.Length; i++) if (Ko.specieslist[i].Length != 0) names[Ko.specieslist[i]] = i;
-            foreach (var raw in Resources.Lines("sword.trackers"))
+            foreach (var raw in Embedded.Text("sword.trackers").Split('\n'))
             {
                 var line = raw.Split('#')[0].Trim();
                 if (line.Length == 0) continue;

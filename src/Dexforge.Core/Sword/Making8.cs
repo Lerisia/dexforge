@@ -18,7 +18,7 @@ public static class Making8
         if (opt.Year is < 2019 or > 2099) return SwitchMaking.Refused("해는 2019 부터 2099 까지입니다 (소드실드는 2019년 11월에 나왔습니다).");
 
         var random = new Random(opt.Seed);
-        var sav = new SAV8SWSH(Resources.Bytes("sword.main"));
+        var sav = new SAV8SWSH(Embedded.Bytes("sword.main"));
         uint id32 = SwitchMaking.Id32(random, opt.Tid, opt.Sid);
         var me = new Trainer(opt.Name, sav.Gender, (ushort)(id32 & 0xFFFF), (ushort)(id32 >> 16), sav.Language, GameVersion.SW, 0, 0, 0);
         var trainer = new SimpleTrainerInfo(GameVersion.SW) { OT = opt.Name, Gender = sav.Gender, Language = sav.Language, ID32 = id32 };
