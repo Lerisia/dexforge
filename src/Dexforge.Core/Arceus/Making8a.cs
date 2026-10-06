@@ -7,7 +7,6 @@ namespace Dexforge.Arceus;
 /// <summary>One Legends: Arceus save made to order: every species and form the game can hold, drawn, checked, and written as a JKSV backup folder with its record.</summary>
 public static class Making8a
 {
-    public const string RecordName = "만든기록.txt";
     public static readonly DateOnly Released = new(2022, 1, 28);
 
     /// <summary>The files JKSV wants in a backup folder besides the save itself, carried inside with the template.</summary>
@@ -127,7 +126,7 @@ public static class Making8a
         Directory.CreateDirectory(outDir);
         File.WriteAllBytes(Path.Combine(outDir, "main"), data);
         foreach (var (res, file) in Sidecars) File.WriteAllBytes(Path.Combine(outDir, file), Embedded.Bytes(res));
-        File.WriteAllLines(Path.Combine(outDir, RecordName), lines, new UTF8Encoding(true));
+        File.WriteAllLines(Path.Combine(outDir, Making.RecordName), lines, new UTF8Encoding(true));
         return new Made(0, outDir, lines, [], me);
     }
 

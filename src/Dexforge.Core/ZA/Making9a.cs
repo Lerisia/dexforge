@@ -6,7 +6,6 @@ namespace Dexforge.ZA;
 /// <summary>One Legends: Z-A save made to order: every species and form the plan holds, drawn, checked, and written as a JKSV backup folder with its record.</summary>
 public static class Making9a
 {
-    public const string RecordName = "만든기록.txt";
     public static readonly DateOnly Released = new(2025, 10, 16);
 
     /// <summary>The period offered first: 2026 (Mega Dimension's year), up to today while the year is still running (owner, 2026-10-05).</summary>
@@ -107,7 +106,7 @@ public static class Making9a
         Directory.CreateDirectory(outDir);
         File.WriteAllBytes(Path.Combine(outDir, "main"), data);
         foreach (var (res, file) in Sidecars) File.WriteAllBytes(Path.Combine(outDir, file), Embedded.Bytes(res));
-        File.WriteAllLines(Path.Combine(outDir, RecordName), lines, new UTF8Encoding(true));
+        File.WriteAllLines(Path.Combine(outDir, Making.RecordName), lines, new UTF8Encoding(true));
         return new Made(0, outDir, lines, [], me);
     }
 }

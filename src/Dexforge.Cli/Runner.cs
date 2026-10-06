@@ -82,7 +82,7 @@ internal sealed class Runner(TextReader input, TextWriter output, TextWriter err
         }
         foreach (var l in made.Lines.Take(20)) output.WriteLine(l);
         output.WriteLine($"썼습니다: {(order.Game is Game.Sword or Game.Arceus or Game.Scarlet or Game.ZA ? made.Folder : made.Save)}");
-        output.WriteLine($"기록:     {order.Game switch { Game.Sword => Path.Combine(made.Folder!, Dexforge.Sword.Making8.RecordName), Game.Arceus => Path.Combine(made.Folder!, Dexforge.Arceus.Making8a.RecordName), Game.Scarlet => Path.Combine(made.Folder!, Dexforge.Scarlet.Making9.RecordName), Game.ZA => Path.Combine(made.Folder!, Dexforge.ZA.Making9a.RecordName), Game.EventBox => Path.Combine(made.Folder!, Dexforge.EventBox.EventBoxMaking.RecordName), _ => made.Record }}");
+        output.WriteLine($"기록:     {made.Record}");
         return 0;
     }
 

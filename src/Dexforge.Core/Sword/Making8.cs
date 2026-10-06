@@ -6,7 +6,6 @@ namespace Dexforge.Sword;
 /// <summary>One Sword save made to order: every species and form the game can hold, drawn, checked, and written as a JKSV backup folder with its record.</summary>
 public static class Making8
 {
-    public const string RecordName = "만든기록.txt";
 
     /// <summary>The files JKSV wants in a backup folder besides the save itself, carried inside with the template.</summary>
     private static readonly (string Resource, string File)[] Sidecars = [("sword.backup", "backup"), ("sword.poke_trade", "poke_trade"), ("sword.nx_save_meta", ".nx_save_meta.bin")];
@@ -124,7 +123,7 @@ public static class Making8
         Directory.CreateDirectory(outDir);
         File.WriteAllBytes(Path.Combine(outDir, "main"), data);
         foreach (var (res, file) in Sidecars) File.WriteAllBytes(Path.Combine(outDir, file), Resources.Bytes(res));
-        File.WriteAllLines(Path.Combine(outDir, RecordName), lines, new UTF8Encoding(true));
+        File.WriteAllLines(Path.Combine(outDir, Making.RecordName), lines, new UTF8Encoding(true));
         return new Made(0, outDir, lines, [], me);
     }
 }

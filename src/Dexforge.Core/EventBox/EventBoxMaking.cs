@@ -14,7 +14,6 @@ public sealed record EventOptions(string Name, uint? Tid, uint? Sid, int Seed, i
 /// <summary>One event box made to order: every distribution the rules keep, its evolutions, and what was picked for the spare room, written as a save with its record.</summary>
 public static class EventBoxMaking
 {
-    public const string RecordName = "만든기록.txt";
     /// <summary>The day the Korean game came out; the adventure begins after it, and this save receives its own cards a few days later still.</summary>
     public static readonly DateOnly Released = new(2017, 11, 17);
     /// <summary>Open-ended distributions are drawn up to this day.</summary>
@@ -177,7 +176,7 @@ public static class EventBoxMaking
         outDir ??= FolderFor(under, me);
         Directory.CreateDirectory(outDir);
         File.WriteAllBytes(Path.Combine(outDir, Making.SaveName), data);
-        File.WriteAllLines(Path.Combine(outDir, RecordName), lines, new UTF8Encoding(true));
+        File.WriteAllLines(Path.Combine(outDir, Making.RecordName), lines, new UTF8Encoding(true));
         return new Made(code, outDir, lines, code == 0 ? [] : problems, me);
     }
 
