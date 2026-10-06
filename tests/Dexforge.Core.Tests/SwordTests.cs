@@ -84,6 +84,9 @@ public class SwordTests
             Assert.Equal("우리", sav.OT);
             var boxed = Enumerable.Range(0, sav.SlotCount).Select(i => sav.GetBoxSlotAtIndex(i)).Where(p => p.Species != 0).ToList();
             Assert.Equal(760 + 81 + 78, boxed.Count);   // the dex, every distribution Sword received, their final evolutions
+            Assert.True(sav.ChecksumsValid);
+            // what was written is what was checked: read back out of the save, every one still passes
+            Assert.All(boxed, p => Assert.True(new LegalityAnalysis(p, sav.Personal).Valid, $"{p.Species}-{p.Form}: {new LegalityAnalysis(p, sav.Personal).Report()}"));
             Assert.Contains(boxed.Skip(760), p => p.Species == 893 && p.MetDate >= new DateOnly(2020, 8, 7));   // a Zarude on a day of its window
             Assert.Contains(boxed, p => p.Species == 38 && p.Form == 1 && p.Ball == (int)(p.Gender == 0 ? Ball.Premier : Ball.Love));   // Alolan Ninetales by sex
             Assert.True(File.Exists(Path.Combine(dir, "backup")) && File.Exists(Path.Combine(dir, ".nx_save_meta.bin")));
