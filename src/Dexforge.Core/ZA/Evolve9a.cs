@@ -21,7 +21,7 @@ public static class Evolve9a
         var steps = new List<(ushort From, byte FromForm, EvolutionMethod[] Methods)>();
         ushort requiredMove = 0;
         bool traded = false;
-        foreach (var (next, nextForm) in Path(fromSpecies, fromForm, species, form))
+        foreach (var (next, nextForm) in Evolution.Path(Tree, Plan9a.Ko, fromSpecies, fromForm, species, form))
         {
             var methods = Tree.Forward.GetForward(fromSpecies, fromForm).Span.ToArray()
                 .Where(m => m.Species == next && m.GetDestinationForm(fromForm) == nextForm).ToArray();
@@ -32,8 +32,8 @@ public static class Evolve9a
             if (m.Level > 0) level = Math.Max(level, m.Level);
             if (m.Method.IsLevelUpRequired) level = Math.Max(level, lastEvolution + 1);
             lastEvolution = level;
-            if (IsTrade(m)) traded = true;
-            if (MoveToEvolve(next) is { Length: > 0 } candidates)
+            if (m.Method.IsTrade) traded = true;
+            if (Evolution.MoveToEvolve(next) is { Length: > 0 } candidates)
             {
                 // the earlier stage must have been able to learn the move by then; the earliest of the candidates is taken
                 var (learn, _) = LearnSource9ZA.GetLearnsetAndPlus(fromSpecies, fromForm);
@@ -144,58 +144,7 @@ public static class Evolve9a
         pk.SetMoves(moves);
     }
 
-    private static bool IsTrade(EvolutionMethod m) => m.Method is EvolutionType.Trade or EvolutionType.TradeHeldItem or EvolutionType.TradeShelmetKarrablast;
-
-    /// <summary>Evolutions that need a move known or used, as the species evolved into (PKHeX's table).</summary>
-    private static ushort[] MoveToEvolve(ushort evolved) => (Species)evolved switch
-    {
-        Species.Sylveon => [(ushort)Move.Charm, (ushort)Move.BabyDollEyes, (ushort)Move.DisarmingVoice],
-        Species.MrMime or Species.Sudowoodo => [(ushort)Move.Mimic],
-        Species.Ambipom => [(ushort)Move.DoubleHit],
-        Species.Lickilicky => [(ushort)Move.Rollout],
-        Species.Tangrowth or Species.Yanmega or Species.Mamoswine => [(ushort)Move.AncientPower],
-        Species.Tsareena => [(ushort)Move.Stomp],
-        Species.Grapploct => [(ushort)Move.Taunt],
-        Species.Annihilape => [(ushort)Move.RageFist],
-        Species.Dudunsparce => [(ushort)Move.HyperDrill],
-        Species.Farigiraf => [(ushort)Move.TwinBeam],
-        Species.Overqwil => [(ushort)Move.BarbBarrage],
-        Species.Wyrdeer => [(ushort)Move.PsyshieldBash],
-        Species.Hydrapple => [(ushort)Move.DragonCheer],
-        _ => [],
-    };
-
     /// <summary>The gender an evolution path insists on, if every way of making a step needs the same one.</summary>
-    public static byte? NeededGender(ushort from, byte fromForm, ushort to, byte toForm)
-    {
-        if (from == to) return null;   // the same species, perhaps another form: no evolution to insist on anything
-        var (species, form) = (from, fromForm);
-        foreach (var (next, nextForm) in Path(from, fromForm, to, toForm))
-        {
-            var methods = Tree.Forward.GetForward(species, form).Span.ToArray()
-                .Where(m => m.Species == next && m.GetDestinationForm(form) == nextForm).ToList();
-            var genders = methods.Select(m => GenderOf(m.Method)).ToList();
-            if (genders.Count != 0 && genders.All(g => g == genders[0]) && genders[0] is { } g)
-                return g;
-            (species, form) = (next, nextForm);
-        }
-        return null;
-    }
-
-    private static byte? GenderOf(EvolutionType t) => t switch
-    {
-        EvolutionType.LevelUpMale or EvolutionType.UseItemMale or EvolutionType.LevelUpRecoilDamageMale => 0,
-        EvolutionType.LevelUpFemale or EvolutionType.UseItemFemale or EvolutionType.LevelUpRecoilDamageFemale or EvolutionType.LevelUpFormFemale1 => 1,
-        _ => null,
-    };
-
-    /// <summary>The stages from the caught species (exclusive) to the wanted one (inclusive).</summary>
-    private static List<(ushort Species, byte Form)> Path(ushort from, byte fromForm, ushort to, byte toForm)
-    {
-        var chain = Tree.Reverse.GetPreEvolutions(to, toForm).Select(x => (x.Species, x.Form)).ToList();
-        chain.Add((to, toForm));
-        int start = chain.FindIndex(x => x.Species == from && x.Form == fromForm);
-        if (start < 0) throw new InvalidOperationException($"{Plan9a.Ko.specieslist[from]}은(는) {Plan9a.Ko.specieslist[to]}으로 진화하지 않습니다.");
-        return chain.Skip(start + 1).ToList();
-    }
+    public static byte? NeededGender(ushort from, byte fromForm, ushort to, byte toForm) =>
+        from == to ? null : Evolution.NeededGender(Tree, Plan9a.Ko, from, fromForm, to, toForm);
 }
