@@ -121,4 +121,13 @@ public class SwordTests
         Assert.Equal(days[0], days[1]);
         Assert.InRange(days[0]!.Value, heroes[0].Start, heroes[0].End!.Value);
     }
+
+    [Fact]
+    public void The_same_seed_hatches_every_egg_again()
+    {
+        var (a, b) = SameSeed.Twice(d => Making8.Run(new Options8("우리", 123456, 1234, 2021, 20261006), d, d), x => new SAV8SWSH(x));
+        var hatched = Enumerable.Range(0, a.Count).Where(i => a[i].Species != 0 && a[i].WasEgg).ToList();
+        Assert.True(hatched.Count > 600, hatched.Count.ToString());
+        Assert.All(hatched, i => Assert.True(SameSeed.Drawn(a[i], b[i]), $"{a[i].Species}-{a[i].Form} in slot {i}"));
+    }
 }

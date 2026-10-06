@@ -183,4 +183,13 @@ public class ScarletTests
         Assert.Equal(18, all.Single(e => e.Card.Species == 151).Variants.Count);
         Assert.Equal(18, all.Single(e => e.Card.Species == 151).Variants.Select(c => c.TeraType).Distinct().Count());
     }
+
+    [Fact]
+    public void The_same_seed_draws_every_wild_catch_again()
+    {
+        var (a, b) = SameSeed.Twice(d => Making9.Run(new Options9("재연", 123456, 1234, new DateOnly(2023, 1, 1), new DateOnly(2024, 12, 31), 20261006), d, d), x => new SAV9SV(x));
+        var wild = Plan9.All.Select((e, i) => (e, i)).Where(x => x.e.Source == Source9.Wild).ToList();
+        Assert.True(wild.Count > 700, wild.Count.ToString());
+        Assert.All(wild, x => { Assert.Equal(x.e.Species, a[x.i].Species); Assert.True(SameSeed.Drawn(a[x.i], b[x.i]), Plan9.Label(x.e.Species, x.e.Form)); });
+    }
 }

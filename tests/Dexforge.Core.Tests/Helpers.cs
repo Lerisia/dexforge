@@ -87,3 +87,34 @@ public abstract class Made
         Was = Template.Pokemon(Before);
     }
 }
+
+/// <summary>
+/// The same seed, twice: what a seed draws must come out again, Pokémon for Pokémon. Only what the program draws from its seed is
+/// held to that; what PKHeX draws for itself (static encounters, gifts, cards) comes out of PKHeX's own unseeded random.
+/// </summary>
+public static class SameSeed
+{
+    /// <summary>Makes the save twice into fresh folders and reads back both boxes, slot for slot.</summary>
+    public static (IReadOnlyList<PKM> First, IReadOnlyList<PKM> Second) Twice(Func<string, Dexforge.Made> make, Func<byte[], SaveFile> read)
+    {
+        var dirs = new[] { Fresh(), Fresh() };
+        try
+        {
+            var boxes = dirs.Select(d =>
+            {
+                var made = make(d);
+                Assert.True(made.Code == 0, string.Join("\n", made.Refused.Take(10)));
+                var sav = read(File.ReadAllBytes(Path.Combine(made.Folder!, "main")));
+                return (IReadOnlyList<PKM>)Enumerable.Range(0, sav.SlotCount).Select(i => sav.GetBoxSlotAtIndex(i)).ToList();
+            }).ToList();
+            return (boxes[0], boxes[1]);
+        }
+        finally { foreach (var d in dirs) if (Directory.Exists(d)) Directory.Delete(d, true); }
+    }
+
+    /// <summary>The same draw: species and form, PID, encryption constant, the six IVs and the nature.</summary>
+    public static bool Drawn(PKM a, PKM b) => a.Species == b.Species && a.Form == b.Form && a.PID == b.PID && a.EncryptionConstant == b.EncryptionConstant
+        && a.IV_HP == b.IV_HP && a.IV_ATK == b.IV_ATK && a.IV_DEF == b.IV_DEF && a.IV_SPA == b.IV_SPA && a.IV_SPD == b.IV_SPD && a.IV_SPE == b.IV_SPE && a.Nature == b.Nature;
+
+    private static string Fresh() => Path.Combine(Path.GetTempPath(), "dexforge-same-" + Guid.NewGuid().ToString("N"));
+}

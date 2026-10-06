@@ -125,4 +125,13 @@ public class ArceusTests
         }
         finally { if (Directory.Exists(into)) Directory.Delete(into, true); }
     }
+
+    [Fact]
+    public void The_same_seed_draws_every_wild_catch_again()
+    {
+        var (a, b) = SameSeed.Twice(d => Making8a.Run(new Options8a("재연", 123456, 1234, Making8a.Released, new DateOnly(2022, 12, 31), 20261006, Size: SizeChoice.Alpha), d, d), x => new SAV8LA(x));
+        var drawn = Plan8a.All.Select((e, i) => (e, i)).Where(x => x.e.Source is Source8a.Field or Source8a.OtherSlot).ToList();
+        Assert.True(drawn.Count > 260, drawn.Count.ToString());
+        Assert.All(drawn, x => { Assert.Equal(x.e.Species, a[x.i].Species); Assert.True(SameSeed.Drawn(a[x.i], b[x.i]), $"{x.e.Species}-{x.e.Form}"); });
+    }
 }

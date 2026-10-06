@@ -114,4 +114,13 @@ public class ZATests
         }
         finally { if (Directory.Exists(into)) Directory.Delete(into, true); }
     }
+
+    [Fact]
+    public void The_same_seed_draws_every_hyperspace_and_wild_catch_again()
+    {
+        var (a, b) = SameSeed.Twice(d => Making9a.Run(new Options9("재연", 123456, 1234, new DateOnly(2026, 1, 1), new DateOnly(2026, 10, 5), 20261006), d, d), x => new SAV9ZA(x));
+        var drawn = Plan9a.All.Select((e, i) => (e, i)).Where(x => x.e.Source is Source9a.Hyperspace or Source9a.Wild).ToList();
+        Assert.True(drawn.Count > 390, drawn.Count.ToString());
+        Assert.All(drawn, x => { Assert.Equal(x.e.Species, a[x.i].Species); Assert.True(SameSeed.Drawn(a[x.i], b[x.i]), $"{x.e.Species}-{x.e.Form}"); });
+    }
 }
