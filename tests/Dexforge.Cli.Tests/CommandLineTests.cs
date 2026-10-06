@@ -143,6 +143,47 @@ public class CommandLineTests
         Directory.Delete(here, true);
     }
 
+    /// <summary>Every other game makes its save from the command line too, into a folder named for the game, and says where it and its record are.</summary>
+    [Theory]
+    [InlineData("소드", "Sword")]
+    [InlineData("아르세우스", "Arceus")]
+    [InlineData("스칼렛", "Scarlet")]
+    [InlineData("za", "ZA")]
+    [InlineData("배포박스", "EventBox")]
+    public void EveryGameMakesItsSaveAndSaysWhere(string game, string prefix)
+    {
+        var here = Fresh();
+        var (code, output, err) = Run(["--game", game, "--name", "달님", "--sid", "1234", "--tid", "567890", "--seed", "3"], here: here);
+        Assert.True(code == 0, err + output);
+        var folder = Path.Combine(here, $"Dexforge-{prefix}-달님-567890");
+        Assert.Contains(folder, output);
+        Assert.Contains(Path.Combine(folder, "만든기록.txt"), output);
+        Assert.True(SaveUtil.TryGetSaveFile(File.ReadAllBytes(Path.Combine(folder, "main")), out var sav));
+        Assert.Equal(567890u, sav!.TrainerTID7);
+        Directory.Delete(here, true);
+    }
+
+    [Fact]
+    public void ListsWhatTheEventBoxSpareRoomMayHold()
+    {
+        var (code, output, _) = Run(["--list-picks"]);
+        Assert.Equal(0, code);
+        var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        Assert.NotEmpty(lines);
+        Assert.All(lines, l => Assert.Equal(2, l.Split('\t').Length));   // the key to pick it by, then what it is
+    }
+
+    [Theory]
+    [InlineData("울트라썬")]
+    [InlineData("소드")]
+    public void ListsTheRibbonsEachDexCanTake(string game)
+    {
+        var (code, output, _) = Run(["--game", game, "--list-ribbons"]);
+        Assert.Equal(0, code);
+        var names = output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(l => l.Split('\t')[0]).ToList();
+        Assert.Equal((game == "소드" ? Ribbons.Sword : Ribbons.All).Select(r => r.Name), names);
+    }
+
     [Fact]
     public void AskedOneThingAtATimeItMakesTheSaveAndWaitsForEnter()
     {
