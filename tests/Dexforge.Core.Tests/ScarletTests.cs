@@ -142,6 +142,26 @@ public class ScarletTests
         }
     }
 
+    [Theory]
+    [InlineData(1017, 1)]   // Ogerpon: Wellspring Mask
+    [InlineData(1017, 2)]   // Hearthflame Mask
+    [InlineData(1017, 3)]   // Cornerstone Mask
+    public void A_form_change_holds_the_mask_the_form_is(int species, int form)
+    {
+        var pk = Blank((ushort)species, 0);
+        Evolve9.ChangeForm(pk, (byte)form);
+        Assert.Equal(form, pk.Form);
+        Assert.Equal(form, FormItem.GetFormOgerpon(pk.HeldItem));   // PKHeX reads the form back from the mask held
+    }
+
+    [Fact]
+    public void Giratina_changed_to_origin_holds_the_orb()
+    {
+        var pk = Blank(487, 0);
+        Evolve9.ChangeForm(pk, 1);
+        Assert.Equal(112, pk.HeldItem);   // Griseous Orb
+    }
+
     [Fact]
     public void Every_distribution_scarlet_received_is_listed()
     {

@@ -102,7 +102,7 @@ public static class Evolve9
     private static int FormItem(ushort species, byte form) => species switch
     {
         487 when form == 1 => 112,            // Griseous Orb
-        1017 when form is 1 or 2 or 3 => 2405 + form,   // Wellspring 2406, Hearthflame 2407, Cornerstone 2408 Mask
+        1017 => PKHeX.Core.FormItem.GetItemOgerpon(form),   // the masks are not in form order: Cornerstone 2406, Wellspring 2407, Hearthflame 2408
         _ => 0,
     };
 
