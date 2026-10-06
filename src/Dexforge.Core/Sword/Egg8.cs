@@ -35,12 +35,12 @@ public static class Egg8
     public static Hatched Generate(ulong seed, Parent a, Parent b, ushort species, byte form, byte genderRatio, uint trainerId32, bool shinyCharm)
     {
         var (p1, p2) = Order(a, b);
-        var rng = new Xoroshiro(seed);
+        var rng = new Xoroshiro128Plus(seed);
 
         // Steps 2-5: species-specific rolls that happen before gender.
-        if (species is 29 or 32) species = (ushort)(rng.Next(2) == 1 ? 29 : 32);          // Nidoran
-        if (species is 313 or 314) species = (ushort)(rng.Next(2) == 1 ? 314 : 313);      // Illumise / Volbeat
-        if (species == 876) form = (byte)rng.Next(2);                                      // Indeedee
+        if (species is 29 or 32) species = (ushort)(rng.NextInt(2) == 1 ? 29 : 32);          // Nidoran
+        if (species is 313 or 314) species = (ushort)(rng.NextInt(2) == 1 ? 314 : 313);      // Illumise / Volbeat
+        if (species == 876) form = (byte)rng.NextInt(2);                                      // Indeedee
 
         // Step 7: gender.
         byte gender = genderRatio switch
@@ -48,18 +48,18 @@ public static class Egg8
             PersonalInfo.RatioMagicGenderless => 2,
             PersonalInfo.RatioMagicFemale => 1,
             PersonalInfo.RatioMagicMale => 0,
-            _ => (byte)(rng.Next(252) + 1 < genderRatio ? 1 : 0),
+            _ => (byte)(rng.NextInt(252) + 1 < genderRatio ? 1 : 0),
         };
 
         // Step 8: nature, then Everstone.
-        var nature = (Nature)rng.Next(25);
-        if (p1.HeldItem == Everstone && p2.HeldItem == Everstone) nature = rng.Next(2) == 1 ? p2.Nature : p1.Nature;
+        var nature = (Nature)rng.NextInt(25);
+        if (p1.HeldItem == Everstone && p2.HeldItem == Everstone) nature = rng.NextInt(2) == 1 ? p2.Nature : p1.Nature;
         else if (p1.HeldItem == Everstone) nature = p1.Nature;
         else if (p2.HeldItem == Everstone) nature = p2.Nature;
 
         // Step 9: ability, from the non-Ditto parent (parent2 unless it is the Ditto).
         var source = p2.IsDitto ? p1 : p2;
-        var rand = (int)rng.Next(100);
+        var rand = (int)rng.NextInt(100);
         int ability = source.AbilityIndex switch
         {
             0 => rand < 80 ? 0 : 1,
@@ -73,13 +73,13 @@ public static class Egg8
         Array.Fill(inherit, -1);
         for (int done = 0; done < inheritCount;)
         {
-            int stat = (int)rng.Next(6);
+            int stat = (int)rng.NextInt(6);
             if (inherit[stat] != -1) continue;
-            inherit[stat] = rng.Next(2) == 1 ? 2 : 1;
+            inherit[stat] = rng.NextInt(2) == 1 ? 2 : 1;
             done++;
         }
         var ivs = new int[6];
-        for (int i = 0; i < 6; i++) ivs[i] = (int)rng.Next(32);
+        for (int i = 0; i < 6; i++) ivs[i] = (int)rng.NextInt(32);
         for (int i = 0; i < 6; i++)
         {
             if (inherit[i] == 1) ivs[i] = p1.Ivs[i];
@@ -87,7 +87,7 @@ public static class Egg8
         }
 
         // Step 12: EC.
-        uint ec = rng.NextUInt(0xFFFFFFFF);
+        uint ec = (uint)rng.NextInt(0xFFFFFFFF);
 
         // Step 13: PID. Masuda gives 6 rolls, the Shiny Charm 2 more; without either the game uses something else, so both parents
         // are always of different languages here.
@@ -98,7 +98,7 @@ public static class Egg8
         bool shiny = false;
         for (int i = 0; i < rolls; i++)
         {
-            pid = rng.NextUInt(0xFFFFFFFF);
+            pid = (uint)rng.NextInt(0xFFFFFFFF);
             if (ShinyUtil.GetShinyXor(pid, trainerId32) < 16) { shiny = true; break; }
         }
 
@@ -106,7 +106,7 @@ public static class Egg8
         Ball ball;
         if (p2.IsDitto) ball = p1.Ball;
         else if (p1.Species != p2.Species) ball = p2.Ball;
-        else ball = rng.Next(100) + 1 < 51 ? p2.Ball : p1.Ball;
+        else ball = rng.NextInt(100) + 1 < 51 ? p2.Ball : p1.Ball;
         if (ball is Ball.Master or Ball.Cherish) ball = Ball.Poke;
 
         return new Hatched(seed, species, form, gender, nature, ability, ivs, ec, pid, ball, shiny);

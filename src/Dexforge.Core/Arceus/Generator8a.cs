@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Numerics;
+using PKHeX.Core;
 
 namespace Dexforge.Arceus;
 
@@ -11,9 +13,8 @@ namespace Dexforge.Arceus;
 /// </summary>
 public static class Generator8a
 {
-    static ulong Rotl(ulong x, int k) => (x << k) | (x >> (64 - k));
-    static ulong X0FromX1(ulong x1) { x1 = Rotl(x1, 27); return Rotl(Xoroshiro8a.Fixed, 24) ^ x1 ^ (x1 << 16) ^ Rotl(x1, 24); }
-    static ulong SeedFromX1(ulong x1) => Rotl(x1, 27) ^ Xoroshiro8a.Fixed;
+    static ulong X0FromX1(ulong x1) { x1 = BitOperations.RotateLeft(x1, 27); return BitOperations.RotateLeft(Xoroshiro128Plus.XOROSHIRO_CONST, 24) ^ x1 ^ (x1 << 16) ^ BitOperations.RotateLeft(x1, 24); }
+    static ulong SeedFromX1(ulong x1) => BitOperations.RotateLeft(x1, 27) ^ Xoroshiro128Plus.XOROSHIRO_CONST;
 
     // one bit per byte, spread from the eight bits of the index
     static readonly ulong[] Slices = Enumerable.Range(0, 256).Select(i => { ulong v = 0; for (int b = 0; b < 8; b++) if ((i >> b & 1) != 0) v |= 1UL << (8 * b); return v; }).ToArray();

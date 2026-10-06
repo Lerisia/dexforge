@@ -1,4 +1,4 @@
-using Dexforge.Arceus;
+using PKHeX.Core;
 
 namespace Dexforge;
 
@@ -47,7 +47,7 @@ public sealed class SizeSeeds
         for (int i = 0; i < equations; i++)
         {
             var (draw, word, bit) = bits[i];
-            var (a0, a1) = Xoroshiro8a.StateAfter(0, Xoroshiro8a.Fixed, draw);
+            var (a0, a1) = StateAfter(0, Xoroshiro128Plus.XOROSHIRO_CONST, draw);
             offsets[i] = (((word == 0 ? a0 : a1) >> bit) & 1) != 0;
         }
         for (int k = 0; k < 64; k++)
@@ -55,7 +55,7 @@ public sealed class SizeSeeds
             for (int i = 0; i < equations; i++)
             {
                 var (draw, word, bit) = bits[i];
-                var (a0, a1) = Xoroshiro8a.StateAfter(1UL << k, 0, draw);
+                var (a0, a1) = StateAfter(1UL << k, 0, draw);
                 if ((((word == 0 ? a0 : a1) >> bit) & 1) != 0) rows[i] |= 1UL << k;
             }
         }
@@ -111,5 +111,13 @@ public sealed class SizeSeeds
         }
         foreach (var v in nullspace) if (rnd.Next(2) == 1) seed ^= v;
         return seed;
+    }
+
+    /// <summary>The state after this many draws, with no draw made: the state is a linear function of the seed.</summary>
+    private static (ulong s0, ulong s1) StateAfter(ulong seed, ulong second, int draws)
+    {
+        var x = new Xoroshiro128Plus(seed, second);
+        for (int i = 0; i < draws; i++) x.Next();
+        return x.GetState();
     }
 }

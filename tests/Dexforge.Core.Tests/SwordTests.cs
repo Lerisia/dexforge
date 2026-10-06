@@ -8,18 +8,6 @@ namespace Dexforge.Tests;
 public class SwordTests
 {
     [Fact]
-    public void Xoroshiro_masks_to_the_next_power_of_two()
-    {
-        Assert.Equal(0ul, Xoroshiro.NextPowerTwoMask(1));
-        Assert.Equal(1ul, Xoroshiro.NextPowerTwoMask(2));
-        Assert.Equal(31ul, Xoroshiro.NextPowerTwoMask(25));
-        Assert.Equal(255ul, Xoroshiro.NextPowerTwoMask(252));
-        Assert.Equal(0xFFFFFFFFul, Xoroshiro.NextPowerTwoMask(0xFFFFFFFF));
-        var rng = new Xoroshiro(1);
-        for (int i = 0; i < 1000; i++) Assert.InRange(rng.Next(25), 0ul, 24ul);
-    }
-
-    [Fact]
     public void Egg_parents_are_ordered_as_the_game_does()
     {
         var male = new Parent(25, 0, 0, Nature.Hardy, new int[6], Ball.Poke, 0, 8);

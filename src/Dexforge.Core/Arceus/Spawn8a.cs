@@ -1,3 +1,5 @@
+using PKHeX.Core;
+
 namespace Dexforge.Arceus;
 
 /// <summary>What a slot decides about how its Pokémon is drawn.</summary>
@@ -28,22 +30,24 @@ public static class Spawn8a
         return x == 0 ? 2 : x < 16 ? 1 : 0;
     }
 
-    /// <summary>The slot roll, the fixed seed and the level roll a generator seed gives.</summary>
-    public static (ulong slot, ulong fixedSeed, Xoroshiro8a rest) FromGenerator(ulong generator)
+    /// <summary>The slot roll and the fixed seed a generator seed gives.</summary>
+    public static (ulong slot, ulong fixedSeed) FromGenerator(ulong generator)
     {
-        var rng = new Xoroshiro8a(generator);
+        var rng = new Xoroshiro128Plus(generator);
         ulong slot = rng.Next(), fixedSeed = rng.Next();
-        return (slot, fixedSeed, rng);
+        return (slot, fixedSeed);
     }
 
     /// <summary>The slot roll as the game compares it with the table's weights: the first output scaled into [0, 1).</summary>
-    public static double SlotRoll(ulong generator) => (generator + Xoroshiro8a.Fixed) * (1.0 / 18446744073709551616.0);
+    public static double SlotRoll(ulong generator) => (generator + Xoroshiro128Plus.XOROSHIRO_CONST) * (1.0 / 18446744073709551616.0);
 
     /// <summary>The level a generator seed gives a slot: min plus a draw of the range, made after the fixed seed.</summary>
     public static int Level(ulong generator, int min, int max)
     {
-        var (_, _, rng) = FromGenerator(generator);
-        return max == min ? min : min + (int)rng.Rand((ulong)(max - min + 1));
+        if (max == min) return min;
+        var rng = new Xoroshiro128Plus(generator);
+        rng.Next(); rng.Next();   // the slot roll and the fixed seed come first
+        return min + (int)rng.NextInt((ulong)(max - min + 1));
     }
 
     /// <summary>
@@ -53,12 +57,12 @@ public static class Spawn8a
     /// </summary>
     public static Drawn FromFixed(ulong fixedSeed, SpawnParams p, uint id32 = 0)
     {
-        var rng = new Xoroshiro8a(fixedSeed);
-        uint ec = (uint)rng.Rand(0xFFFFFFFF), fakeTid = (uint)rng.Rand(0xFFFFFFFF), pid = 0;
+        var rng = new Xoroshiro128Plus(fixedSeed);
+        uint ec = (uint)rng.NextInt(0xFFFFFFFF), fakeTid = (uint)rng.NextInt(0xFFFFFFFF), pid = 0;
         int shiny = 0, used = 0;
         for (int i = 0; i < p.Rolls; i++)
         {
-            pid = (uint)rng.Rand(0xFFFFFFFF); used++;
+            pid = (uint)rng.NextInt(0xFFFFFFFF); used++;
             shiny = ShinyType(pid, fakeTid);
             if (shiny != 0) break;
         }
@@ -75,25 +79,25 @@ public static class Spawn8a
         var ivs = new int[6];
         for (int i = 0; i < p.Flawless; i++)
         {
-            int k = (int)rng.Rand(6);
-            while (ivs[k] != 0) k = (int)rng.Rand(6);
+            int k = (int)rng.NextInt(6);
+            while (ivs[k] != 0) k = (int)rng.NextInt(6);
             ivs[k] = 31;
         }
-        for (int i = 0; i < 6; i++) if (ivs[i] == 0) ivs[i] = (int)rng.Rand(32);
-        int ability = (int)rng.Rand(2);
+        for (int i = 0; i < 6; i++) if (ivs[i] == 0) ivs[i] = (int)rng.NextInt(32);
+        int ability = (int)rng.NextInt(2);
         int gender = p.GenderRatio switch
         {
             0 => 0,
             254 => 1,
             255 => 2,
-            _ => (int)rng.Rand(253) + 1 < p.GenderRatio ? 1 : 0,
+            _ => (int)rng.NextInt(253) + 1 < p.GenderRatio ? 1 : 0,
         };
-        int nature = (int)rng.Rand(25);
+        int nature = (int)rng.NextInt(25);
         int height = 255, weight = 255;
         if (!p.IsAlpha)
         {
-            height = (int)rng.Rand(0x81) + (int)rng.Rand(0x80);
-            weight = (int)rng.Rand(0x81) + (int)rng.Rand(0x80);
+            height = (int)rng.NextInt(0x81) + (int)rng.NextInt(0x80);
+            weight = (int)rng.NextInt(0x81) + (int)rng.NextInt(0x80);
         }
         return new Drawn(ec, fakeTid, pid, ivs, ability, gender, nature, height, weight, shiny, used);
     }

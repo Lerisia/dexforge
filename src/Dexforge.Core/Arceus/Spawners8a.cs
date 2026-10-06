@@ -1,3 +1,5 @@
+using PKHeX.Core;
+
 namespace Dexforge.Arceus;
 
 /// <summary>One slot of a spawner's table as the game weighs it at the chosen time of day and weather.</summary>
@@ -56,7 +58,7 @@ public sealed record FieldSpawner(ushort Species, byte Form, bool IsAlpha, strin
             double roll = lo + rnd.NextDouble() * (hi - lo);
             ulong first = (ulong)(roll * 18446744073709551616.0);
             // the first output is the seed plus the constant; the low bits the double cannot place are drawn at random
-            ulong seed = unchecked(first - Xoroshiro8a.Fixed) ^ (ulong)rnd.NextInt64(0, 1L << 11);
+            ulong seed = unchecked(first - Xoroshiro128Plus.XOROSHIRO_CONST) ^ (ulong)rnd.NextInt64(0, 1L << 11);
             if (Pick(Spawn8a.SlotRoll(seed)) == Index) return seed;
         }
     }

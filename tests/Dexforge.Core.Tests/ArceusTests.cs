@@ -14,7 +14,7 @@ public class ArceusTests
         for (int i = 0; i < 4; i++)
         {
             ulong g = (ulong)rnd.NextInt64() ^ ((ulong)rnd.NextInt64() << 11);
-            var (_, f, _) = Spawn8a.FromGenerator(g);
+            var (_, f) = Spawn8a.FromGenerator(g);
             Assert.Contains(g, Generator8a.Of(f));
         }
     }
