@@ -68,14 +68,6 @@ public sealed class Effort
 
     public static string Name(EffortClass c) => ByName.First(kv => kv.Value == c).Key;
 
-    public static string Describe(EffortClass c) => c switch
-    {
-        EffortClass.Tank => "HP 252 · 방어 252 · 특방 6",
-        EffortClass.SlowPhysical => "공격 252 · HP 252 · 방어 6",
-        EffortClass.SlowSpecial => "특공 252 · HP 252 · 방어 6",
-        EffortClass.FastPhysical => "공격 252 · 스핏 252 · HP 6",
-        _ => "특공 252 · 스핏 252 · HP 6",
-    };
 
     /// <summary>Spends the Pokémon's effort points as its class says; a species the table does not know is spent as a tank.</summary>
     public EffortClass Apply(PKM pk)

@@ -17,7 +17,7 @@ public static class Evolve9
         catch (InvalidOperationException) { return false; }
     }
 
-    public static void Evolve(PK9 pk, ushort species, byte form, ITrainerInfo trainer, ITrainerInfo friend, Random random)
+    public static void Evolve(PK9 pk, ushort species, byte form, ITrainerInfo friend, Random random)
     {
         int level = pk.CurrentLevel;
         byte metLevel = pk.MetLevel;

@@ -57,7 +57,6 @@ public static class Egg7
         int used = 0;
         uint Rand() { used++; return rng.Next(); }
 
-        bool random = 0x0F < p.Ratio && p.Ratio < 0xEF;
         byte settled = p.Ratio switch
         {
             0x1F or 0x3F or 0x7F or 0xBF or 0xE1 => (byte)(p.Ratio - 1),
@@ -70,13 +69,10 @@ public static class Egg7
         byte gender = p.EitherSex ? (byte)((Rand() & 1) + 1)
                     : drawn ? (byte)((int)(Rand() % 252) >= settled ? 1 : 2)
                     : settled;
-        _ = random;
 
         byte nature = (byte)(Rand() % 25);
 
-        bool everstone = p.MaleHolds == Held.Everstone || p.FemaleHolds == Held.Everstone;
         if (p.MaleHolds == Held.Everstone && p.FemaleHolds == Held.Everstone) Rand();
-        _ = everstone;
 
         uint roll = Rand() % 100;
         byte ability = p.Ability switch

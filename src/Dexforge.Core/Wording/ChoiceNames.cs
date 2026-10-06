@@ -85,12 +85,4 @@ public static class SizeNames
             default: choice = SizeChoice.Random; return false;
         }
     }
-
-    public static string Said(SizeChoice choice) => choice switch
-    {
-        SizeChoice.Smallest => "가장 작게 (키 0, 무게 0; 우두머리와 고정 조우는 제외)",
-        SizeChoice.Alpha => "우두머리 (우두머리가 있는 종은 전부)",
-        SizeChoice.Largest => "가장 크게 (스케일 255, 커다란 증표)",
-        _ => "게임이 뽑은 대로",
-    };
 }

@@ -181,7 +181,7 @@ public sealed class Maker8(SimpleTrainerInfo trainer, SimpleTrainerInfo friend, 
         if (e.Evolves)
         {
             byte target = Evolve8.CanReach(pk.Species, pk.Form, e.Species, e.Form) ? e.Form : (byte)0;
-            Evolve8.Evolve(pk, e.Species, target, trainer, shield, random); // a trade evolution goes to the trainer's other cartridge and back
+            Evolve8.Evolve(pk, e.Species, target, shield, random); // a trade evolution goes to the trainer's other cartridge and back
         }
         if (pk.Form != e.Form)
             Evolve8.ChangeForm(pk, e.Form);

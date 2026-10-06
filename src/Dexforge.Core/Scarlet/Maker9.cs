@@ -105,7 +105,7 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Random random, Options9 op
             if ((Ball)pk.Ball != first) how += $" (볼 {Plan9.Ko.balllist[(int)first]} 불가 → {Plan9.Ko.balllist[pk.Ball]})";
         }
 
-        if (e.Evolves) Evolve9.Evolve(pk, e.Species, e.Form, trainer, Violet, random);
+        if (e.Evolves) Evolve9.Evolve(pk, e.Species, e.Form, Violet, random);
         if (opt.Level == LevelChoice.Hundred) { pk.CurrentLevel = 100; pk.ResetPartyStats(); }
         pk.RefreshChecksum();
         var la = new LegalityAnalysis(pk);
@@ -159,7 +159,7 @@ public sealed class Maker9(SimpleTrainerInfo trainer, Random random, Options9 op
             try
             {
                 byte target = Evolve9.CanReach(pk2.Species, pk2.Form, sp, f) ? f : (byte)0;
-                Evolve9.Evolve(pk2, sp, target, trainer, Violet, random);
+                Evolve9.Evolve(pk2, sp, target, Violet, random);
                 if (pk2.Form != f) Evolve9.ChangeForm(pk2, f);
             }
             catch (InvalidOperationException ex) { made.Add(new Made9(e2, pk2, made[0].How, null, false, ex.Message)); continue; }
